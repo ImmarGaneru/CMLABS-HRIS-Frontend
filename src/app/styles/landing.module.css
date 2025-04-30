@@ -1,0 +1,66 @@
+/* src/app/styles/Landing.module.css */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1e293b; /* Slate-800 */
+    margin-bottom: 1rem;
+  }
+  
+  .subheading {
+    font-size: 1.125rem;
+    color: #475569; /* Slate-600 */
+    margin-bottom: 2rem;
+  }
+  
+  .buttonPrimary {
+    background-color: #1d4ed8; /* Blue-700 */
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    text-align: center;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .buttonPrimary:hover {
+    background-color: #2563eb; /* Blue-600 */
+  }
+  
+  .card {
+    border: 1px solid #e2e8f0; /* Gray-200 */
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .faqItem {
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 0;
+  }
+  
+  .footerLink {
+    color: #334155;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .footerLink:hover {
+    text-decoration: underline;
+  }
+  
