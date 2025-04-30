@@ -73,7 +73,7 @@ export default function EmployeeTablePage() {
     () => [
       {
         name: "No",
-        selector: (row: { id: any }) => row.id,
+        selector: (row: { id: number }) => row.id,
         width: "60px",
       },
       {
@@ -98,25 +98,25 @@ export default function EmployeeTablePage() {
       },
       {
         name: "Nama",
-        selector: (row: { nama: any }) => row.nama,
+        selector: (row: { nama: string }) => row.nama,
         sortable: true,
       },
       {
         name: "Jenis Kelamin",
-        selector: (row: { jenisKelamin: any }) => row.jenisKelamin,
+        selector: (row: { jenisKelamin: string }) => row.jenisKelamin,
         sortable: true,
       },
       {
         name: "Nomor Telepon",
-        selector: (row: { nomor: any }) => row.nomor,
+        selector: (row: { nomor: string }) => row.nomor,
       },
       {
         name: "Cabang",
-        selector: (row: { cabang: any }) => row.cabang,
+        selector: (row: { cabang: string }) => row.cabang,
       },
       {
         name: "Jabatan",
-        selector: (row: { jabatan: any }) => row.jabatan,
+        selector: (row: { jabatan: string }) => row.jabatan,
       },
       {
         name: "Status",
@@ -167,7 +167,7 @@ export default function EmployeeTablePage() {
       },
       {
         name: "Action",
-        cell: (row: { nama: any }) => (
+        cell: (row: { nama: string }) => (
           <div style={{ display: "flex", gap: "6px" }}>
             <button
               title="Lihat"
@@ -212,7 +212,7 @@ export default function EmployeeTablePage() {
         ),
       },
     ],
-    [statusData]
+    []
   );
 
   return (
@@ -410,9 +410,6 @@ export default function EmployeeTablePage() {
   </div>
 </div>
 
-
-
-
         <DataTable
           columns={columns}
           data={filteredEmployees}
@@ -425,8 +422,6 @@ export default function EmployeeTablePage() {
       </div>
     
   );
- 
-
 }
 
 
