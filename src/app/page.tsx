@@ -1,7 +1,7 @@
-import HeroSection from './components/heroSection';
-import Features from './components/features';
-import FAQ from './components/faq';
-import CTA from './components/cta';
+import HeroSection from './landing_page/heroSection';
+import Features from './landing_page/features';
+import FAQ from './landing_page/faq';
+import CTA from './landing_page/cta';
 
 export default function HomePage() {
   return (

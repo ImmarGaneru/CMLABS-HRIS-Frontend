@@ -1,8 +1,8 @@
 // src/app/layout.tsx
 
 import './globals.css';
-import Navbar from './components/navbar';
-import Footer from './components/footer';
+import Navbar from './landing_page/navbar';
+import Footer from './landing_page/footer';
 import { ReactNode } from 'react';
 
 export const metadata = {
