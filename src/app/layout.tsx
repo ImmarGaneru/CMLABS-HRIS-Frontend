@@ -37,7 +37,5 @@ export default function RootLayout({
       </body>
     </html>
   );
-  <body className={`${inter.className} ${geistSans.variable} ${geistMono.variable}`}>
-  <Layout>{children}</Layout>
-</body>
+
 }
