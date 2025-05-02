@@ -15,7 +15,7 @@ export default function Features() {
     ];
   
     return (
-      <section className="px-8 py-16 text-center">
+      <section className="px-8 py-16 bg-gray-50 text-center">
         <h2
           className="mb-6 font-bold leading-tight"
           style={{

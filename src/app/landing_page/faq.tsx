@@ -1,6 +1,6 @@
 export default function FAQ() {
   return (
-    <section className="px-8 py-16 text-center">
+    <section className="px-8 py-16 bg-gray-50 text-center">
       <h2
         className="font-bold leading-tight mb-2"
         style={{
