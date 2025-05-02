@@ -4,6 +4,9 @@ import './globals.css';
 import Navbar from './landing_page/navbar';
 import Footer from './landing_page/footer';
 import { ReactNode } from 'react';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'CMLABS HRIS',
@@ -12,7 +15,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="id">
+    <html lang="id" className={inter.className}>
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
@@ -23,5 +26,4 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
-
 }
