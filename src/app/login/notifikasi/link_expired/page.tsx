@@ -16,8 +16,8 @@ export default function LinkExpiredPage() {
             Tolong ajukan ulang link reset password anda.
           </p>
   
-          {/* Garis tipis */}
-          <div className="w-full h-[1px] bg-[#7CA5BF] my-3" />
+          {/* Garis gradasi */}
+            <div className="w-full h-[2px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
   
           {/* Tombol ke Halaman Login */}
           <a
