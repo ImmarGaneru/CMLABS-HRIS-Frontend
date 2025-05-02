@@ -1,9 +1,8 @@
 // src/app/layout.tsx
 
 import './globals.css';
-import Navbar from './landing_page/navbar';
-import Footer from './landing_page/footer';
 import { ReactNode } from 'react';
+import Layout2 from '@/components/Layout2';
 
 export const metadata = {
   title: 'CMLABS HRIS',
@@ -17,9 +16,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <Layout2>
+            {children}
+        </Layout2>
       </body>
     </html>
   );
