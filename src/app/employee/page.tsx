@@ -1,6 +1,7 @@
 "use client";
 
 
+import router from "next/router";
 import React, { useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
 import {
@@ -392,7 +393,8 @@ export default function EmployeeTablePage() {
       </button>
 
       <button
-        onClick={() => alert("Tambah Data clicked")}
+     onClick={() => router.push('/TambahKaryawan')}
+
         style={{
           padding: "6px 12px",
           borderRadius: 6,

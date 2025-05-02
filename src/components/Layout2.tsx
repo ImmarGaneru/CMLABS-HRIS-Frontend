@@ -7,8 +7,8 @@ import { Button } from "./ui/button"
 import { Menu } from "lucide-react"
 import Head from "next/head"
 import React from "react"
-import Navbar from "./Navbar"
-import Footer from "./Footer"
+import Navbar from "./navbar"
+import Footer from "./footer"
 import { Navbar3 } from "./Navbar3"
 
 export default function Layout2({ children }: { children: React.ReactNode }) {
