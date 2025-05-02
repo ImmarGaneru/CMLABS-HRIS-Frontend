@@ -18,9 +18,9 @@ export default function CekEmailPage() {
             Silakan periksa kotak masuk Anda!
           </p>
   
-          {/* Garis tipis */}
-          <div className="w-full h-[1px] bg-[#7CA5BF] my-3" />
-  
+          {/* Garis gradasi */}
+          <div className="w-full h-[2px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
+
           {/* Bagian link kiri */}
           <div className="text-left text-xs text-gray-700 space-y-1">
             <p>
