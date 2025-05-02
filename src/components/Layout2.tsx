@@ -20,9 +20,10 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
 
     // Handle special layout for lupa_password and link_expired
     if (
-        pathname.startsWith("/login/lupa_password") ||
-        pathname.startsWith("/login/cek_email") ||
-        pathname.startsWith("/login/sukses_password")
+        pathname.startsWith("/login/notifikasi/lupa_password") ||
+        pathname.startsWith("/login/notifikasi/cek_email") ||
+        pathname.startsWith("/login/notifikasi/sukses_password") ||
+        pathname.startsWith("/login/notifikasi/link_expired")
     ) {
         return (
             <Navbar4>
