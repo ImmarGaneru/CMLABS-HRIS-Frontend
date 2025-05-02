@@ -10,6 +10,7 @@ import React from "react"
 import Navbar from "./Navbar"
 import Footer from "./Footer"
 import { Navbar3 } from "./Navbar3"
+import { Navbar4 } from "./Navbar4"
 
 export default function Layout2({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
@@ -18,6 +19,20 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         // Define all routes that should use the sidebar
         return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")
     }
+
+    const noLayout = () => {
+        return pathname.startsWith("/login/lupa_password") || pathname.startsWith("/login/link_expired")
+        
+    }
+
+    if (pathname.startsWith("/login/lupa_password")) {
+        return (
+            <Navbar4>
+                {children}
+            </Navbar4>
+        )
+    }
+    
 
     if (usesSidebar()) {
         return (
