@@ -2,9 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import { SidebarApp } from "./SidebarApp"
-import { SidebarProvider, SidebarTrigger } from "./ui/sidebar"
-import { Button } from "./ui/button"
-import { Menu } from "lucide-react"
+import { SidebarProvider } from "./ui/sidebar"
 import Head from "next/head"
 import React from "react"
 import Navbar from "./Navbar"
@@ -20,29 +18,28 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")
     }
 
-    const noLayout = () => {
-        return pathname.startsWith("/login/lupa_password") || pathname.startsWith("/login/link_expired")
-        
-    }
-
-    if (pathname.startsWith("/login/lupa_password")) {
+    // Handle special layout for lupa_password and link_expired
+    if (
+        pathname.startsWith("/login/lupa_password") ||
+        pathname.startsWith("/login/cek_email")
+    ) {
         return (
             <Navbar4>
                 {children}
             </Navbar4>
         )
     }
-    
 
+    // Layout with sidebar for attendance and dashboard pages
     if (usesSidebar()) {
         return (
             <SidebarProvider>
                 <Head>
-                    <link rel="icon" href="/favicon.ico"/>
+                    <link rel="icon" href="/favicon.ico" />
                 </Head>
-                <SidebarApp/>
+                <SidebarApp />
                 <div className="flex-1 flex flex-col">
-                    <Navbar3/>
+                    <Navbar3 />
                     <div className="flex-1 p-6">
                         <main>{children}</main>
                     </div>
@@ -51,6 +48,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         )
     }
 
+    // Default layout with Navbar and Footer
     return (
         <>
             <Navbar />
