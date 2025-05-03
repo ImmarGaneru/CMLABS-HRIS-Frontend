@@ -6,9 +6,6 @@ import EmployeeStat from '../component/dashboard/employee_stat';
 import EmployeeSumCard from '../component/dashboard/employee_sum';
 import EmployeeType from '../component/dashboard/employee_type';
 
-import BarChartExample from './barchartexample';
-import PieChartExample from './piechartexample';
-
 import { MdOutlineGroup } from 'react-icons/md';
 export default function DashboardPage() {
   return (
