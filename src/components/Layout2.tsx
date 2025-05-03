@@ -2,13 +2,13 @@
 
 import { usePathname } from "next/navigation"
 import { SidebarApp } from "./SidebarApp"
-import { SidebarProvider, SidebarTrigger } from "./ui/sidebar"
-import { Button } from "./ui/button"
-import { Menu } from "lucide-react"
+import { SidebarProvider,  } from "./ui/sidebar"
+// import { Button } from "./ui/button"
+// import { Menu } from "lucide-react"
 import Head from "next/head"
 import React from "react"
-import Navbar from "./navbar"
-import Footer from "./footer"
+import Navbar from "./Navbar"
+import Footer from "./Footer"
 import { Navbar3 } from "./Navbar3"
 
 export default function Layout2({ children }: { children: React.ReactNode }) {
@@ -16,7 +16,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
 
     const usesSidebar = () => {
         // Define all routes that should use the sidebar
-        return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")
+        return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")|| pathname.startsWith("/employee")
     }
 
     if (usesSidebar()) {
