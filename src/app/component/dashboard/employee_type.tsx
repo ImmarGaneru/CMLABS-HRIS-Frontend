@@ -5,19 +5,23 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
-const data = [
-  { label: 'Aktif', total: 133 },
-  { label: 'Baru', total: 10 },
-  { label: 'Resign', total: 7 },
+
+const contractData = [
+  { label: 'Tetap', total: 85 },
+  { label: 'Kontrak', total: 45 },
+  { label: 'Probation', total: 20 },
 ];
 
 const COLORS = {
   'Aktif': '#1E3A5F',
   'Baru': '#7CA5BF',
-  'Resign': '#BA3C54'
+  'Resign': '#BA3C54',
+  'Tetap': '#1E3A5F',
+  'Kontrak': '#7CA5BF',
+  'Probation': '#BA3C54'
 };
 
-export default function EmployeeStat() {
+export default function EmployeeType() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
 
   const handleMonthChange = (date: Date | null) => {
@@ -34,7 +38,7 @@ export default function EmployeeStat() {
       <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
         <div className='flex flex-col gap-2'>
           <p className='text-[16px]'>Statistik Karyawan</p>
-          <p className='text-[24px] font-bold'>Rangkuman Data Jumlah Karyawan</p>
+          <p className='text-[24px] font-bold'>Rangkuman Kontrak Karyawan</p>
         </div>
         <div className="relative">
           <DatePicker
@@ -61,19 +65,29 @@ export default function EmployeeStat() {
           />
         </div>
       </div>
-      {/* Isi */}
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data}>
-          <XAxis dataKey="label" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="total">
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[entry.label as keyof typeof COLORS]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      
+      {/* Charts Container */}
+      <div className='flex flex-col gap-8'>
+        {/* Contract Type Chart */}
+        <div>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart 
+              data={contractData}
+              layout="vertical"
+              margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+            >
+              <XAxis type="number" />
+              <YAxis type="category" dataKey="label" width={100} />
+              <Tooltip />
+              <Bar dataKey="total">
+                {contractData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[entry.label as keyof typeof COLORS]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 }
