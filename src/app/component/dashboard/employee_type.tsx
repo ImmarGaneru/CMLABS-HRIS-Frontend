@@ -9,16 +9,13 @@ import "react-datepicker/dist/react-datepicker.css";
 const contractData = [
   { label: 'Tetap', total: 85 },
   { label: 'Kontrak', total: 45 },
-  { label: 'Probation', total: 20 },
+  { label: 'Lepas', total: 20 },
 ];
 
 const COLORS = {
-  'Aktif': '#1E3A5F',
-  'Baru': '#7CA5BF',
-  'Resign': '#BA3C54',
   'Tetap': '#1E3A5F',
   'Kontrak': '#7CA5BF',
-  'Probation': '#BA3C54'
+  'Lepas': '#BA3C54'
 };
 
 export default function EmployeeType() {
@@ -33,7 +30,7 @@ export default function EmployeeType() {
   };
 
   return (
-    <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-auto min-w-[480px] h-fit min-h-[400px] px-8 py-8 gap-2 rounded-2xl'>
+    <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl'>
       {/* Top bar */}
       <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
         <div className='flex flex-col gap-2'>
@@ -74,7 +71,7 @@ export default function EmployeeType() {
             <BarChart 
               data={contractData}
               layout="vertical"
-              margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
             >
               <XAxis type="number" />
               <YAxis type="category" dataKey="label" width={100} />

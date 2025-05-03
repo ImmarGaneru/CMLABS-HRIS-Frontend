@@ -55,7 +55,7 @@ const EmployeeAttendancePie: React.FC = () => {
   };
 
   return (
-    <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-auto min-w-[480px] h-fit min-h-[400px] px-8 py-8 gap-2 rounded-2xl'>
+    <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl'>
       {/* Top bar */}
       <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
         <div className='flex flex-col gap-2'>
