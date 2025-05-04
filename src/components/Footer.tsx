@@ -1,6 +1,7 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import Logo from '../../public/LogoFooter.svg';
 import { FaPhone, FaEnvelope, FaLinkedin, FaFacebook, FaInstagram } from 'react-icons/fa';
 
 type FooterLinkProps = {
@@ -19,14 +20,18 @@ function FooterLink({ text, url }: FooterLinkProps) {
 export default function Footer() {
   return (
     <footer className="bg-[#1E3A5F] text-white pt-10 px-8 pb-16">
-
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8 text-sm">
 
         {/* Logo */}
         <div>
           <div className="flex items-center mb-4">
-            <Image src={Logo} alt="Logo" width={160} height={160} className="mr-2" />
-      
+            <Image
+              src="/LogoFooter.svg" // gunakan string path, bukan import static untuk SSR-safe
+              alt="Logo"
+              width={160}
+              height={160}
+              className="mr-2"
+            />
           </div>
         </div>
 
@@ -65,15 +70,12 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold mb-2">Sosial Media</h4>
           <div className="flex space-x-4 mt-1 text-xl">
-  <Link href="#"><span className="text-white hover:text-blue-400"><FaLinkedin /></span></Link>
-  <Link href="#"><span className="text-white hover:text-blue-400"><FaFacebook /></span></Link>
-  <Link href="#"><span className="text-white hover:text-pink-400"><FaInstagram /></span></Link>
-</div>
-
+            <Link href="#"><span className="text-white hover:text-blue-400"><FaLinkedin /></span></Link>
+            <Link href="#"><span className="text-white hover:text-blue-400"><FaFacebook /></span></Link>
+            <Link href="#"><span className="text-white hover:text-pink-400"><FaInstagram /></span></Link>
+          </div>
         </div>
       </div>
-
-   
     </footer>
   );
 }

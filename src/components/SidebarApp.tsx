@@ -30,7 +30,7 @@ const sidebarNavItems = [
     },
     {
         title: "Karyawan",
-        url: "/dashboard/profile",
+        url: "/employee",
         icon: UserCircle,
     },
     {

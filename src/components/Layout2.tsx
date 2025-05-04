@@ -15,7 +15,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
 
     const usesSidebar = () => {
         // Define all routes that should use the sidebar
-        return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")
+        return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")|| pathname.startsWith("/employee")
     }
 
     // Handle special layout for lupa_password and link_expired
