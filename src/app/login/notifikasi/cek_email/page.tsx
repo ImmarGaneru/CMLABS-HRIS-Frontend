@@ -25,12 +25,12 @@ export default function CekEmailPage() {
           <div className="text-left text-xs text-gray-700 space-y-1">
             <p>
               Tidak menerima pesan?{' '}
-              <a href="#" className="text-blue-600 font-medium hover:underline">
+              <a href="/login/notifikasi/cek_email" className="text-blue-600 font-medium hover:underline">
                 Tekan untuk kirim ulang
               </a>
             </p>
             <a
-              href="/login"
+              href="/login/email"
               className="text-blue-600 font-medium hover:underline inline-block"
             >
               Kembali ke halaman Login

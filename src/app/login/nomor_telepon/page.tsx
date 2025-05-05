@@ -76,7 +76,7 @@ export default function LoginNomorTeleponPage() {
                     Ingat saya
                   </label>
                 </div>
-                <Link href="/login/notifikasi/lupa_password" className="text-xs text-blue-500 hover:underline">
+                <Link href="/login/notifikasi/kode_password" className="text-xs text-blue-500 hover:underline">
                   Lupa Password?
                 </Link>
               </div>
