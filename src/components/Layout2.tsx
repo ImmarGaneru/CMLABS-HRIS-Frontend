@@ -15,7 +15,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
 
     const usesSidebar = () => {
         // Define all routes that should use the sidebar
-        return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")|| pathname.startsWith("/employee")
+        return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")|| pathname.startsWith("/employee") ||pathname.startsWith("/jadwal")
     }
 
     // Handle special layout 
