@@ -2,6 +2,8 @@
 
 import './globals.css';
 import { ReactNode } from 'react';
+import { Inter } from 'next/font/google';
+const inter = Inter({ subsets: ['latin'] });
 import Layout2 from '@/components/Layout2';
 
 export const metadata = {
@@ -11,7 +13,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="id">
+    <html lang="id" className={inter.className}>
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
@@ -22,5 +24,4 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
-
 }
