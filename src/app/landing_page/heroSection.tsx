@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export default function HeroSection() {
   return (
-    <section className="flex flex-col-reverse lg:flex-row items-center px-8 py-20 gap-8">
+    <section className="flex flex-col-reverse lg:flex-row items-center px-8 py-20 bg-gray-50 gap-8">
       {/* Bagian Kiri (Teks dan Form) */}
       <div className="lg:w-1/2 space-y-6 justify-start">
         <h1 className="text-6xl font text-[#1E3A5F] leading-tight">

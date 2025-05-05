@@ -2,6 +2,8 @@
 
 import './globals.css';
 import { ReactNode } from 'react';
+import { Inter } from 'next/font/google';
+const inter = Inter({ subsets: ['latin'] });
 import Layout2 from '@/components/Layout2';
 
 export const metadata = {
