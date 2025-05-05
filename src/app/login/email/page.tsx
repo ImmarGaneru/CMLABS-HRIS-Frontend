@@ -1,3 +1,7 @@
+'use client';
+
+import Link from 'next/link';
+
 export default function LoginEmailPage() {
     return (
       <div className="flex min-h-screen bg-white flex-col md:flex-row">
@@ -62,9 +66,9 @@ export default function LoginEmailPage() {
                     Ingat saya
                   </label>
                 </div>
-                <a href="#" className="text-xs text-blue-500 hover:underline">
+                <Link href="/login/notifikasi/lupa_password" className="text-xs text-blue-500 hover:underline">
                   Lupa Password?
-                </a>
+                </Link>
               </div>
   
               {/* Tombol Masuk */}
@@ -85,24 +89,35 @@ export default function LoginEmailPage() {
               </div>
   
               {/* Tombol alternatif */}
-              <button className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2">
-                Masuk dengan ID Karyawan
-              </button>
-              <button className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2">
-                Masuk dengan Nomor Telepon
-              </button>
-              <button className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm">
+              <Link href="/login/id_karyawan">
+                <button className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300">
+                  Masuk dengan ID Karyawan
+                </button>
+              </Link>
+
+              <Link href="/login/nomor_telepon">
+                <button className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300">
+                  Masuk dengan Nomor Telepon
+                </button>
+              </Link>
+
+              <button
+                onClick={() => {
+                  window.location.href = '/api/auth/google';
+                }}
+                className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+              >
                 <span>Masuk dengan akun Google</span>
                 <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
               </button>
             </form>
   
             {/* Link Daftar */}
-            <p className="text-sm text-center mt-4 text-gray-600">
+              <p className="text-sm text-center mt-4 text-gray-600">
               Belum memiliki akun?{' '}
-              <a href="#" className="text-blue-600 font-medium hover:underline">
-                Daftar lewat sini
-              </a>
+              <Link href="/register" className="text-blue-600 font-medium hover:underline">
+                  Daftar lewat sini
+              </Link>
             </p>
           </div>
         </div>

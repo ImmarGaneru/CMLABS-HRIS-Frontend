@@ -1,3 +1,7 @@
+'use client';
+
+import Link from 'next/link';
+
 export default function RegisterPage() {
   return (
     <div className="flex min-h-screen bg-white flex-col md:flex-row">
@@ -83,17 +87,22 @@ export default function RegisterPage() {
               <div className="flex-grow h-px bg-blue-300" />
             </div>
 
-            <button className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold mt-2">
-              <span>Gunakan akun Google</span>
-              <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
-            </button>
+            <button
+                onClick={() => {
+                  window.location.href = '/api/auth/google';
+                }}
+                className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+              >
+                <span>Masuk dengan akun Google</span>
+                <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
+              </button>
           </form>
 
           <p className="text-sm text-center mt-4 text-gray-600">
             Sudah pernah daftar?{' '}
-            <a href="#" className="text-blue-600 font-medium">
+            <Link href="/login/email" className="text-blue-600 font-medium">
               Masuk disini
-            </a>
+            </Link>
           </p>
           <p className="text-xs text-center text-gray-500 mt-2">
             Dengan menekan tombol daftar, saya telah membaca dan menyetujui serta patuh kepada{' '}
