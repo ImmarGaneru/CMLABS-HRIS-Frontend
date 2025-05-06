@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { usePathname } from "next/navigation"
 import { SidebarApp } from "./SidebarApp"
@@ -18,7 +18,11 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         return pathname.startsWith("/attendance") || pathname.startsWith("/dashboard")|| pathname.startsWith("/employee")
     }
 
-    // Handle special layout 
+    const usesNavBar = () => {
+        return pathname.startsWith("/payment")
+    }
+
+    // Handle special layout for lupa_password and link_expired
     if (
         pathname.startsWith("/login/notifikasi/lupa_password") ||
         pathname.startsWith("/login/notifikasi/cek_email") ||
@@ -42,9 +46,25 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
                     <link rel="icon" href="/favicon.ico" />
                 </Head>
                 <SidebarApp />
-                <div className="flex-1 flex flex-col">
+                <div className="flex-1 flex flex-col bg-gray-300">
                     <Navbar3 />
-                    <div className="flex-1 p-6">
+                    <div className="flex-1">
+                        <main>{children}</main>
+                    </div>
+                </div>
+            </SidebarProvider>
+        )
+    }
+
+    if (usesNavBar()){
+        return(
+            <SidebarProvider>
+                <Head>
+                    <link rel="icon" href="/favicon.ico" />
+                </Head>
+                <div className="flex-1 flex flex-col bg-gray-300">
+                    <Navbar3 />
+                    <div className="flex-1">
                         <main>{children}</main>
                     </div>
                 </div>
