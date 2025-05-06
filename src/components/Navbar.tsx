@@ -59,9 +59,9 @@ export default function Navbar() {
           {/* Login & Demo Button */}
           <div className="flex items-center space-x-4">
             <Link
-              href="/login"
+              href="/login/email"
               className={`font-medium ${
-                pathname === '/login' ? 'text-teal-500' : 'text-blue-900'
+                pathname === '/login/email' ? 'text-teal-500' : 'text-blue-900'
               }`}
             >
               Login
