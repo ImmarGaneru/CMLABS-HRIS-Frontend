@@ -2,6 +2,17 @@
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import DataTable from "react-data-table-component";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import {
   FaFileDownload,
@@ -65,6 +76,10 @@ export default function EmployeeTablePage() {
       item.nama.toLowerCase().includes(filterText.toLowerCase()) &&
       (filterGender === "" || item.jenisKelamin === filterGender)
   );
+  const navigateToDetailPage = (id: number) => {
+    console.log("Navigating to detail page with id:", id); // Debugging untuk memastikan id ada
+    router.push(`/employee/detail/${id}`);
+  };
 
   const toggleStatus = (id: number) => {
     setStatusData((prev) =>
@@ -198,9 +213,10 @@ export default function EmployeeTablePage() {
             >
               <FaEdit />
             </button>
-            <button
+            <AlertDialog>
+            <AlertDialogTrigger>  <button
               title="Hapus"
-              onClick={() => alert(`Hapus ${row.nama}`)}
+              // onClick={() => alert(`Hapus ${row.nama}`)}
               style={{
                 backgroundColor: "white",
                 border: "1px solid #1E3A5F",
@@ -210,7 +226,22 @@ export default function EmployeeTablePage() {
               }}
             >
               <FaTrash />
-            </button>
+            </button></AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
           </div>
         ),
       },
@@ -396,14 +427,14 @@ export default function EmployeeTablePage() {
               </div>
             </div>
           </div>
-
+        
           <DataTable
-            columns={columns}
-            data={filteredEmployees}
-            pagination
-            highlightOnHover
-            striped
-          />
+  columns={columns}
+  data={filteredEmployees}
+  customStyles={{ rows: { style: { cursor: "pointer" } } }}
+  onRowClicked={(row) => navigateToDetailPage(row.id)}  // Add this line
+/>
+
         </div>
       </div>
     </div>
