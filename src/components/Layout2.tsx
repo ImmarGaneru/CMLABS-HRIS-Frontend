@@ -28,7 +28,8 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         pathname.startsWith("/login/notifikasi/cek_email") ||
         pathname.startsWith("/login/notifikasi/sukses_password") ||
         pathname.startsWith("/login/notifikasi/link_expired") ||
-        pathname.startsWith("/login/notifikasi/kode_password")
+        pathname.startsWith("/login/notifikasi/kode_password") ||
+        pathname.startsWith("/login/notifikasi/ubah_password")
     ) {
         return (
             <Navbar4>
