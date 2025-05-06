@@ -13,7 +13,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="id" className={inter.className}>
+    <html lang="id">
       <head>
         <link rel="icon" href="/favicon.ico" />
       </head>
@@ -24,4 +24,5 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
+
 }
