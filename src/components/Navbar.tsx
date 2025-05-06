@@ -1,9 +1,9 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Logo from '../../public/Logo.svg';
 
 type NavItemProps = {
   title: string;
@@ -28,6 +28,17 @@ function NavItem({ title, url, isSelected }: NavItemProps) {
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Cegah hydration error
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Hindari render saat SSR
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <nav className="bg-white shadow-sm">
@@ -35,7 +46,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Image src={Logo} alt="Logo" width={80} height={80} className="mr-2" />
+            <Image src="/Logo.svg" alt="Logo" width={80} height={80} className="mr-2" />
           </div>
 
           {/* Menu */}
@@ -48,19 +59,23 @@ export default function Navbar() {
           {/* Login & Demo Button */}
           <div className="flex items-center space-x-4">
             <Link
-              href="/login"
+              href="/login/email"
               className={`font-medium ${
-                pathname === '/login' ? 'text-teal-500' : 'text-blue-900'
+                pathname === '/login/email' ? 'text-teal-500' : 'text-blue-900'
               }`}
             >
               Login
             </Link>
-            <Link
-              href="/demo"
-              className="px-4 py-2 rounded-full border-2 border-blue-400 text-blue-900 font-medium hover:bg-blue-50 transition"
-            >
-              Demo Gratis
-            </Link>
+
+            {/* Tombol Demo Gratis */}
+            <div className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full p-[2px]">
+              <Link
+                href="/demo"
+                className="block bg-white text-[#1E3A5F] text-sm font-medium px-6 py-2 rounded-full text-center"
+              >
+                Demo Gratis
+              </Link>
+            </div>
           </div>
         </div>
       </div>

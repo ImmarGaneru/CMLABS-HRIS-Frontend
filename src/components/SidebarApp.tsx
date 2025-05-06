@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -30,7 +32,7 @@ const sidebarNavItems = [
     },
     {
         title: "Karyawan",
-        url: "/dashboard/profile",
+        url: "/employee",
         icon: UserCircle,
     },
     {
