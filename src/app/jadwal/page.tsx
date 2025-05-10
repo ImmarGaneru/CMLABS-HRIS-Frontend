@@ -124,30 +124,30 @@ export default function JadwalTablePage() {
         name: "Action",
         cell: (row: { id: number }) => (
           <div style={{ display: "flex", gap: "10px" }}>
-         <button
-  onClick={() => {
-    // Here, you need to make sure that `row` has the full `Schedule` data
-    const fullSchedule = {
-      id: row.id,
-      namaJadwal: "Example Schedule", // Replace with actual data
-      hariKerja: "Monday",            // Replace with actual data
-      jamKerja: "09:00 - 17:00",     // Replace with actual data
-      tanggalEfektif: "2025-01-01",  // Replace with actual data
-    };
-    setSelectedSchedule(fullSchedule);  // Now, this matches the `Schedule` type
-    setIsDetailOpen(true);
-  }}
-  style={{
-    backgroundColor: "white",
-    border: "1px solid #1E3A5F",
-    padding: "6px 12px",
-cursor: "pointer",
-    borderRadius: 6,
-    color: "#1E3A5F",
-  }}
->
-  <FaEye />
-</button>
+            <button
+              onClick={() => {
+                // Here, you need to make sure that `row` has the full `Schedule` data
+                const fullSchedule = {
+                  id: row.id,
+                  namaJadwal: "Example Schedule", // Replace with actual data
+                  hariKerja: "Monday", // Replace with actual data
+                  jamKerja: "09:00 - 17:00", // Replace with actual data
+                  tanggalEfektif: "2025-01-01", // Replace with actual data
+                };
+                setSelectedSchedule(fullSchedule); // Now, this matches the `Schedule` type
+                setIsDetailOpen(true);
+              }}
+              style={{
+                backgroundColor: "white",
+                border: "1px solid #1E3A5F",
+                padding: "6px 12px",
+                cursor: "pointer",
+                borderRadius: 6,
+                color: "#1E3A5F",
+              }}
+            >
+              <FaEye />
+            </button>
 
             <button
               onClick={() => navigateToDetailPage(row.id)}
@@ -303,172 +303,203 @@ cursor: "pointer",
             boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
           }}
         >
-          <DataTable
-            columns={columns}
-            data={filteredData}
-          
-            pagination
-          />
+          <DataTable columns={columns} data={filteredData} pagination />
         </div>
         {isDetailOpen && selectedSchedule && (
-  <>
-    {/* Overlay abu-abu gelap */}
-    <div
-      onClick={() => setIsDetailOpen(true)}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "rgba(0, 0, 0, 0.5)", //agar bg nya warna abu abu
-        zIndex: 40,
-      }}
-    />
+          <>
+            {/* Overlay abu-abu gelap */}
+            <div
+              onClick={() => setIsDetailOpen(true)}
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                backgroundColor: "rgba(0, 0, 0, 0.5)", //agar bg nya warna abu abu
+                zIndex: 40,
+              }}
+            />
 
-    {/* Panel detail */}
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        right: 0,
-        height: "100vh",
-        width: 600,
-        backgroundColor: "white",
-        border: "1px solid #ccc",
-        borderRadius: "8px 0 0 0",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-        zIndex: 50,
-        padding: 20,
-        fontFamily: "Arial, sans-serif",
-        overflow: "auto",
-      }}
-      onClick={(e) => e.stopPropagation()} // Supaya klik dalam panel tidak menutup panel
-    >
-      <h2
-        style={{
-          color: "#1E3A5F",
-          fontSize: 24,
-          fontWeight: "bold",
-          marginBottom: 16,
-          borderBottom: "1px solid #E5E7EB",
-          paddingBottom: 8,
-        }}
-      >
-        Detail Jadwal
-      </h2>
+            {/* Panel detail */}
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                right: 0,
+                height: "100vh",
+                width: 600,
+                backgroundColor: "white",
+                border: "1px solid #ccc",
+                borderRadius: "8px 0 0 0",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+                zIndex: 50,
+                padding: 20,
+                fontFamily: "Arial, sans-serif",
+                overflow: "auto",
+              }}
+              onClick={(e) => e.stopPropagation()} // Supaya klik dalam panel tidak menutup panel
+            >
+              <h2
+                style={{
+                  color: "#1E3A5F",
+                  fontSize: 24,
+                  fontWeight: "bold",
+                  marginBottom: 16,
+                  borderBottom: "1px solid #E5E7EB",
+                  paddingBottom: 8,
+                }}
+              >
+                Detail Jadwal
+              </h2>
 
-      <div
-        style={{
-          backgroundColor: "#F9FAFB",
-          border: "1px solid #E5E7EB",
-          borderRadius: 6,
-          padding: 12,
-          marginBottom: 16,
-          fontSize: 14,
-          color: "#374151",
-        }}
-      >
-        Jadwal efektif minimal jadwal kerja adalah --/--/----, karena harus sehari setelah atau sama dengan jadwal karyawan bekerja.
-      </div>
+              <div
+                style={{
+                  backgroundColor: "#F9FAFB",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: 6,
+                  padding: 12,
+                  marginBottom: 16,
+                  fontSize: 14,
+                  color: "#374151",
+                }}
+              >
+                Jadwal efektif minimal jadwal kerja adalah --/--/----, karena
+                harus sehari setelah atau sama dengan jadwal karyawan bekerja.
+              </div>
 
-      <label
-        style={{
-          fontSize: 14,
-          color: "#374151",
-          marginBottom: 8,
-          display: "block",
-        }}
-      >
-        Berlaku efektif mulai tanggal
-      </label>
-      <div
-        style={{
-          border: "1px solid #D1D5DB",
-          borderRadius: 6,
-          padding: "8px 12px",
-          display: "flex",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <span role="img" aria-label="calendar" style={{ marginRight: 10 }}>
-          📅
-        </span>
-        {selectedSchedule.tanggalEfektif || "27/04/2025"}
-      </div>
+              <label
+                style={{
+                  fontSize: 14,
+                  color: "#374151",
+                  marginBottom: 8,
+                  display: "block",
+                }}
+              >
+                Berlaku efektif mulai tanggal
+              </label>
+              <div
+                style={{
+                  border: "1px solid #D1D5DB",
+                  borderRadius: 6,
+                  padding: "8px 12px",
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <span
+                  role="img"
+                  aria-label="calendar"
+                  style={{ marginRight: 10 }}
+                >
+                  📅
+                </span>
+                {selectedSchedule.tanggalEfektif || "27/04/2025"}
+              </div>
 
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          fontSize: 14,
-          color: "#1E3A5F",
-          border: "1px solid #E5E7EB",
-        }}
-      >
-        <thead>
-          <tr style={{ borderBottom: "1px solid #E5E7EB", textAlign: "left" }}>
-            <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>Hari</th>
-            <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>Jenis</th>
-            <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>Clock In</th>
-            <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>Clock Out</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[
-            ["Senin", "Hari Kerja", "08:00", "17:00"],
-            ["Selasa", "Hari Kerja", "08:00", "17:00"],
-            ["Rabu", "Hari Kerja", "08:00", "17:00"],
-            ["Kamis", "Hari Kerja", "08:00", "17:00"],
-            ["Jumat", "Hari Kerja", "08:00", "17:00"],
-            ["Sabtu", "Day Off", "00:00", "00:00"],
-            ["Minggu", "Day Off", "00:00", "00:00"],
-          ].map(([hari, jenis, inTime, outTime], index) => (
-            <tr key={index} style={{ borderBottom: "1px solid #E5E7EB" }}>
-              <td style={{ padding: "8px", border: "1px solid #E5E7EB" }}>{hari}</td>
-              <td style={{ padding: "8px", border: "1px solid #E5E7EB" }}>{jenis}</td>
-              <td style={{ padding: "8px", border: "1px solid #E5E7EB" }}>{inTime}</td>
-              <td style={{ padding: "8px", border: "1px solid #E5E7EB" }}>{outTime}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              <table
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: 14,
+                  color: "#1E3A5F",
+                  border: "1px solid #E5E7EB",
+                }}
+              >
+                <thead>
+                  <tr
+                    style={{
+                      borderBottom: "1px solid #E5E7EB",
+                      textAlign: "left",
+                    }}
+                  >
+                    <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>
+                      Hari
+                    </th>
+                    <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>
+                      Jenis
+                    </th>
+                    <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>
+                      Clock In
+                    </th>
+                    <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>
+                      Clock Out
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["Senin", "Hari Kerja", "08:00", "17:00"],
+                    ["Selasa", "Hari Kerja", "08:00", "17:00"],
+                    ["Rabu", "Hari Kerja", "08:00", "17:00"],
+                    ["Kamis", "Hari Kerja", "08:00", "17:00"],
+                    ["Jumat", "Hari Kerja", "08:00", "17:00"],
+                    ["Sabtu", "Day Off", "00:00", "00:00"],
+                    ["Minggu", "Day Off", "00:00", "00:00"],
+                  ].map(([hari, jenis, inTime, outTime], index) => (
+                    <tr
+                      key={index}
+                      style={{ borderBottom: "1px solid #E5E7EB" }}
+                    >
+                      <td
+                        style={{ padding: "8px", border: "1px solid #E5E7EB" }}
+                      >
+                        {hari}
+                      </td>
+                      <td
+                        style={{ padding: "8px", border: "1px solid #E5E7EB" }}
+                      >
+                        {jenis}
+                      </td>
+                      <td
+                        style={{ padding: "8px", border: "1px solid #E5E7EB" }}
+                      >
+                        {inTime}
+                      </td>
+                      <td
+                        style={{ padding: "8px", border: "1px solid #E5E7EB" }}
+                      >
+                        {outTime}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-      <ul
-        style={{
-          fontSize: 13,
-          color: "#1E3A5F",
-          marginTop: 16,
-          paddingLeft: 18,
-          padding: "10px",
-        }}
-      >
-        <li>Hari libur nasional libur</li>
-        <li>Cuti bersama libur</li>
-        <li>Jam kerja tidak fleksibel</li>
-        <li>Toleransi keterlambatan 30 menit</li>
-      </ul>
+              <ul
+                style={{
+                  fontSize: 13,
+                  color: "#1E3A5F",
+                  marginTop: 16,
+                  paddingLeft: 18,
+                  padding: "10px",
+                }}
+              >
+                <li>Hari libur nasional libur</li>
+                <li>Cuti bersama libur</li>
+                <li>Jam kerja tidak fleksibel</li>
+                <li>Toleransi keterlambatan 30 menit</li>
+              </ul>
 
-      <button
-        onClick={() => setIsDetailOpen(false)}
-        style={{
-          marginTop: 20,
-          backgroundColor: "#1E3A5F",
-          color: "white",
-          padding: "10px 16px",
-          border: "none",
-          borderRadius: 6,
-          cursor: "pointer",
-          fontWeight: "bold",
-        }}
-      >
-        Tutup
-      </button>
-    </div>
-  </>
-)}
-
+              <button
+                onClick={() => setIsDetailOpen(false)}
+                style={{
+                  marginTop: 20,
+                  backgroundColor: "#1E3A5F",
+                  color: "white",
+                  padding: "10px 16px",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                Tutup
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

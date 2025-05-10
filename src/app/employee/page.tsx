@@ -24,6 +24,7 @@ import {
   FaPlusCircle,
   FaFilter,
 } from "react-icons/fa"; // Import the icons
+
 const employees = [
   {
     id: 1,
@@ -185,11 +186,11 @@ export default function EmployeeTablePage() {
       },
       {
         name: "Action",
-        cell: (row: { nama: string }) => (
+        cell: (row: { id: number }) => (
           <div style={{ display: "flex", gap: "6px" }}>
             <button
               title="Lihat"
-              onClick={() => alert(`Lihat ${row.nama}`)}
+              onClick={() => alert(`Lihat ${row.id}`)}
               style={{
                 backgroundColor: "white",
                 border: "1px solid #1E3A5F",
@@ -202,7 +203,7 @@ export default function EmployeeTablePage() {
             </button>
             <button
               title="Edit"
-              onClick={() => alert(`Edit ${row.nama}`)}
+              onClick={() => alert(`Edit ${row.id}`)}
               style={{
                 backgroundColor: "white",
                 border: "1px solid #1E3A5F",
@@ -229,15 +230,18 @@ export default function EmployeeTablePage() {
             </button></AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogTitle>Yakin ingin menghapus?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  your account and remove your data from our servers.
+                Data jadwal ini akan dihapus secara permanen.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Continue</AlertDialogAction>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction
+                                   onClick={() => console.log("Deleting ID:", row.id)}
+                                 >
+                                   Hapus
+                                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
