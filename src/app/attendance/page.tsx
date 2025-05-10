@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react"
+import {useRouter} from "next/navigation";
 
 export default function AttendacePage() {
+    const router = useRouter();
     type AttendanceStatus = "Waiting Approval" | "Sick Leave" | "On Time" | "Late"
     const statuses: Record<AttendanceStatus, string> = {
         "Waiting Approval": "bg-yellow-500 text-white",
@@ -37,7 +39,12 @@ export default function AttendacePage() {
                     <Input placeholder="Search here..." className="max-w-lg" />
                     <div className="flex gap-2">
                         <Button variant="outline"><SlidersHorizontal/> Filter</Button>
-                        <Button className="bg-[#1E3A5F]">+ Tambah Data</Button>
+                        <Button
+                            onClick={() => router.push("/attendance/create")}
+                            className="bg-[#1E3A5F]"
+                        >
+                            + Tambah Data
+                        </Button>
                     </div>
                 </div>
 
