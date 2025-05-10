@@ -428,7 +428,7 @@ export default function TambahKaryawan() {
               className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
             />
             {/* Ikon upload ditempatkan di dalam input */}
-            <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-500" />
+            <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
           </div>
         </div>
 

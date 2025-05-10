@@ -1,8 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-white flex-col md:flex-row">
       {/* KIRI: Section HRIS */}
@@ -26,7 +30,7 @@ export default function RegisterPage() {
         </p>
       </div>
 
-      {/* KANAN: Kotak Form HRIS */}
+      {/* KANAN: Form Register */}
       <div className="md:w-1/2 w-full flex items-center justify-center p-6">
         <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-sm rounded-xl p-8 w-full max-w-md">
           <h2 className="text-[32px] font-bold text-gray-800 mb-2 leading-tight">
@@ -39,23 +43,79 @@ export default function RegisterPage() {
 
           <form className="space-y-4">
             {[
-              'Nama Lengkap',
+              'Nama Depan',
+              'Nama Belakang',
               'Nama Perusahaan',
               'Email',
               'Nomor Telepon',
-              'Password',
-              'Konfirmasi Password',
             ].map((label, i) => (
               <div key={i} className="space-y-1">
                 <label className="text-sm text-gray-600">{label}</label>
                 <input
-                  type={label.toLowerCase().includes('password') ? 'password' : 'text'}
+                  type="text"
                   placeholder={label}
                   className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             ))}
 
+            {/* Password Field */}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                >
+                  <img
+                    src={showPassword ? '/password_on.svg' : '/password_off.svg'}
+                    alt="Toggle Password"
+                    className="w-5 h-5"
+                    style={{
+                      filter: showPassword
+                        ? 'invert(44%) sepia(91%) saturate(3086%) hue-rotate(191deg) brightness(99%) contrast(101%)'
+                        : 'none',
+                    }}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Konfirmasi Password */}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Konfirmasi Password</label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Konfirmasi Password"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                >
+                  <img
+                    src={showConfirmPassword ? '/password_on.svg' : '/password_off.svg'}
+                    alt="Toggle Confirm Password"
+                    className="w-5 h-5"
+                    style={{
+                      filter: showConfirmPassword
+                        ? 'invert(44%) sepia(91%) saturate(3086%) hue-rotate(191deg) brightness(99%) contrast(101%)'
+                        : 'none',
+                    }}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Dropdown */}
             <div className="flex gap-2">
               <div className="w-1/2">
                 <label className="text-sm text-gray-600">Paket Premium</label>
@@ -71,6 +131,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md mt-4 mb-3"
@@ -78,7 +139,7 @@ export default function RegisterPage() {
               Daftar Sekarang
             </button>
 
-            {/* Divider Metode Lain */}
+            {/* Divider */}
             <div className="flex items-center gap-2 mb-2">
               <div className="flex-grow h-px bg-blue-300" />
               <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">
@@ -87,17 +148,19 @@ export default function RegisterPage() {
               <div className="flex-grow h-px bg-blue-300" />
             </div>
 
+            {/* Login Google */}
             <button
-                onClick={() => {
-                  window.location.href = '/api/auth/google';
-                }}
-                className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
-              >
-                <span>Masuk dengan akun Google</span>
-                <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
-              </button>
+              onClick={() => {
+                window.location.href = '/api/auth/google';
+              }}
+              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+            >
+              <span>Masuk dengan akun Google</span>
+              <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
+            </button>
           </form>
 
+          {/* Footer */}
           <p className="text-sm text-center mt-4 text-gray-600">
             Sudah pernah daftar?{' '}
             <Link href="/login/email" className="text-blue-600 font-medium">
