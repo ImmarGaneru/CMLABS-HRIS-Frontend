@@ -1,3 +1,7 @@
+'use client';
+
+import Link from 'next/link';
+
 export default function LupaPasswordPage() {
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-white text-gray-800 px-4">
@@ -25,20 +29,20 @@ export default function LupaPasswordPage() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
+          <Link
+            href="/login/notifikasi/cek_email"
+            className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
           >
             Reset Password
-          </button>
+          </Link>
         </form>
 
-        <a
-          href="/login"
+        <Link
+          href="/login/email"
           className="text-sm text-blue-600 hover:underline mt-4 inline-block"
         >
           Kembali ke halaman Login
-        </a>
+        </Link>
       </div>
     </div>
   );
