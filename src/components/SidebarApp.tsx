@@ -42,7 +42,7 @@ const sidebarNavItems = [
     },
     {
         title: "Jadwal",
-        url: "/schedule",
+        url: "/jadwal",
         icon: CalendarDays,
     },
     {

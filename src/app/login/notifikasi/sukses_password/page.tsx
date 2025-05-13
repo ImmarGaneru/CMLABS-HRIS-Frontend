@@ -22,8 +22,8 @@ export default function SuksesPasswordPage() {
 
         {/* Tombol ke Halaman Login */}
         <a
-          href="/login"
-          className="bg-[#248BE2] hover:bg-[#1a6fc2] text-white font-semibold py-2 px-4 rounded-md block"
+          href="/login/email"
+          className="hover:bg-[#248BE2] bg-[#1a6fc2] text-blue-600 text-white font-semibold py-2 px-4 rounded-md block"
         >
           Ke Halaman Login
         </a>
