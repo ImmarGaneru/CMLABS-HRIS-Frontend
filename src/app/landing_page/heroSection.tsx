@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function HeroSection() {
   return (
@@ -16,7 +17,7 @@ export default function HeroSection() {
         </p>
 
         <div
-          className="flex gap-4 items-center"
+          className="flex gap-4 items-center justify-between"
           style={{
             backgroundColor: '#D9D9D9',
             borderRadius: '32px',
@@ -30,37 +31,18 @@ export default function HeroSection() {
             className="px-4 py-2 w-64 border-none rounded-l-full bg-transparent outline-none"
           />
 
-          <a
-            href="#"
-            style={{
-              background: 'linear-gradient(to right, #7CA5BF, #1E3A5F)',
-              borderRadius: '24px',
-              padding: '2px',
-              display: 'inline-block',
-              textDecoration: 'none',
-            }}
-          >
-            <span
-              style={{
-                backgroundColor: 'white',
-                color: '#1E3A5F',
-                borderRadius: '20px',
-                padding: '6px 24px',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                display: 'inline-block',
-              }}
-            >
+          <Link href="#" className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-[24px] p-1 text-white items-center">
+            <span className="inline-block bg-white text-[#1E3A5F] rounded-[20px] px-6 py-2 text-sm font-medium">
               Demo Gratis
             </span>
-          </a>
+          </Link>
         </div>
       </div>
 
       {/* Bagian Kanan (Gambar) */}
       <div className="lg:w-1/2 flex justify-center">
         <Image
-          src="/icon.jpg"
+          src="/HR_image.png"
           alt="Dashboard"
           width={2500}
           height={2500}

@@ -17,7 +17,7 @@ function NavItem({ title, url, isSelected }: NavItemProps) {
       <Link
         href={url}
         className={`block px-3 py-2 transition hover:text-teal-500 ${
-          isSelected ? 'text-teal-500' : 'text-blue-900'
+          isSelected ? 'text-teal-500' : 'text-[#1E3A5F]'
         }`}
       >
         {title}
@@ -41,8 +41,8 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-[#f8f8f8] shadow-xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
@@ -61,21 +61,18 @@ export default function Navbar() {
             <Link
               href="/login/email"
               className={`font-medium ${
-                pathname === '/login/email' ? 'text-teal-500' : 'text-blue-900'
+                pathname === '/login/email' ? 'text-teal-500' : 'text-[#1E3A5F]'
               }`}
             >
               Login
             </Link>
 
             {/* Tombol Demo Gratis */}
-            <div className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full p-[2px]">
-              <Link
-                href="/demo"
-                className="block bg-white text-[#1E3A5F] text-sm font-medium px-6 py-2 rounded-full text-center"
-              >
+            <Link href="#" className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-[24px] p-1 text-white items-center">
+              <span className="inline-block bg-white text-[#1E3A5F] rounded-[20px] px-6 py-2 text-sm font-medium">
                 Demo Gratis
-              </Link>
-            </div>
+              </span>
+            </Link>
           </div>
         </div>
       </div>
