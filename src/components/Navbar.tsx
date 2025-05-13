@@ -41,7 +41,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-[#f8f8f8] shadow-xl">
+    <nav className="bg-[#f8f8f8] shadow-xl border-b-2 border-[#1E3A5F]/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
@@ -68,7 +68,7 @@ export default function Navbar() {
             </Link>
 
             {/* Tombol Demo Gratis */}
-            <Link href="#" className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-[24px] p-1 text-white items-center">
+            <Link href="/register" className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-[24px] p-1 text-white items-center">
               <span className="inline-block bg-white text-[#1E3A5F] rounded-[20px] px-6 py-2 text-sm font-medium">
                 Demo Gratis
               </span>

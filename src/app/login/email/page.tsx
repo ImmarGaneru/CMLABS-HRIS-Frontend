@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { LuEyeOff } from "react-icons/lu";
+import { LuEye } from "react-icons/lu";
 
 export default function LoginEmailPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,11 +13,11 @@ export default function LoginEmailPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-white flex-col md:flex-row">
+    <div className="flex min-h-screen bg-[#f8f8f8] flex-col md:flex-row p-4">
       {/* KIRI: Section HRIS */}
-      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10 bg-white">
+      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10">
         <img
-          src="/icon.jpg"
+          src="/HR_image.png"
           alt="HRIS Icon"
           className="max-w-lg mb-6 object-contain"
         />
@@ -67,16 +69,13 @@ export default function LoginEmailPage() {
                 <button
                   type="button"
                   onClick={togglePassword}
-                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none"
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none cursor-pointer"
                 >
-                  <img
-                    src={showPassword ? '/password_on.svg' : '/password_off.svg'}
-                    alt="Toggle Password"
-                    className={`w-5 h-5 ${showPassword ? 'text-[#2D8EFF]' : ''}`}
-                    style={{
-                      filter: showPassword ? 'brightness(0) saturate(100%) invert(42%) sepia(100%) saturate(624%) hue-rotate(180deg) brightness(96%) contrast(90%)' : 'none',
-                    }}
-                  />
+                  {showPassword ? (
+                    <LuEye className="w-5 h-5 text-[#2D8EFF]" />
+                  ) : (
+                    <LuEyeOff className="w-5 h-5 text-gray-400" />
+                  )}
                 </button>
               </div>
             </div>
@@ -102,7 +101,8 @@ export default function LoginEmailPage() {
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
             >
-              Daftar Sekarang
+              {/* Daftar Sekarang */}
+              Masuk
             </button>
 
             {/* Divider Metode Lain */}

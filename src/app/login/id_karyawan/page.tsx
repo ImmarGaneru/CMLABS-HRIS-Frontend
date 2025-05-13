@@ -2,16 +2,23 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { LuEyeOff } from "react-icons/lu";
+import { LuEye } from "react-icons/lu";
 
 export default function LoginIDKaryawanPage() {
   const [showPassword, setShowPassword] = useState(false);
 
+  // Penyamaan menggunakan togglePassword
+  const togglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   return (
-    <div className="flex min-h-screen bg-white flex-col md:flex-row">
+    <div className="flex min-h-screen bg-[#f8f8f8] flex-col md:flex-row p-4">
       {/* KIRI: Section HRIS */}
-      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10 bg-white">
+      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10">
         <img
-          src="/icon.jpg"
+          src="/HR_image.png"
           alt="HRIS Icon"
           className="max-w-lg mb-6 object-contain"
         />
@@ -64,23 +71,24 @@ export default function LoginIDKaryawanPage() {
             {/* Password dengan Toggle */}
             <div className="space-y-1 relative">
               <label className="text-sm text-gray-600">Password</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="---"
-                className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 bottom-2.5"
-              >
-                <img
-                  src={showPassword ? '/password_on.svg' : '/password_off.svg'}
-                  alt="toggle password"
-                  className="w-5 h-5"
-                  style={showPassword ? { filter: 'invert(38%) sepia(90%) saturate(1094%) hue-rotate(187deg) brightness(96%) contrast(101%)' } : {}}
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="--- --- ---"
+                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </button>
+                <button
+                  type="button"
+                  onClick={togglePassword}
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none cursor-pointer"
+                >
+                  {showPassword ? (
+                    <LuEye className="w-5 h-5 text-[#2D8EFF]" />
+                  ) : (
+                    <LuEyeOff className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Ingat saya + Lupa Password */}

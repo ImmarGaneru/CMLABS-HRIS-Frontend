@@ -2,16 +2,22 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { LuEyeOff } from "react-icons/lu";
+import { LuEye } from "react-icons/lu";
 
 export default function LoginNomorTeleponPage() {
   const [showPassword, setShowPassword] = useState(false);
 
+  const togglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   return (
-    <div className="flex min-h-screen bg-white flex-col md:flex-row">
+    <div className="flex min-h-screen bg-[#f8f8f8] flex-col md:flex-row p-4">
       {/* KIRI: Section HRIS */}
-      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10 bg-white">
+      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10">
         <img
-          src="/icon.jpg"
+          src="/HR_image.png"
           alt="HRIS Icon"
           className="max-w-lg mb-6 object-contain"
         />
@@ -72,19 +78,14 @@ export default function LoginNomorTeleponPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center"
+                  onClick={togglePassword}
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none cursor-pointer"
                 >
-                  <img
-                    src={showPassword ? '/password_on.svg' : '/password_off.svg'}
-                    alt="Toggle Password"
-                    className={`w-5 h-5 ${
-                      showPassword ? 'filter' : ''
-                    }`}
-                    style={{
-                      filter: showPassword ? 'brightness(0) saturate(100%) invert(44%) sepia(94%) saturate(747%) hue-rotate(183deg) brightness(101%) contrast(92%)' : 'none'
-                    }}
-                  />
+                  {showPassword ? (
+                    <LuEye className="w-5 h-5 text-[#2D8EFF]" />
+                  ) : (
+                    <LuEyeOff className="w-5 h-5 text-gray-400" />
+                  )}
                 </button>
               </div>
             </div>

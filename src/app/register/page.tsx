@@ -2,17 +2,23 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { LuEyeOff } from "react-icons/lu";
+import { LuEye } from "react-icons/lu";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
+
+  const togglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-white flex-col md:flex-row">
+    <div className="flex min-h-screen bg-[#f8f8f8] flex-col md:flex-row p-4">
       {/* KIRI: Section HRIS */}
-      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10 bg-white">
+      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10">
         <img
-          src="/icon.jpg"
+          src="/HR_image.png"
           alt="HRIS Icon"
           className="max-w-lg mb-6 object-contain"
         />
@@ -65,24 +71,19 @@ export default function RegisterPage() {
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  placeholder="--- --- ---"
+                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  onClick={togglePassword}
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none cursor-pointer"
                 >
-                  <img
-                    src={showPassword ? '/password_on.svg' : '/password_off.svg'}
-                    alt="Toggle Password"
-                    className="w-5 h-5"
-                    style={{
-                      filter: showPassword
-                        ? 'invert(44%) sepia(91%) saturate(3086%) hue-rotate(191deg) brightness(99%) contrast(101%)'
-                        : 'none',
-                    }}
-                  />
+                  {showPassword ? (
+                    <LuEye className="w-5 h-5 text-[#2D8EFF]" />
+                  ) : (
+                    <LuEyeOff className="w-5 h-5 text-gray-400" />
+                  )}
                 </button>
               </div>
             </div>
@@ -116,7 +117,8 @@ export default function RegisterPage() {
             </div>
 
             {/* Dropdown */}
-            <div className="flex gap-2">
+            {/* Ini diganti, dibawa ke halaman pemilihan paket */}
+            {/* <div className="flex gap-2">
               <div className="w-1/2">
                 <label className="text-sm text-gray-600">Paket Premium</label>
                 <select className="w-full px-4 py-2 rounded-md border border-gray-300 bg-gray-200 text-sm">
@@ -129,14 +131,14 @@ export default function RegisterPage() {
                   <option>51 - 100 Seat</option>
                 </select>
               </div>
-            </div>
+            </div> */}
 
             {/* Submit */}
             <button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md mt-4 mb-3"
             >
-              Daftar Sekarang
+              Selanjutnya
             </button>
 
             {/* Divider */}
