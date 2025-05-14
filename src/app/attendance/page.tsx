@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react"
+import {ChevronLeft, ChevronRight, Eye, SlidersHorizontal} from "lucide-react"
 import {useRouter} from "next/navigation";
 
 export default function AttendacePage() {
@@ -18,12 +18,18 @@ export default function AttendacePage() {
     }
 
     const dummyData: {
+        id: number
+        name: string
+        jabatan: string
         date: string
         clockIn: string
         clockOut: string
         hours: string
         status: AttendanceStatus
     }[] = Array.from({ length: 10 }).map((_, i) => ({
+        id: i,
+        name: "Anomali",
+        jabatan: "Staff",
         date: "26 Apr, 2025",
         clockIn: "08:00 AM",
         clockOut: "05:00 PM",
@@ -51,22 +57,34 @@ export default function AttendacePage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Date</TableHead>
+                            <TableHead>Nama Karyawan</TableHead>
+                            <TableHead>Jabatan</TableHead>
                             <TableHead>Clock In</TableHead>
                             <TableHead>Clock Out</TableHead>
                             <TableHead>Work Hours</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Detail</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {dummyData.map((row, i) => (
                             <TableRow key={i}>
-                                <TableCell>{row.date}</TableCell>
+                                <TableCell>{row.name}</TableCell>
+                                <TableCell>{row.jabatan}</TableCell>
                                 <TableCell>{row.clockIn}</TableCell>
                                 <TableCell>{row.clockOut}</TableCell>
                                 <TableCell>{row.hours}</TableCell>
                                 <TableCell>
                                     <Badge className={statuses[row.status]}>{row.status}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <Button
+                                        size="sm"
+                                        className="bg-[#2D8EFF]"
+                                        onClick={() => router.push(`/attendance/${row.id}`)}
+                                    >
+                                        <Eye/>
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         ))}

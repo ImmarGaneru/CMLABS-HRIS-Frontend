@@ -88,9 +88,6 @@ export default function ApprovalPage() {
         },
     ]
 
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
     return (
         <main className="w-full min-h-screen p-6 ">
             <div className="bg-white rounded-2xl p-4 shadow-sm mt-2">
