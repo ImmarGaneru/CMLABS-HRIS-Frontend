@@ -75,6 +75,7 @@ export function SidebarApp() {
                                                 "flex items-center rounded-full px-4 py-2 w-full text-4xl font-medium text-[#1E3A5F] hover:bg-accent hover:text-accent-foreground",
                                                 pathname === item.url ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
                                             )}
+                                            replace
                                         >
                                             <item.icon className="mr-2 h-4 w-4"/>
                                             <span>{item.title}</span>

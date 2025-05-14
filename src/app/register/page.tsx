@@ -1,17 +1,85 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LuEyeOff } from "react-icons/lu";
 import { LuEye } from "react-icons/lu";
 
+// Fungsi untuk standarisasi password
+function isPasswordValid(password: string): boolean {
+  const minLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  // const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  return minLength && hasUppercase && hasNumber;
+}
+
+
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [compName, setCompName] = useState('');
+  const [email, setEmail] = useState('');
+  const [notelp, setNotelp] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
+
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [fieldErrors, setFieldErrors] = useState({
+    firstName: false,
+    lastName: false,
+    compName: false,
+    email: false,
+    notelp: false,
+  });
+  
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setError('');
+
+    const newErrors = {
+      firstName: firstName.trim() === '',
+      lastName: lastName.trim() === '',
+      compName: compName.trim() === '',
+      email: email.trim() === '' || !/^\S+@\S+\.\S+$/.test(email),
+      notelp: notelp.trim() === '',
+      // password: password.trim().length < 8 || !/[A-Z]/.test(password),
+    };
+
+    setFieldErrors(newErrors);
+
+    const hasErrors = Object.values(newErrors).some(Boolean);
+    if (hasErrors){
+      setError('Pastikan semua field terisi dengan benar.');
+      return;
+    }
+
+    if (password !== confirmPassword){
+      setError('Password dan konfirmasi tidak cocok.');
+      return;
+    }
+    
+    if (!isPasswordValid(password)) {
+      setError('Password harus minimal 8 karakter, mengandung huruf besar dan angka.');
+      return;
+    }
+
+    // Simulasi submit
+    router.push('/login/email');
+  };
 
   return (
     <div className="flex min-h-screen bg-[#f8f8f8] flex-col md:flex-row p-4">
@@ -47,8 +115,9 @@ export default function RegisterPage() {
           </p>
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
 
-          <form className="space-y-4">
-            {[
+          {/* Form login dan register harus memiliki style form yang sama */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* {[
               'Nama Depan',
               'Nama Belakang',
               'Nama Perusahaan',
@@ -63,7 +132,77 @@ export default function RegisterPage() {
                   className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-            ))}
+            ))} */}
+
+            {/* Nama Depan */}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Nama Depan</label>
+              <input
+                type="text"
+                placeholder="Nama Depan"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className={`w-full px-4 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 ${
+                  fieldErrors.firstName ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              />
+            </div>
+            
+            {/* Nama Belakang */}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Nama Belakang</label>
+              <input
+                type="text"
+                placeholder="Nama Belakang"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className={`w-full px-4 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 ${
+                  fieldErrors.lastName ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              />
+            </div>
+            
+            {/* Nama Perusahaan */}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Nama Perusahaan</label>
+              <input
+                type="text"
+                placeholder="Nama Perusahaan"
+                value={compName}
+                onChange={(e) => setCompName(e.target.value)}
+                className={`w-full px-4 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 ${
+                  fieldErrors.compName ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              />
+            </div>
+
+            {/* Email */}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Email</label>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`w-full px-4 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 ${
+                  fieldErrors.email ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              />
+            </div>
+
+            {/* Nomor Telepon */}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Nomor Telepon</label>
+              <input
+                type="tel"
+                placeholder="08xxxxxxxxxx"
+                value={notelp}
+                onChange={(e) => setNotelp(e.target.value)}
+                className={`w-full px-4 py-2 rounded-md border text-sm focus:outline-none focus:ring-2 ${
+                  fieldErrors.notelp ? 'border-red-500 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              />
+            </div>
 
             {/* Password Field */}
             <div className="space-y-1">
@@ -72,7 +211,9 @@ export default function RegisterPage() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="--- --- ---"
-                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   type="button"
@@ -95,43 +236,29 @@ export default function RegisterPage() {
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Konfirmasi Password"
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2"
                 >
-                  <img
-                    src={showConfirmPassword ? '/password_on.svg' : '/password_off.svg'}
-                    alt="Toggle Confirm Password"
-                    className="w-5 h-5"
-                    style={{
-                      filter: showConfirmPassword
-                        ? 'invert(44%) sepia(91%) saturate(3086%) hue-rotate(191deg) brightness(99%) contrast(101%)'
-                        : 'none',
-                    }}
-                  />
+                  {showConfirmPassword ? (
+                    <LuEye className="w-5 h-5 text-[#2D8EFF]" />
+                  ) : (
+                    <LuEyeOff className="w-5 h-5 text-gray-400" />
+                  )}
                 </button>
               </div>
             </div>
-
-            {/* Dropdown */}
-            {/* Ini diganti, dibawa ke halaman pemilihan paket */}
-            {/* <div className="flex gap-2">
-              <div className="w-1/2">
-                <label className="text-sm text-gray-600">Paket Premium</label>
-                <select className="w-full px-4 py-2 rounded-md border border-gray-300 bg-gray-200 text-sm">
-                  <option>Paket Premium</option>
-                </select>
-              </div>
-              <div className="w-1/2">
-                <label className="text-sm text-gray-600">Jumlah Seat</label>
-                <select className="w-full px-4 py-2 rounded-md border border-gray-300 bg-gray-200 text-sm">
-                  <option>51 - 100 Seat</option>
-                </select>
-              </div>
-            </div> */}
+            {/* Menampilkan Error */}
+            {error && (
+              <p className="text-red-500 text-sm mb-4 text-center bg-red-50 p-2 rounded-md border border-red-300">
+                {error}
+              </p>
+            )}
 
             {/* Submit */}
             <button
@@ -140,6 +267,7 @@ export default function RegisterPage() {
             >
               Selanjutnya
             </button>
+
 
             {/* Divider */}
             <div className="flex items-center gap-2 mb-2">
@@ -161,6 +289,7 @@ export default function RegisterPage() {
               <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
             </button>
           </form>
+          {/* End Form */}
 
           {/* Footer */}
           <p className="text-sm text-center mt-4 text-gray-600">

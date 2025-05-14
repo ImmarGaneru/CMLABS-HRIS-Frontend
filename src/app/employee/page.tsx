@@ -36,7 +36,7 @@ const employees = [
   },
   {
     id: 2,
-    nama: "Luna Christina aj",
+    nama: "Luna Christina ajeng",
     jenisKelamin: "Perempuan",
     nomor: "085850219981",
     cabang: "Malang",
@@ -45,7 +45,7 @@ const employees = [
   },
   {
     id: 3,
-    nama: "Didik Putra Utar",
+    nama: "Didik Putra Utarlana",
     jenisKelamin: "Laki-laki",
     nomor: "085850219981",
     cabang: "Malang",
