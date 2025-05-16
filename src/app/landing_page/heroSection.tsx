@@ -22,7 +22,7 @@ export default function HeroSection() {
             backgroundColor: '#D9D9D9',
             borderRadius: '32px',
             padding: '8px',
-            width: '75%',
+            width: '80%',
           }}
         >
           <input

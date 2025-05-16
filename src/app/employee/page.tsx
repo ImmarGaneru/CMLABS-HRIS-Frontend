@@ -1,7 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
-import DataTable from "react-data-table-component";
+// import DataTable from "react-data-table-component";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/Datatable";
+import { RxAvatar } from "react-icons/rx";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,230 +27,183 @@ import {
   FaPlusCircle,
   FaFilter,
 } from "react-icons/fa"; // Import the icons
-const employees = [
+
+// Objek Employee
+type Employee = {
+  id: number
+  nama: string
+  jenisKelamin: string
+  notelp: string
+  cabang: string
+  jabatan: string
+  status: string
+  
+}
+
+// Dummy data employee berdasarkan objek/type yg dibuat
+const dummyData: Employee[] = [
   {
     id: 1,
     nama: "Ahmad",
     jenisKelamin: "Laki-laki",
-    nomor: "085850219981",
+    notelp: "085850219981",
     cabang: "Malang",
     jabatan: "Manager",
-    status: true,
+    status: "Aktif",
   },
   {
     id: 2,
     nama: "Luna Christina ajeng",
     jenisKelamin: "Perempuan",
-    nomor: "085850219981",
+    notelp: "085850219981",
     cabang: "Malang",
     jabatan: "Manager",
-    status: true,
+    status: "Aktif",
   },
   {
     id: 3,
-    nama: "Didik Putra Utarlana",
+    nama: "Didik Putra Utarlana Mahmud",
     jenisKelamin: "Laki-laki",
-    nomor: "085850219981",
+    notelp: "085850219981",
     cabang: "Malang",
     jabatan: "Manager",
-    status: true,
+    status: "Aktif",
   },
   {
     id: 4,
     nama: "Nirmala Sukma",
     jenisKelamin: "Perempuan",
-    nomor: "085850219981",
+    notelp: "085850219981",
     cabang: "Malang",
     jabatan: "Manager",
-    status: false,
+    status: "Aktif",
   },
 ];
+
 
 export default function EmployeeTablePage() {
   const [filterText, setFilterText] = useState("");
   const [filterGender, setFilterGender] = useState(""); // ✅ pindahkan ke sini
-  const [statusData, setStatusData] = useState(employees);
+  // const [statusData, setStatusData] = useState(employees);
   const router = useRouter();
+
   const navigateToAnotherPage = () => {
     router.push("/employee/tambah"); // Navigasi ke halaman lain
   };
-  const filteredEmployees = statusData.filter(
-    (item) =>
-      item.nama.toLowerCase().includes(filterText.toLowerCase()) &&
-      (filterGender === "" || item.jenisKelamin === filterGender)
-  );
+
   const navigateToDetailPage = (id: number) => {
     console.log("Navigating to detail page with id:", id); // Debugging untuk memastikan id ada
     router.push(`/employee/detail/${id}`);
   };
 
-  const toggleStatus = (id: number) => {
-    setStatusData((prev) =>
-      prev.map((emp) => (emp.id === id ? { ...emp, status: !emp.status } : emp))
-    );
-  };
-
-  const columns = useMemo(
+  // Start tabel berdasarkan data dummy
+  const employeeColumns = useMemo<ColumnDef<Employee>[]>(
     () => [
       {
-        name: "No",
-        selector: (row: { id: number }) => row.id,
-        width: "60px",
+        id: "No",
+        header: "No",
+        cell: ({ row }) => row.index + 1,
+        size: 60,
       },
       {
-        name: "Avatar",
+        id: "Avatar",
+        header: "Avatar",
         cell: () => (
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "9999px",
-              background: "#E5E7EB",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-            }}
-          >
-            👤
+          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-lg">
+            <RxAvatar/>
           </div>
         ),
-        width: "80px",
       },
       {
-        name: "Nama",
-        selector: (row: { nama: string }) => row.nama,
-        sortable: true,
-      },
-      {
-        name: "Jenis Kelamin",
-        selector: (row: { jenisKelamin: string }) => row.jenisKelamin,
-        sortable: true,
-      },
-      {
-        name: "Nomor Telepon",
-        selector: (row: { nomor: string }) => row.nomor,
-      },
-      {
-        name: "Cabang",
-        selector: (row: { cabang: string }) => row.cabang,
-      },
-      {
-        name: "Jabatan",
-        selector: (row: { jabatan: string }) => row.jabatan,
-      },
-      {
-        name: "Status",
-        cell: (row: { status: boolean | undefined; id: number }) => (
-          <label
-            style={{
-              display: "inline-block",
-              width: 40,
-              height: 20,
-              position: "relative",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={row.status}
-              onChange={() => toggleStatus(row.id)}
-              style={{ opacity: 0, width: 0, height: 0 }}
-            />
-            <span
-              style={{
-                position: "absolute",
-                cursor: "pointer",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: row.status ? "#16a34a" : "#dc2626",
-                borderRadius: 20,
-                transition: "0.4s",
-              }}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  height: 16,
-                  width: 16,
-                  left: row.status ? 20 : 4,
-                  bottom: 2,
-                  backgroundColor: "white",
-                  borderRadius: "50%",
-                  transition: "0.4s",
-                }}
-              ></span>
-            </span>
-          </label>
-        ),
-        width: "100px",
-      },
-      {
-        name: "Action",
-        cell: (row: { nama: string }) => (
-          <div style={{ display: "flex", gap: "6px" }}>
-            <button
-              title="Lihat"
-              onClick={() => alert(`Lihat ${row.nama}`)}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #1E3A5F",
-                padding: "6px 12px",
-                borderRadius: 6,
-                color: "#1E3A5F",
-              }}
-            >
-              <FaFileDownload />
-            </button>
-            <button
-              title="Edit"
-              onClick={() => alert(`Edit ${row.nama}`)}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #1E3A5F",
-                padding: "6px 12px",
-                borderRadius: 6,
-                color: "#1E3A5F",
-              }}
-            >
-              <FaEdit />
-            </button>
-            <AlertDialog>
-            <AlertDialogTrigger>  <button
-              title="Hapus"
-              // onClick={() => alert(`Hapus ${row.nama}`)}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #1E3A5F",
-                padding: "6px 12px",
-                borderRadius: 6,
-                color: "#1E3A5F",
-              }}
-            >
-              <FaTrash />
-            </button></AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  your account and remove your data from our servers.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
+        accessorKey: "nama",
+        header: "Nama",
+        cell:  info => (
+          <div className="truncate max-w-[200px] min-w-[120px]">
+            {info.getValue() as string}
           </div>
         ),
+      },
+      {
+        accessorKey: "jenisKelamin",
+        header: "Jenis Kelamin",
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "notelp",
+        header: "Nomor Telepon",
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "cabang",
+        header: "Cabang",
+        cell: info=> info.getValue(),
+      },
+      {
+        accessorKey: "jabatan",
+        header: "Jabatan",
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: info => (
+          <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+            {info.getValue() as String}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Action",
+        cell: ({ row }) => {
+          const data = row.original
+          return (
+            <div className="flex gap-2">
+              <button
+                title="Lihat"
+                onClick={() => alert(`Lihat ${data.nama}`)}
+                className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
+              >
+                <FaFileDownload />
+              </button>
+              <button
+                title="Edit"
+                onClick={() => alert(`Edit ${data.nama}`)}
+                className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
+              >
+                <FaEdit />
+              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    title="Hapus"
+                    className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
+                  >
+                    <FaTrash />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Hapus Data</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Apakah kamu yakin ingin menghapus data {data.nama}?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => alert(`Hapus ${data.nama}`)}>
+                      Ya, Hapus
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )
+        },
       },
     ],
     []
-  );
+  )
 
   return (
     <div
@@ -428,12 +384,13 @@ export default function EmployeeTablePage() {
             </div>
           </div>
         
-          <DataTable
-  columns={columns}
-  data={filteredEmployees}
-  customStyles={{ rows: { style: { cursor: "pointer" } } }}
-  onRowClicked={(row) => navigateToDetailPage(row.id)}  // Add this line
-/>
+          {/* <DataTable
+            columns={columns}
+            data={filteredEmployees}
+            customStyles={{ rows: { style: { cursor: "pointer" } } }}
+            onRowClicked={(row) => navigateToDetailPage(row.id)}  // Add this line
+          /> */}
+          <DataTable columns={employeeColumns} data={dummyData}/>
 
         </div>
       </div>
