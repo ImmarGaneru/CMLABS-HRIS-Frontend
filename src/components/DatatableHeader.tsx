@@ -1,0 +1,158 @@
+'use client';
+import React from 'react';
+import Button from './Button';
+import {
+  FaSearch,
+  FaPlusCircle,
+  FaCloudUploadAlt,
+  FaCloudDownloadAlt,
+} from 'react-icons/fa';
+import { MdTune } from "react-icons/md";
+
+type FilterOption = {label: string; value: string};
+type DataTableHeaderProps = {
+  title: string;
+
+  // Feature Toggles
+  hasSearch?: boolean;
+  hasFilter?: boolean;
+  hasDateFilter?: boolean;
+  hasExport?: boolean;
+  hasImport?: boolean;
+  hasAdd?: boolean;
+
+  // Handlers (only needed if feature is enabled)
+  onSearch?: (value: string) => void;
+  onFilterChange?: (value: string) => void;
+  onDateFilterChange?: (value: string) => void;
+  onExport?: () => void;
+  onImport?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onAdd?: () => void;
+
+  // State values
+  searchValue?: string;
+  filterValue?: string;
+  dateFilterValue?: string;
+
+  // Custom filter option agar bisa diisi data filter lain
+  filterOptions?: FilterOption[];
+};
+
+const DataTableHeader: React.FC<DataTableHeaderProps> = ({
+  title,
+  hasSearch = true,
+  hasFilter = true,
+  hasDateFilter = false,
+  hasExport = true,
+  hasImport = true,
+  hasAdd = true,
+  onSearch,
+  onFilterChange,
+  onDateFilterChange,
+  onExport,
+  onImport,
+  onAdd,
+  searchValue = '',
+  filterValue = '',
+  dateFilterValue = '',
+  filterOptions,
+}) => {
+  return (
+    <div className="flex flex-row gap-4 w-full">
+      {/* Title */}
+      <h3 className="text-xl font-bold text-[#1E3A5F]">{title}</h3>
+
+      {/* Search Input */}
+      {hasSearch && onSearch && (
+        <div className="relative flex-1">
+          <FaSearch className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchValue}
+            onChange={(e) => onSearch(e.target.value)}
+            className="w-full pl-8 pr-2 py-2 border border-[#1E3A5F] rounded-md text-sm"
+          />
+        </div>
+      )}
+
+      {/* Action Buttons Container */}
+      <div className="flex items-center gap-2">
+        {/* Date Filter */}
+        {hasDateFilter && onDateFilterChange && (
+          <Button variant="tableFeatureButton">
+            <input
+              type="date"
+              value={dateFilterValue}
+              onChange={(e) => onDateFilterChange(e.target.value)}
+              className="border-none bg-transparent text-[#1E3A5F] outline-none text-sm cursor-pointer"
+            />
+          </Button>
+        )}
+
+        {/* Filter Button */}
+        {hasFilter && onFilterChange && (
+          <Button variant="tableFeatureButton">
+            <MdTune size={16} />
+            {filterOptions ? (
+              <select
+                value={filterValue}
+                onChange={(e) => onFilterChange?.(e.target.value)}
+                className="border-none bg-transparent text-[#1E3A5F] outline-none text-sm cursor-pointer"
+              >
+                <option value="">Filter</option>
+                {filterOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <select
+                value={filterValue}
+                onChange={(e) => onFilterChange(e.target.value)}
+                className="border-none bg-transparent text-[#1E3A5F] outline-none text-sm cursor-pointer"
+              >
+                <option value="">Filter</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </select>
+            )}
+          </Button>
+        )}
+
+        {/* Export Button */}
+        {hasExport && onExport && (
+          <Button onClick={onExport} variant="tableFeatureButton">
+            <FaCloudUploadAlt size={16} />
+            Export
+          </Button>
+        )}
+
+        {/* Import Button */}
+        {hasImport && onImport && (
+          <Button variant="tableFeatureButton">
+            <FaCloudDownloadAlt size={16} />
+            Import
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={onImport}
+              className="hidden"
+            />
+          </Button>
+        )}
+
+        {/* Add Button */}
+        {hasAdd && onAdd && (
+          <Button onClick={onAdd} variant="redirectButton">
+            <FaPlusCircle className="text-lg" />
+            <span className="font-medium">Tambah Data</span>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default DataTableHeader;

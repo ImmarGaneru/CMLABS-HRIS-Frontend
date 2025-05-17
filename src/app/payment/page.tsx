@@ -1,6 +1,6 @@
 'use client';
 
-import BillList from "../component/payment/billing";
+import BillList from "./component_payment/billing";
 
 export default function PaymentPage(){
     return(

@@ -1,5 +1,5 @@
 'use client';
-import Invoice from '@/app/component/payment/invoice';
+import Invoice from '@/app/payment/component_payment/invoice';
 
 export default function InvoicePage() {
     return (

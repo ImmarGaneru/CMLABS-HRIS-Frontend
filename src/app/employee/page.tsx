@@ -3,32 +3,12 @@
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
 import React, { useMemo, useState } from "react";
-// import DataTable from "react-data-table-component";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import { RxAvatar } from "react-icons/rx";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
-import {
-  FaFileDownload,
-  FaEdit,
-  FaTrash,
-  FaSearch,
-  FaCloudDownloadAlt,
-  FaCloudUploadAlt,
-  FaPlusCircle,
-  FaFilter,
-} from "react-icons/fa"; // Import the icons
+import { FaEdit, FaEye } from "react-icons/fa";
+import EmployeeCardSum from "./component_employee/employee_card_sum";
+import DataTableHeader from "@/components/DatatableHeader";
 
 // Objek Employee
 type Employee = {
@@ -58,7 +38,7 @@ const dummyData: Employee[] = [
     nama: "Luna Christina ajeng",
     jenisKelamin: "Perempuan",
     notelp: "085850219981",
-    cabang: "Malang",
+    cabang: "Malang Selatan",
     jabatan: "Manager",
     status: "Aktif",
   },
@@ -66,6 +46,60 @@ const dummyData: Employee[] = [
     id: 3,
     nama: "Didik Putra Utarlana Mahmud",
     jenisKelamin: "Laki-laki",
+    notelp: "085850219981",
+    cabang: "Surabaya",
+    jabatan: "Manager",
+    status: "Tidak Aktif",
+  },
+  {
+    id: 4,
+    nama: "Nirmala Sukma",
+    jenisKelamin: "Perempuan",
+    notelp: "085850219981",
+    cabang: "Malang Kabupaten",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
+  {
+    id: 4,
+    nama: "Nirmala Sukma",
+    jenisKelamin: "Perempuan",
+    notelp: "085850219981",
+    cabang: "Malang",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
+  {
+    id: 4,
+    nama: "Nirmala Sukma",
+    jenisKelamin: "Perempuan",
+    notelp: "085850219981",
+    cabang: "Malang",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
+  {
+    id: 4,
+    nama: "Nirmala Sukma",
+    jenisKelamin: "Perempuan",
+    notelp: "085850219981",
+    cabang: "Malang",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
+  {
+    id: 4,
+    nama: "Nirmala Sukma",
+    jenisKelamin: "Perempuan",
+    notelp: "085850219981",
+    cabang: "Malang",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
+  {
+    id: 4,
+    nama: "Nirmala Sukma",
+    jenisKelamin: "Perempuan",
     notelp: "085850219981",
     cabang: "Malang",
     jabatan: "Manager",
@@ -85,35 +119,75 @@ const dummyData: Employee[] = [
 
 export default function EmployeeTablePage() {
   const [filterText, setFilterText] = useState("");
-  const [filterGender, setFilterGender] = useState(""); // ✅ pindahkan ke sini
-  // const [statusData, setStatusData] = useState(employees);
+  const [filterGender, setFilterGender] = useState("");
   const router = useRouter();
 
-
-  const navigateToAnotherPage = () => {
-    router.push("/employee/tambah"); // Navigasi ke halaman lain
+  // Function to handle CSV export
+  const handleExportCSV = () => {
+    // Convert data to worksheet
+    const worksheet = XLSX.utils.json_to_sheet(dummyData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+    
+    // Generate and download file
+    XLSX.writeFile(workbook, "employees_data.xlsx");
   };
 
-  const navigateToDetailPage = (id: number) => {
-    console.log("Navigating to detail page with id:", id); // Debugging untuk memastikan id ada
-    router.push(`/employee/detail/${id}`);
+  // Function to handle CSV import
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          
+          // Here you would typically update your data state with the imported data
+          console.log('Imported data:', jsonData);
+          // TODO: Add your data update logic here
+        } catch (error) {
+          console.error('Error importing file:', error);
+          alert('Error importing file. Please check the file format.');
+        }
+      };
+      reader.readAsBinaryString(file);
+    }
   };
+
+  // Filter data based on search text and gender
+  const filteredData = useMemo(() => {
+    return dummyData.filter((item) => {
+      const matchesSearch = item.nama.toLowerCase().includes(filterText.toLowerCase()) ||
+                          item.cabang.toLowerCase().includes(filterText.toLowerCase()) ||
+                          item.jabatan.toLowerCase().includes(filterText.toLowerCase());
+      const matchesGender = !filterGender || item.jenisKelamin === filterGender;
+      return matchesSearch && matchesGender;
+    });
+  }, [filterText, filterGender]);
   
-  // Start tabel berdasarkan data dummy
+  // Kolom tabel berdasarkan data dummy
   const employeeColumns = useMemo<ColumnDef<Employee>[]>(
     () => [
       {
         id: "No",
         header: "No",
-        cell: ({ row }) => row.index + 1,
+        cell: ({ row }) => (
+        <div className="flex justify-center">
+          {row.index + 1}
+        </div>
+        ),
         size: 60,
       },
       {
         id: "Avatar",
         header: "Avatar",
         cell: () => (
-          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-lg">
-            <RxAvatar/>
+          <div className="flex items-center justify-center text-lg bg">
+              <RxAvatar size={24}/>
           </div>
         ),
       },
@@ -121,7 +195,7 @@ export default function EmployeeTablePage() {
         accessorKey: "nama",
         header: "Nama",
         cell:  info => (
-          <div className="truncate max-w-[200px] min-w-[120px]">
+          <div className="truncate w-[120px]">
             {info.getValue() as string}
           </div>
         ),
@@ -129,7 +203,10 @@ export default function EmployeeTablePage() {
       {
         accessorKey: "jenisKelamin",
         header: "Jenis Kelamin",
-        cell: info => info.getValue(),
+        cell: info => 
+          <div>
+            {info.getValue() as String}
+          </div>
       },
       {
         accessorKey: "notelp",
@@ -139,7 +216,11 @@ export default function EmployeeTablePage() {
       {
         accessorKey: "cabang",
         header: "Cabang",
-        cell: info=> info.getValue(),
+        cell: info=> (
+          <div className="truncate w-[80px]">
+            {info.getValue() as String}
+          </div>
+      ),
       },
       {
         accessorKey: "jabatan",
@@ -149,57 +230,46 @@ export default function EmployeeTablePage() {
       {
         accessorKey: "status",
         header: "Status",
-        cell: info => (
-          <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
-            {info.getValue() as String}
-          </span>
-        ),
+        cell: info => {
+          const status = info.getValue() as string;
+
+          //Mapping jenis status
+          const statusStyle: Record<string, string> = {
+            Aktif: "bg-green-100 text-green-800",
+            "Tidak Aktif": "bg-red-100 text-red-800",
+            Pending: "bg-yellow-100 text-yellow-800",
+            Cuti: "bg-blue-100 text-blue-800",
+          };
+          return(
+          <div className="flex justify-center w-[120px]">
+            <span className={`px-2 py-1 text-xs rounded ${statusStyle[status] ?? "bg-gray-100 text-gray-800"}`}>
+              {info.getValue() as String}
+            </span>
+          </div>
+          );
+        },
       },
       {
         id: "actions",
-        header: "Action",
+        header: "Aksi",
         cell: ({ row }) => {
           const data = row.original
           return (
             <div className="flex gap-2">
               <button
-                title="Lihat"
-                onClick={() => alert(`Lihat ${data.nama}`)}
-                className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
+                title="Detail"
+                onClick={() => router.push(`/employee/detail/${data.id}`)}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
-                <FaFileDownload />
+                <FaEye />
               </button>
               <button
                 title="Edit"
-                onClick={() => alert(`Edit ${data.nama}`)}
-                className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
+                onClick={() => router.push(`/employee/edit/${data.id}`)}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEdit />
               </button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <button
-                    title="Hapus"
-                    className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
-                  >
-                    <FaTrash />
-                  </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Hapus Data</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Apakah kamu yakin ingin menghapus data {data.nama}?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => alert(`Hapus ${data.nama}`)}>
-                      Ya, Hapus
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           )
         },
@@ -209,97 +279,35 @@ export default function EmployeeTablePage() {
   )
 
 return (
-  <div className="p-4 bg-gray-100 min-h-screen flex flex flex-col gap-4">
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <div className="flex justify-between gap-4">
-          {[{ label: "Periode", value: "Aug/2025" },
-            { label: "Total Employee", value: "234 Employee" },
-            { label: "Total New Hire", value: "12 Person" },
-            { label: "Full Time Employee", value: "212 Full Time" }].map((info, idx) => (
-              <div key={idx} className="flex-1 text-center">
-                <strong className="text-xl">{info.value}</strong>
-                <p className="text-sm text-gray-500">{info.label}</p>
-              </div>
-          ))}
-        </div>
-        </div>
-
+  <div className="p-4 min-h-screen flex flex-col gap-4">
+    {/* Label card informasi data karyawan bagian atas */}
+    <EmployeeCardSum/>
     {/* Second Section: Employee Information */}
-    <div className="bg-white rounded-xl p-8 shadow-md mt-6">
+    <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
       <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
-        <div className="flex flex-col gap-4 w-full">
-          <h3 className="text-xl font-bold text-[#1E3A5F]">Semua Informasi Karyawan</h3>
+        {/* Tabel Halaman Start */}
 
-          {/* Input pencarian */}
-          <div className="relative flex-1">
-            <FaSearch className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-500" />
-            <input
-              type="text"
-              placeholder="search here"
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              className="w-full h-9 pl-8 pr-2 py-2 border border-[#1E3A5F] rounded-md text-sm"
-            />
-          </div>
+          {/* Data Tabel Header */}
+          <DataTableHeader
+            title="Data Karyawan" //Ini nanti sesuaikan tiap halaman
+            hasSearch={true}
+            hasFilter={true}
+            hasExport={true}
+            hasImport={true}
+            hasAdd={true}
+            searchValue={filterText}
+            onSearch={setFilterText}
+            filterValue={filterGender}
+            onFilterChange={setFilterGender}
+            onExport={handleExportCSV}
+            onImport={handleImportCSV}
+            onAdd={() => router.push("/employee/tambah")}
+          />
 
-          {/* Tombol Filter, Export, Import, Tambah Data */}
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-white border border-[#1E3A5F] text-[#1E3A5F] flex items-center gap-2">
-              <FaFilter />
-              <select
-                value={filterGender}
-                onChange={(e) => setFilterGender(e.target.value)}
-                className="border-none bg-transparent text-[#1E3A5F] outline-none text-sm cursor-pointer"
-              >
-                <option value="">All</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
-            </div>
+          {/* Data Tabel Isi Karyawan Menggunakan Component DataTable dummy */}
+          <DataTable columns={employeeColumns} data={filteredData}/>
 
-            <button
-              // onClick={handleExport}
-              className="flex items-center gap-2 p-2 rounded-lg bg-white border border-[#1E3A5F] text-[#1E3A5F] cursor-pointer"
-            >
-              <FaCloudUploadAlt />
-              Export
-            </button>
-
-            <button
-              // onClick={handleImport}
-              className="flex items-center gap-2 p-2 rounded-lg bg-white border border-[#1E3A5F] text-[#1E3A5F] cursor-pointer"
-            >
-              <FaCloudDownloadAlt />
-              Import
-            </button>
-
-            {/* Input file disembunyikan, tapi tetap ada di DOM */}
-            <input
-              type="file"
-              // ref={fileInputRef}
-              // onChange={handleFileChange}
-              className="hidden"
-            />
-
-            {/* Tombol Tambah Data */}
-            <button
-              onClick={navigateToAnotherPage}
-              type="button"
-              className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
-            >
-              <FaPlusCircle className="text-lg" />
-              <span className="font-medium">Tambah Data</span>
-            </button>
-          </div>
-        
-          {/* <DataTable
-            columns={columns}
-            data={filteredEmployees}
-            customStyles={{ rows: { style: { cursor: "pointer" } } }}
-            onRowClicked={(row) => navigateToDetailPage(row.id)}  // Add this line
-          /> */}
-          <DataTable columns={employeeColumns} data={dummyData}/>
-        </div>
+        {/* Tabel Halaman End */}
       </div>
     </div>
   </div>

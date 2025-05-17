@@ -42,7 +42,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         )
     }
 
-    // Layout with sidebar for attendance and dashboard pages
+    // Layout dengan Sidebar untuk bagian dalam aplikasi
     if (usesSidebar()) {
         return (
             <SidebarProvider>
