@@ -89,6 +89,7 @@ export default function EmployeeTablePage() {
   // const [statusData, setStatusData] = useState(employees);
   const router = useRouter();
 
+
   const navigateToAnotherPage = () => {
     router.push("/employee/tambah"); // Navigasi ke halaman lain
   };
@@ -226,7 +227,7 @@ return (
     {/* Second Section: Employee Information */}
     <div className="bg-white rounded-xl p-8 shadow-md mt-6">
       <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
-        <div className="flex gap-4 w-full">
+        <div className="flex flex-col gap-4 w-full">
           <h3 className="text-xl font-bold text-[#1E3A5F]">Semua Informasi Karyawan</h3>
 
           {/* Input pencarian */}
@@ -257,7 +258,7 @@ return (
             </div>
 
             <button
-              onClick={handleExport}
+              // onClick={handleExport}
               className="flex items-center gap-2 p-2 rounded-lg bg-white border border-[#1E3A5F] text-[#1E3A5F] cursor-pointer"
             >
               <FaCloudUploadAlt />
@@ -265,7 +266,7 @@ return (
             </button>
 
             <button
-              onClick={handleImport}
+              // onClick={handleImport}
               className="flex items-center gap-2 p-2 rounded-lg bg-white border border-[#1E3A5F] text-[#1E3A5F] cursor-pointer"
             >
               <FaCloudDownloadAlt />
@@ -275,8 +276,8 @@ return (
             {/* Input file disembunyikan, tapi tetap ada di DOM */}
             <input
               type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
+              // ref={fileInputRef}
+              // onChange={handleFileChange}
               className="hidden"
             />
 
@@ -299,16 +300,6 @@ return (
           /> */}
           <DataTable columns={employeeColumns} data={dummyData}/>
         </div>
-      </div>
-
-      {/* Tabel Karyawan and Buttons in One Box */}
-      <div className="bg-white rounded-xl p-4 shadow-md mt-6">
-        <DataTable
-          columns={columns}
-          data={filteredEmployees}
-          pagination
-          highlightOnHover
-        />
       </div>
     </div>
   </div>
