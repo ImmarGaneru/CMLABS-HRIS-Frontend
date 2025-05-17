@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import React, { useMemo, useState, useRef } from "react";
-import { FaCloudUploadAlt, FaFileDownload, FaEdit, FaTrash, FaSearch, FaCloudDownloadAlt, FaPlusCircle, FaFilter } from "react-icons/fa";
 import * as XLSX from "xlsx";
-import DataTable from "react-data-table-component";
+import React, { useMemo, useState } from "react";
+// import DataTable from "react-data-table-component";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/Datatable";
+import { RxAvatar } from "react-icons/rx";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,133 +19,193 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// Definisikan tipe data untuk Employee
-interface Employee {
-  id: number;
-  nama: string;
-  jenisKelamin: string;
-  nomor: string;
-  cabang: string;
-  jabatan: string;
-  status: boolean;
+import {
+  FaFileDownload,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaCloudDownloadAlt,
+  FaCloudUploadAlt,
+  FaPlusCircle,
+  FaFilter,
+} from "react-icons/fa"; // Import the icons
+
+// Objek Employee
+type Employee = {
+  id: number
+  nama: string
+  jenisKelamin: string
+  notelp: string
+  cabang: string
+  jabatan: string
+  status: string
+  
 }
 
-// Data awal karyawan
-const employees: Employee[] = [
-  { id: 1, nama: "Ahmad", jenisKelamin: "Laki-laki", nomor: "085850219981", cabang: "Malang", jabatan: "Manager", status: true },
-  { id: 2, nama: "Luna Christina aj", jenisKelamin: "Perempuan", nomor: "085850219981", cabang: "Malang", jabatan: "Manager", status: true },
-  { id: 3, nama: "Didik Putra Utar", jenisKelamin: "Laki-laki", nomor: "085850219981", cabang: "Malang", jabatan: "Manager", status: true },
-  { id: 4, nama: "Nirmala Sukma", jenisKelamin: "Perempuan", nomor: "085850219981", cabang: "Malang", jabatan: "Manager", status: false },
+// Dummy data employee berdasarkan objek/type yg dibuat
+const dummyData: Employee[] = [
+  {
+    id: 1,
+    nama: "Ahmad",
+    jenisKelamin: "Laki-laki",
+    notelp: "085850219981",
+    cabang: "Malang",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
+  {
+    id: 2,
+    nama: "Luna Christina ajeng",
+    jenisKelamin: "Perempuan",
+    notelp: "085850219981",
+    cabang: "Malang",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
+  {
+    id: 3,
+    nama: "Didik Putra Utarlana Mahmud",
+    jenisKelamin: "Laki-laki",
+    notelp: "085850219981",
+    cabang: "Malang",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
+  {
+    id: 4,
+    nama: "Nirmala Sukma",
+    jenisKelamin: "Perempuan",
+    notelp: "085850219981",
+    cabang: "Malang",
+    jabatan: "Manager",
+    status: "Aktif",
+  },
 ];
+
 
 export default function EmployeeTablePage() {
   const [filterText, setFilterText] = useState("");
-  const [filterGender, setFilterGender] = useState("");
-  const [statusData, setStatusData] = useState<Employee[]>(employees);
+  const [filterGender, setFilterGender] = useState(""); // ✅ pindahkan ke sini
+  // const [statusData, setStatusData] = useState(employees);
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImport = () => fileInputRef.current?.click();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // parsing logic
-    }
+  const navigateToAnotherPage = () => {
+    router.push("/employee/tambah"); // Navigasi ke halaman lain
   };
 
-  const handleExport = () => {
-    const worksheet = XLSX.utils.json_to_sheet(statusData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
-    XLSX.writeFile(workbook, "data-export.xlsx");
+  const navigateToDetailPage = (id: number) => {
+    console.log("Navigating to detail page with id:", id); // Debugging untuk memastikan id ada
+    router.push(`/employee/detail/${id}`);
   };
-
-  const navigateToAnotherPage = () => router.push("/employee/tambah");
-
-  const filteredEmployees = statusData.filter(
-    (item) =>
-      item.nama.toLowerCase().includes(filterText.toLowerCase()) &&
-      (filterGender === "" || item.jenisKelamin === filterGender)
-  );
-
-  const toggleStatus = (id: number) => {
-    setStatusData((prev) =>
-      prev.map((emp) => (emp.id === id ? { ...emp, status: !emp.status } : emp))
-    );
-  };
-
-  const columns = useMemo(
+  
+  // Start tabel berdasarkan data dummy
+  const employeeColumns = useMemo<ColumnDef<Employee>[]>(
     () => [
-      { name: "No", selector: (row: Employee) => row.id, width: "60px" },
-      { name: "Avatar", cell: () => <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-lg">👤</div>,width: "80px",},
-      { name: "Nama", selector: (row: Employee) => row.nama, sortable: true },
-      { name: "Jenis Kelamin", selector: (row: Employee) => row.jenisKelamin, sortable: true },
-      { name: "Nomor Telepon", selector: (row: Employee) => row.nomor },
-      { name: "Cabang", selector: (row: Employee) => row.cabang },
-      { name: "Jabatan", selector: (row: Employee) => row.jabatan },
       {
-        name: "Status",
-        cell: (row: Employee) => (
-          <label className="inline-block w-10 h-5 relative">
-            <input
-              type="checkbox"
-              checked={row.status}
-              onChange={() => toggleStatus(row.id)}
-              className="opacity-0 w-0 h-0"
-            />
-            <span className={`absolute top-0 left-0 right-0 bottom-0 rounded-full transition-all ${row.status ? 'bg-green-600' : 'bg-red-600'}`}>
-              <span
-                className={`absolute h-4 w-4 bottom-0.5 bg-white rounded-full transition-all ${row.status ? 'left-5' : 'left-1'}`}
-              ></span>
-            </span>
-          </label>
-        ),
-        width: "100px",
+        id: "No",
+        header: "No",
+        cell: ({ row }) => row.index + 1,
+        size: 60,
       },
       {
-        name: "Action",
-        cell: (row: Employee) => (
-          <div className="flex gap-2">
-            <button
-              title="Lihat"
-              onClick={() => alert(`Lihat ${row.nama}`)}
-              className="bg-white border border-blue-900 text-blue-900 px-3 py-1 rounded"
-            >
-              <FaFileDownload />
-            </button>
-            <button
-              title="Edit"
-              onClick={() => alert(`Edit ${row.nama}`)}
-              className="bg-white border border-blue-900 text-blue-900 px-3 py-1 rounded"
-            >
-              <FaEdit />
-            </button>
-            <AlertDialog>
-              <AlertDialogTrigger>
-                <button className="bg-white border border-blue-900 text-blue-900 px-3 py-1 rounded">
-                  <FaTrash />
-                </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete your account and remove your data from our servers.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+        id: "Avatar",
+        header: "Avatar",
+        cell: () => (
+          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-lg">
+            <RxAvatar/>
           </div>
         ),
       },
+      {
+        accessorKey: "nama",
+        header: "Nama",
+        cell:  info => (
+          <div className="truncate max-w-[200px] min-w-[120px]">
+            {info.getValue() as string}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "jenisKelamin",
+        header: "Jenis Kelamin",
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "notelp",
+        header: "Nomor Telepon",
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "cabang",
+        header: "Cabang",
+        cell: info=> info.getValue(),
+      },
+      {
+        accessorKey: "jabatan",
+        header: "Jabatan",
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: info => (
+          <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+            {info.getValue() as String}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Action",
+        cell: ({ row }) => {
+          const data = row.original
+          return (
+            <div className="flex gap-2">
+              <button
+                title="Lihat"
+                onClick={() => alert(`Lihat ${data.nama}`)}
+                className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
+              >
+                <FaFileDownload />
+              </button>
+              <button
+                title="Edit"
+                onClick={() => alert(`Edit ${data.nama}`)}
+                className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
+              >
+                <FaEdit />
+              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    title="Hapus"
+                    className="border border-blue-900 px-3 py-1 rounded text-blue-900 bg-white"
+                  >
+                    <FaTrash />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Hapus Data</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Apakah kamu yakin ingin menghapus data {data.nama}?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => alert(`Hapus ${data.nama}`)}>
+                      Ya, Hapus
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )
+        },
+      },
     ],
-    [statusData]
-  );
+    []
+  )
 
 return (
   <div className="p-4 bg-gray-100 min-h-screen flex flex flex-col gap-4">
@@ -228,6 +290,14 @@ return (
               <span className="font-medium">Tambah Data</span>
             </button>
           </div>
+        
+          {/* <DataTable
+            columns={columns}
+            data={filteredEmployees}
+            customStyles={{ rows: { style: { cursor: "pointer" } } }}
+            onRowClicked={(row) => navigateToDetailPage(row.id)}  // Add this line
+          /> */}
+          <DataTable columns={employeeColumns} data={dummyData}/>
         </div>
       </div>
 
