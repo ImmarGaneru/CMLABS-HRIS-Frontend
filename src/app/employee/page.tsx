@@ -1,5 +1,7 @@
 "use client";
+
 import { useRouter } from "next/navigation";
+import * as XLSX from "xlsx";
 import React, { useMemo, useState } from "react";
 // import DataTable from "react-data-table-component";
 import { ColumnDef } from "@tanstack/react-table";
@@ -95,7 +97,7 @@ export default function EmployeeTablePage() {
     console.log("Navigating to detail page with id:", id); // Debugging untuk memastikan id ada
     router.push(`/employee/detail/${id}`);
   };
-
+  
   // Start tabel berdasarkan data dummy
   const employeeColumns = useMemo<ColumnDef<Employee>[]>(
     () => [
@@ -205,183 +207,88 @@ export default function EmployeeTablePage() {
     []
   )
 
-  return (
-    <div
-      style={{ padding: 24, backgroundColor: "#f9fafb", minHeight: "100vh" }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: 24,
-          borderRadius: 12,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div
-          style={{ display: "flex", justifyContent: "space-between", gap: 16 }}
-        >
-          {[
-            { label: "Periode", value: "Aug/2025" },
+return (
+  <div className="p-4 bg-gray-100 min-h-screen flex flex flex-col gap-4">
+      <div className="bg-white p-6 rounded-xl shadow-md">
+        <div className="flex justify-between gap-4">
+          {[{ label: "Periode", value: "Aug/2025" },
             { label: "Total Employee", value: "234 Employee" },
             { label: "Total New Hire", value: "12 Person" },
-            { label: "Full Time Employee", value: "212 Full Time" },
-          ].map((info, idx) => (
-            <div key={idx} style={{ flex: 1, textAlign: "center" }}>
-              <strong style={{ fontSize: 18 }}>{info.value}</strong>
-              <p style={{ margin: 0, fontSize: 14, color: "#6b7280" }}>
-                {info.label}
-              </p>
-            </div>
+            { label: "Full Time Employee", value: "212 Full Time" }].map((info, idx) => (
+              <div key={idx} className="flex-1 text-center">
+                <strong className="text-xl">{info.value}</strong>
+                <p className="text-sm text-gray-500">{info.label}</p>
+              </div>
           ))}
         </div>
-      </div>
+        </div>
 
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: 12,
-          padding: 16,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          marginTop: 24, // Menambahkan jarak dari atas
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: "white",
-            borderRadius: 12,
-            padding: 16,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.0)",
-            marginTop: 24, // Menambahkan jarak dari atas
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: 12,
-              padding: 16,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.0)",
-              marginTop: 0, // Menambahkan jarak dari atas
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 16,
-                gap: 16, // Memberikan jarak antar elemen
-                flexWrap: "wrap", // Membungkus elemen jika lebar layar kecil
-              }}
-            >
-              {/* kontainer bagian judul dan button komponnen search filter dll  */}
-              <div style={{ display: "flex", gap: 10, width: "100%" }}>
-                <h3
-                  style={{ fontSize: 18, fontWeight: "bold", color: "#1E3A5F" }}
-                >
-                  Semua Informasi Karyawan
-                </h3>
+    {/* Second Section: Employee Information */}
+    <div className="bg-white rounded-xl p-8 shadow-md mt-6">
+      <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+        <div className="flex gap-4 w-full">
+          <h3 className="text-xl font-bold text-[#1E3A5F]">Semua Informasi Karyawan</h3>
 
-                {/* Input pencarian */}
+          {/* Input pencarian */}
+          <div className="relative flex-1">
+            <FaSearch className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              placeholder="search here"
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              className="w-full h-9 pl-8 pr-2 py-2 border border-[#1E3A5F] rounded-md text-sm"
+            />
+          </div>
 
-                <div style={{ position: "relative", flex: 1 }}>
-                  <FaSearch
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "10px",
-                      transform: "translateY(-50%)",
-                      color: "#6b7280",
-                    }}
-                  />
-                  <div className="w-full md:flex-1">
-                    <input
-                      type="text"
-                      placeholder="search here"
-                      value={filterText}
-                      onChange={(e) => setFilterText(e.target.value)}
-                      className="w-full h-9 pl-[30px] pr-2 py-2 border border-[#1E3A5F] rounded-md text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Tombol Filter, Export, Import, Tambah Data */}
-
-                <div
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 6,
-                    backgroundColor: "white",
-                    border: "1px solid #1E3A5F",
-                    color: "#1E3A5F",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  <FaFilter />
-                  <select
-                    value={filterGender}
-                    onChange={(e) => setFilterGender(e.target.value)}
-                    style={{
-                      border: "none",
-                      backgroundColor: "transparent",
-                      color: "#1E3A5F",
-                      outline: "none",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <option value="">All</option>
-                    <option value="Laki-laki">Laki-laki</option>
-                    <option value="Perempuan">Perempuan</option>
-                  </select>
-                </div>
-
-                <button
-                  onClick={() => alert("Export clicked")}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 6,
-                    backgroundColor: "white",
-                    border: "1px solid #1E3A5F", // Border biru
-                    color: "#1E3A5F",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  <FaCloudUploadAlt /> {/* Ikon Export */}
-                  Export
-                </button>
-
-                <button
-                  onClick={() => alert("Import clicked")}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 6,
-                    backgroundColor: "white",
-                    border: "1px solid #1E3A5F", // Border biru
-                    color: "#1E3A5F",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  <FaCloudDownloadAlt /> {/* Ikon Import */}
-                  Import
-                </button>
-
-                {/* Tombol Tambah Data */}
-                <button
-                  onClick={navigateToAnotherPage}
-                  type="button"
-                  className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
-                >
-                  <FaPlusCircle className="text-lg" />
-                  <span className="font-medium">Tambah Data</span>
-                </button>
-              </div>
+          {/* Tombol Filter, Export, Import, Tambah Data */}
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-white border border-[#1E3A5F] text-[#1E3A5F] flex items-center gap-2">
+              <FaFilter />
+              <select
+                value={filterGender}
+                onChange={(e) => setFilterGender(e.target.value)}
+                className="border-none bg-transparent text-[#1E3A5F] outline-none text-sm cursor-pointer"
+              >
+                <option value="">All</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </select>
             </div>
+
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 p-2 rounded-lg bg-white border border-[#1E3A5F] text-[#1E3A5F] cursor-pointer"
+            >
+              <FaCloudUploadAlt />
+              Export
+            </button>
+
+            <button
+              onClick={handleImport}
+              className="flex items-center gap-2 p-2 rounded-lg bg-white border border-[#1E3A5F] text-[#1E3A5F] cursor-pointer"
+            >
+              <FaCloudDownloadAlt />
+              Import
+            </button>
+
+            {/* Input file disembunyikan, tapi tetap ada di DOM */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            {/* Tombol Tambah Data */}
+            <button
+              onClick={navigateToAnotherPage}
+              type="button"
+              className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
+            >
+              <FaPlusCircle className="text-lg" />
+              <span className="font-medium">Tambah Data</span>
+            </button>
           </div>
         
           {/* <DataTable
@@ -391,9 +298,20 @@ export default function EmployeeTablePage() {
             onRowClicked={(row) => navigateToDetailPage(row.id)}  // Add this line
           /> */}
           <DataTable columns={employeeColumns} data={dummyData}/>
-
         </div>
       </div>
+
+      {/* Tabel Karyawan and Buttons in One Box */}
+      <div className="bg-white rounded-xl p-4 shadow-md mt-6">
+        <DataTable
+          columns={columns}
+          data={filteredEmployees}
+          pagination
+          highlightOnHover
+        />
+      </div>
     </div>
-  );
+  </div>
+);
+
 }

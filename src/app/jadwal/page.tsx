@@ -123,57 +123,34 @@ export default function JadwalTablePage() {
       {
         name: "Action",
         cell: (row: { id: number }) => (
-          <div style={{ display: "flex", gap: "10px" }}>
-         <button
-  onClick={() => {
-    // Here, you need to make sure that `row` has the full `Schedule` data
-    const fullSchedule = {
-      id: row.id,
-      namaJadwal: "Example Schedule", // Replace with actual data
-      hariKerja: "Monday",            // Replace with actual data
-      jamKerja: "09:00 - 17:00",     // Replace with actual data
-      tanggalEfektif: "2025-01-01",  // Replace with actual data
-    };
-    setSelectedSchedule(fullSchedule);  // Now, this matches the `Schedule` type
-    setIsDetailOpen(true);
-  }}
-  style={{
-    backgroundColor: "white",
-    border: "1px solid #1E3A5F",
-    padding: "6px 12px",
-cursor: "pointer",
-    borderRadius: 6,
-    color: "#1E3A5F",
-  }}
->
-  <FaEye />
-</button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                // Here, you need to make sure that `row` has the full `Schedule` data
+                const fullSchedule = {
+                  id: row.id,
+                  namaJadwal: "Example Schedule", // Replace with actual data
+                  hariKerja: "Monday", // Replace with actual data
+                  jamKerja: "09:00 - 17:00", // Replace with actual data
+                  tanggalEfektif: "2025-01-01", // Replace with actual data
+                };
+                setSelectedSchedule(fullSchedule); // Now, this matches the `Schedule` type
+                setIsDetailOpen(true);
+              }}
+              className="bg-white border border-[#1E3A5F] p-2 rounded text-[#1E3A5F] cursor-pointer"
+            >
+              <FaEye />
+            </button>
 
             <button
               onClick={() => navigateToDetailPage(row.id)}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #1E3A5F",
-                padding: "6px 12px",
-                borderRadius: 6,
-                cursor: "pointer",
-                color: "#1E3A5F",
-              }}
+              className="bg-white border border-[#1E3A5F] p-2 rounded text-[#1E3A5F] cursor-pointer"
             >
               <FaEdit />
             </button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button
-                  style={{
-                    backgroundColor: "white",
-                    border: "1px solid #1E3A5F",
-                    padding: "6px 12px",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                    color: "#1E3A5F",
-                  }}
-                >
+                <button className="bg-white border border-[#1E3A5F] p-2 rounded text-[#1E3A5F] cursor-pointer">
                   <FaTrash />
                 </button>
               </AlertDialogTrigger>
@@ -203,273 +180,134 @@ cursor: "pointer",
   );
 
   return (
-    <div
-      style={{ padding: 24, backgroundColor: "#f9fafb", minHeight: "100vh" }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: 12,
-          padding: 16,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 16,
-            marginBottom: 16,
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <h3 style={{ fontSize: 18, fontWeight: "bold", color: "#1E3A5F" }}>
-            Semua Jadwal Kerja
-          </h3>
+    <div className="p-10 bg-gray-50 min-h-screen">
+      {/* Title and Action Bar */}
+      <div className="flex flex-wrap gap-2 mb-20 justify-between items-center mt-10">
+        <h3 className="text-lg font-semibold text-[#1E3A5F]">
+          Semua Jadwal Kerja
+        </h3>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", flex: 1 }}>
-            {/* Search Input */}
-            <div style={{ position: "relative", flex: 1 }}>
-              <FaSearch
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "10px",
-                  transform: "translateY(-50%)",
-                  color: "#6b7280",
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Cari jadwal..."
-                value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
-                className="w-full h-10 pl-[30px] pr-2 py-2 border border-[#1E3A5F] rounded-md text-sm"
-              />
-            </div>
+        <div className="flex gap-2 flex-wrap w-full sm:w-auto justify-end">
+          {/* Search Input */}
+          <div className="relative w-full sm:w-1/3">
+            <FaSearch className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Cari jadwal..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              className="w-full h-10 pl-8 pr-2 py-2 border border-[#1E3A5F] rounded-md text-sm"
+            />
+          </div>
 
-            {/* Filter Hari Kerja */}
-            <div
-              style={{
-                padding: "6px 12px",
-                borderRadius: 6,
-                backgroundColor: "white",
-                border: "1px solid #1E3A5F",
-                color: "#1E3A5F",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
+          {/* Filter Hari Kerja */}
+          <div className="flex items-center gap-2 p-2 border border-[#1E3A5F] rounded text-[#1E3A5F] w-full sm:w-1/4">
+            <FaFilter />
+            <select
+              value={filterHari}
+              onChange={(e) => setFilterHari(e.target.value)}
+              className="bg-transparent border-none outline-none text-[#1E3A5F] cursor-pointer text-sm w-full"
             >
-              <FaFilter />
-              <select
-                value={filterHari}
-                onChange={(e) => setFilterHari(e.target.value)}
-                style={{
-                  border: "none",
-                  backgroundColor: "transparent",
-                  color: "#1E3A5F",
-                  outline: "none",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                }}
-              >
-                <option value="">Semua</option>
-                <option value="4 Hari">4 Hari</option>
-                <option value="5 Hari">5 Hari</option>
-                <option value="6 Hari">6 Hari</option>
-              </select>
+              <option value="">Semua</option>
+              <option value="4 Hari">4 Hari</option>
+              <option value="5 Hari">5 Hari</option>
+              <option value="6 Hari">6 Hari</option>
+            </select>
+          </div>
+
+          {/* Add Button */}
+          <button
+            onClick={navigateToAddPage}
+            className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md w-full sm:w-auto"
+          >
+            <FaPlusCircle className="text-lg" />
+            <span className="font-medium">Tambah Data</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="relative bg-white rounded-xl p-4 shadow-md">
+        <DataTable columns={columns} data={filteredData} pagination />
+      </div>
+
+      {isDetailOpen && selectedSchedule && (
+        <>
+          {/* Overlay */}
+          <div
+            onClick={() => setIsDetailOpen(false)}
+            className="fixed inset-0 bg-black opacity-50 z-40"
+          />
+
+          {/* Panel detail */}
+          <div
+            className="fixed top-0 right-0 h-screen w-[600px] bg-white border border-gray-300 rounded-l-lg shadow-lg z-50 p-5 font-sans overflow-auto"
+            onClick={(e) => e.stopPropagation()} // Supaya klik dalam panel tidak menutup panel
+          >
+            <h2 className="text-[#1E3A5F] text-2xl font-bold mb-4 border-b border-gray-200 pb-2">
+              Detail Jadwal
+            </h2>
+
+            <div className="bg-[#F9FAFB] border border-gray-200 rounded-lg p-3 mb-4 text-sm text-[#374151]">
+              Jadwal efektif minimal jadwal kerja adalah --/--/----, karena
+              harus sehari setelah atau sama dengan jadwal karyawan bekerja.
             </div>
 
-            {/* Tombol Tambah */}
+            <label className="text-sm text-[#374151] mb-2 block">
+              Berlaku efektif mulai tanggal
+            </label>
+            <div className="border border-gray-300 rounded-lg p-2 flex items-center mb-4">
+              <span role="img" aria-label="calendar" className="mr-2">
+                📅
+              </span>
+              {selectedSchedule.tanggalEfektif || "27/04/2025"}
+            </div>
+
+            <table className="w-full border-collapse text-sm text-[#1E3A5F] border border-gray-200">
+              <thead>
+                <tr className="border-b border-gray-200 text-left">
+                  <th className="p-2 border border-gray-200">Hari</th>
+                  <th className="p-2 border border-gray-200">Jenis</th>
+                  <th className="p-2 border border-gray-200">Clock In</th>
+                  <th className="p-2 border border-gray-200">Clock Out</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Senin", "Hari Kerja", "08:00", "17:00"],
+                  ["Selasa", "Hari Kerja", "08:00", "17:00"],
+                  ["Rabu", "Hari Kerja", "08:00", "17:00"],
+                  ["Kamis", "Hari Kerja", "08:00", "17:00"],
+                  ["Jumat", "Hari Kerja", "08:00", "17:00"],
+                  ["Sabtu", "Day Off", "00:00", "00:00"],
+                  ["Minggu", "Day Off", "00:00", "00:00"],
+                ].map(([hari, jenis, inTime, outTime], index) => (
+                  <tr key={index} className="border-b border-gray-200">
+                    <td className="p-2 border border-gray-200">{hari}</td>
+                    <td className="p-2 border border-gray-200">{jenis}</td>
+                    <td className="p-2 border border-gray-200">{inTime}</td>
+                    <td className="p-2 border border-gray-200">{outTime}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <ul className="text-xs text-[#1E3A5F] mt-4 pl-5 py-3">
+              <li>Hari libur nasional libur</li>
+              <li>Cuti bersama libur</li>
+              <li>Jam kerja tidak fleksibel</li>
+              <li>Toleransi keterlambatan 30 menit</li>
+            </ul>
+
             <button
-              onClick={navigateToAddPage}
-              type="button"
-              className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
+              onClick={() => setIsDetailOpen(false)}
+              className="mt-5 bg-[#1E3A5F] text-white py-2 px-4 rounded-lg font-bold"
             >
-              <FaPlusCircle className="text-lg" />
-              <span className="font-medium">Tambah Data</span>
+              Tutup
             </button>
           </div>
-        </div>
-
-        <div
-          style={{
-            position: "relative",
-            backgroundColor: "white",
-            borderRadius: 12,
-            padding: 16,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          }}
-        >
-          <DataTable
-            columns={columns}
-            data={filteredData}
-          
-            pagination
-          />
-        </div>
-        {isDetailOpen && selectedSchedule && (
-  <>
-    {/* Overlay abu-abu gelap */}
-    <div
-      onClick={() => setIsDetailOpen(true)}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "rgba(0, 0, 0, 0.5)", //agar bg nya warna abu abu
-        zIndex: 40,
-      }}
-    />
-
-    {/* Panel detail */}
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        right: 0,
-        height: "100vh",
-        width: 600,
-        backgroundColor: "white",
-        border: "1px solid #ccc",
-        borderRadius: "8px 0 0 0",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-        zIndex: 50,
-        padding: 20,
-        fontFamily: "Arial, sans-serif",
-        overflow: "auto",
-      }}
-      onClick={(e) => e.stopPropagation()} // Supaya klik dalam panel tidak menutup panel
-    >
-      <h2
-        style={{
-          color: "#1E3A5F",
-          fontSize: 24,
-          fontWeight: "bold",
-          marginBottom: 16,
-          borderBottom: "1px solid #E5E7EB",
-          paddingBottom: 8,
-        }}
-      >
-        Detail Jadwal
-      </h2>
-
-      <div
-        style={{
-          backgroundColor: "#F9FAFB",
-          border: "1px solid #E5E7EB",
-          borderRadius: 6,
-          padding: 12,
-          marginBottom: 16,
-          fontSize: 14,
-          color: "#374151",
-        }}
-      >
-        Jadwal efektif minimal jadwal kerja adalah --/--/----, karena harus sehari setelah atau sama dengan jadwal karyawan bekerja.
-      </div>
-
-      <label
-        style={{
-          fontSize: 14,
-          color: "#374151",
-          marginBottom: 8,
-          display: "block",
-        }}
-      >
-        Berlaku efektif mulai tanggal
-      </label>
-      <div
-        style={{
-          border: "1px solid #D1D5DB",
-          borderRadius: 6,
-          padding: "8px 12px",
-          display: "flex",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <span role="img" aria-label="calendar" style={{ marginRight: 10 }}>
-          📅
-        </span>
-        {selectedSchedule.tanggalEfektif || "27/04/2025"}
-      </div>
-
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          fontSize: 14,
-          color: "#1E3A5F",
-          border: "1px solid #E5E7EB",
-        }}
-      >
-        <thead>
-          <tr style={{ borderBottom: "1px solid #E5E7EB", textAlign: "left" }}>
-            <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>Hari</th>
-            <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>Jenis</th>
-            <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>Clock In</th>
-            <th style={{ padding: "8px", border: "1px solid #E5E7EB" }}>Clock Out</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[
-            ["Senin", "Hari Kerja", "08:00", "17:00"],
-            ["Selasa", "Hari Kerja", "08:00", "17:00"],
-            ["Rabu", "Hari Kerja", "08:00", "17:00"],
-            ["Kamis", "Hari Kerja", "08:00", "17:00"],
-            ["Jumat", "Hari Kerja", "08:00", "17:00"],
-            ["Sabtu", "Day Off", "00:00", "00:00"],
-            ["Minggu", "Day Off", "00:00", "00:00"],
-          ].map(([hari, jenis, inTime, outTime], index) => (
-            <tr key={index} style={{ borderBottom: "1px solid #E5E7EB" }}>
-              <td style={{ padding: "8px", border: "1px solid #E5E7EB" }}>{hari}</td>
-              <td style={{ padding: "8px", border: "1px solid #E5E7EB" }}>{jenis}</td>
-              <td style={{ padding: "8px", border: "1px solid #E5E7EB" }}>{inTime}</td>
-              <td style={{ padding: "8px", border: "1px solid #E5E7EB" }}>{outTime}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <ul
-        style={{
-          fontSize: 13,
-          color: "#1E3A5F",
-          marginTop: 16,
-          paddingLeft: 18,
-          padding: "10px",
-        }}
-      >
-        <li>Hari libur nasional libur</li>
-        <li>Cuti bersama libur</li>
-        <li>Jam kerja tidak fleksibel</li>
-        <li>Toleransi keterlambatan 30 menit</li>
-      </ul>
-
-      <button
-        onClick={() => setIsDetailOpen(false)}
-        style={{
-          marginTop: 20,
-          backgroundColor: "#1E3A5F",
-          color: "white",
-          padding: "10px 16px",
-          border: "none",
-          borderRadius: 6,
-          cursor: "pointer",
-          fontWeight: "bold",
-        }}
-      >
-        Tutup
-      </button>
-    </div>
-  </>
-)}
-
-      </div>
+        </>
+      )}
     </div>
   );
 }
