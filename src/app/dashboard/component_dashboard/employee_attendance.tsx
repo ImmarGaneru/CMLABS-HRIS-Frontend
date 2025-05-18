@@ -117,7 +117,7 @@ const EmployeeAttendancePie: React.FC = () => {
                 style={{ backgroundColor: COLORS[index] }}
               />
               <span className='text-gray-700'>{item.name}</span>
-              <span className='text-gray-500'>({item.value} karyawan)</span>
+              <span className='text-gray-500'>({item.value})</span>
               <span className='text-gray-400'>
                 ({((item.value / total) * 100).toFixed(1)}%)
               </span>

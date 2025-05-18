@@ -210,7 +210,7 @@ export default function JadwalTablePage() {
 
 //RETURN CLASS MAIN FUNCTION== 
   return (
-    <div className="p-4 min-h-screen flex flex-col gap-4">
+    <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
       {/* Second Section: Schedule Information */}
       <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
         <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
@@ -228,8 +228,8 @@ export default function JadwalTablePage() {
             onSearch={setFilterText}
             filterValue={filterTipeJadwal}
             onFilterChange={setFilterTipeJadwal}
-            dateFilterValue={filterTanggal}
-            onDateFilterChange={setFilterTanggal}
+            // dateFilterValue={filterTanggal}
+            // onDateFilterChange={setFilterTanggal}
             filterOptions={jadwalFilters}
             onExport={handleExportCSV}
             onImport={handleImportCSV}

@@ -61,7 +61,7 @@ export default function ApprovalPage() {
                 accessorKey: "nama",
                 header: "Nama Karyawan",
                 cell: info => (
-                    <div className="truncate w-[120px]">
+                    <div className="truncate w-[180px]">
                         {info.getValue() as string}
                     </div>
                 ),
@@ -69,12 +69,20 @@ export default function ApprovalPage() {
             {
                 accessorKey: "type",
                 header: "Jenis Pengajuan",
-                cell: info => info.getValue(),
+                cell: info => (
+                    <div className="flex justify-center">
+                        {info.getValue()as string}
+                    </div>
+                ),
             },
             {
                 accessorKey: "date",
                 header: "Tanggal Pengajuan",
-                cell: info => info.getValue(),
+                cell: info => (
+                    <div className="flex justify-center">
+                        {info.getValue() as string}
+                    </div>
+                ),
             },
             {
                 accessorKey: "status",
@@ -87,7 +95,7 @@ export default function ApprovalPage() {
                         "Approved": "bg-green-100 text-green-800",
                     };
                     return (
-                        <div className="flex justify-center w-[120px]">
+                        <div className="flex justify-center">
                             <span className={`px-2 py-1 text-xs rounded ${statusStyle[status] ?? "bg-gray-100 text-gray-800"}`}>
                                 {info.getValue() as String}
                             </span>
@@ -101,7 +109,7 @@ export default function ApprovalPage() {
                 cell: ({ row }) => {
                     const data = row.original;
                     return (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 justify-center">
                             <button
                                 title="Detail"
                                 onClick={() => router.push(`/approval/${data.id}`)}
@@ -122,63 +130,63 @@ export default function ApprovalPage() {
             id: 1,
             nama: "Ahmad",
             type: "Izin",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Waiting Approval",
         },
         {
             id: 2,
-            nama: "Luna Christina aj",
+            nama: "Luna Christina Ajeng",
             type: "Sakit",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Waiting Approval",
         },
         {
             id: 3,
-            nama: "Didik Putra Utar",
+            nama: "Didik Putra Utarlana Mahmud",
             type: "Cuti",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Waiting Approval",
         },
         {
             id: 4,
             nama: "Nirmala Sukma",
             type: "Izin",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Approved",
         },
         {
             id: 5,
-            nama: "Didik Putra Utar",
+            nama: "Didik Putra Utarlana Mahmud",
             type: "Izin",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Rejected",
         },
         {
             id: 6,
-            nama: "Luna Christina aj",
+            nama: "Luna Christina Ajeng",
             type: "Perubahan Data",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Approved",
         },
         {
             id: 7,
             nama: "Ahmad",
             type: "Perubahan Data",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Approved",
         },
         {
             id: 8,
-            nama: "Luna Christina aj",
+            nama: "Luna Christina Ajeng",
             type: "Izin",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Rejected",
         },
         {
             id: 9,
-            nama: "Didik Putra Utar",
+            nama: "Nirmala Sukma",
             type: "Perubahan Data",
-            date: "26 Apr, 2025",
+            date: "26/04/2025",
             status: "Approved",
         },
     ];
@@ -199,7 +207,7 @@ export default function ApprovalPage() {
 
 //RETURN CLASS MAIN FUNCTION==
     return (
-        <div className="p-4 min-h-screen flex flex-col gap-4">
+        <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
                 <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
                     <DataTableHeader

@@ -142,7 +142,7 @@ export default function AttendacePage() {
                 cell: ({ row }) => {
                   const data = row.original
                   return (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 justify-center">
                       <button
                         title="Detail"
                         onClick={() => router.push(`/attendance`)}
@@ -224,7 +224,7 @@ export default function AttendacePage() {
 
 //RETURN CLASS MAIN FUNCTION==
     return (
-        <main className="p-4 min-h-screen flex flex-col gap-4">
+        <main className="px-2 py-4 min-h-screen flex flex-col gap-4">
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
                 <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
                     {/* Data Table Header */}

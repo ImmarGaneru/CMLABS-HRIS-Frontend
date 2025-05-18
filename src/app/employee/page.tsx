@@ -294,9 +294,11 @@ export default function EmployeeTablePage() {
 
 //RETURN CLASS MAIN FUNCTION==
   return (
-    <div className="p-4 min-h-screen flex flex-col gap-4">
+    <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
+
       {/* Label card informasi data karyawan bagian atas */}
       <EmployeeCardSum/>
+      
       {/* Second Section: Employee Information */}
       <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
         <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
