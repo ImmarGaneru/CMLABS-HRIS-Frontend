@@ -6,6 +6,7 @@ import {
   FaPlusCircle,
   FaCloudUploadAlt,
   FaCloudDownloadAlt,
+  FaHistory
 } from 'react-icons/fa';
 import { MdTune } from "react-icons/md";
 
@@ -21,6 +22,7 @@ type DataTableHeaderProps = {
   hasImport?: boolean;
   hasAdd?: boolean;
   hasSecondFilter?: boolean;
+  hasHistoryToggle?: boolean;
 
   // Handlers (only needed if feature is enabled)
   onSearch?: (value: string) => void;
@@ -30,12 +32,14 @@ type DataTableHeaderProps = {
   onExport?: () => void;
   onImport?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAdd?: () => void;
+  onHistoryToggle?: () => void;
 
   // State values
   searchValue?: string;
   filterValue?: string;
   secondFilterValue?: string;
   dateFilterValue?: string;
+  showHistory?: boolean;
 
   // Custom filter options
   filterOptions?: FilterOption[];
@@ -51,6 +55,7 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
   hasExport = true,
   hasImport = true,
   hasAdd = true,
+  hasHistoryToggle = false,
   onSearch,
   onFilterChange,
   onSecondFilterChange,
@@ -58,10 +63,12 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
   onExport,
   onImport,
   onAdd,
+  onHistoryToggle,
   searchValue = '',
   filterValue = '',
   secondFilterValue = '',
   dateFilterValue = '',
+  showHistory = false,
   filterOptions,
   secondFilterOptions,
 }) => {
@@ -86,6 +93,20 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
 
       {/* Action Buttons Container */}
       <div className="flex items-center gap-2">
+        {/* History Toggle Button */}
+        {hasHistoryToggle && onHistoryToggle && (
+          <Button variant="tableFeatureButton">
+            <FaHistory size={16} />
+            <span className="font-medium">{showHistory ? 'Current' : 'History'}</span>
+            <input
+              type="checkbox"
+              checked={showHistory}
+              onChange={onHistoryToggle}
+              className="hidden"
+            />
+          </Button>
+        )}
+
         {/* Date Filter */}
         {hasDateFilter && onDateFilterChange && (
           <Button variant="tableFeatureButton">

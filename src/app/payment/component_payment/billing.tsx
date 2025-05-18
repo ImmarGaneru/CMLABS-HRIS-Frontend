@@ -1,25 +1,132 @@
 'use client';
-import { GoHistory } from "react-icons/go";
-import { IoArrowBackOutline } from "react-icons/io5";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { DataTable } from "@/components/Datatable";
+import DataTableHeader from "@/components/DatatableHeader";
+import { ColumnDef } from "@tanstack/react-table";
+import { FaEye } from "react-icons/fa";
 
-interface Bill {
-    id: string;
-    title: string;
-    plan: string;
-    seat: number;
-    price: number;
-    dueDate: string;
-    status: 'unpaid' | 'paid' | 'overdue';
-}
-
-export default function BillList(){
+export default function BillList() {
     const router = useRouter();
     const [showHistory, setShowHistory] = useState(false);
+    const [filterText, setFilterText] = useState("");
+    const [filterStatus, setFilterStatus] = useState("");
 
-    const bills: Bill[] = [
+    type Bill = {
+        id: string;
+        title: string;
+        plan: string;
+        seat: number;
+        price: number;
+        dueDate: string;
+        status: 'unpaid' | 'paid' | 'overdue';
+    };
+
+    const statusFilters = [
+        { label: 'Unpaid', value: 'unpaid' },
+        { label: 'Paid', value: 'paid' },
+        { label: 'Overdue', value: 'overdue' },
+    ];
+
+    const billColumns = useMemo<ColumnDef<Bill>[]>(
+        () => [
+            {
+                id: "No",
+                header: "No",
+                cell: ({ row }) => (
+                    <div className="flex justify-center">
+                        {row.index + 1}
+                    </div>
+                ),
+                size: 60,
+            },
+            {
+                accessorKey: "title",
+                header: "Title",
+                cell: info => (
+                    <div className="truncate w-[200px] font-bold">
+                        {info.getValue() as string}
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "plan",
+                header: "Plan",
+                cell: info => (
+                    <div className="flex justify-center">
+                        {info.getValue() as string}
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "seat",
+                header: "Seat",
+                cell: info => (
+                    <div className="flex justify-center">
+                        {info.getValue() as number} Seat
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "price",
+                header: "Price",
+                cell: info => (
+                    <div className="flex justify-center">
+                        Rp {(info.getValue() as number).toLocaleString()}/seat
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "dueDate",
+                header: "Due Date",
+                cell: info => (
+                    <div className="flex justify-center">
+                        {info.getValue() as string}
+                    </div>
+                ),
+            },
+            {
+                accessorKey: "status",
+                header: "Status",
+                cell: info => {
+                    const status = info.getValue() as string;
+                    const statusStyle: Record<string, string> = {
+                        "paid": "bg-green-100 text-green-800",
+                        "overdue": "bg-red-100 text-red-800",
+                        "unpaid": "bg-yellow-100 text-yellow-800",
+                    };
+                    return (
+                        <div className="flex justify-center">
+                            <span className={`px-2 py-1 text-xs rounded ${statusStyle[status] ?? "bg-gray-100 text-gray-800"}`}>
+                                {status}
+                            </span>
+                        </div>
+                    );
+                },
+            },
+            {
+                id: "actions",
+                header: "Aksi",
+                cell: ({ row }) => {
+                    const data = row.original;
+                    return (
+                        <div className="flex gap-2 justify-center">
+                            <button
+                                title="Detail"
+                                onClick={() => handleViewInvoice(data)}
+                                className={"border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"}
+                            >
+                                <FaEye />
+                            </button>
+                        </div>
+                    );
+                },
+            },
+        ],
+        []
+    );
+
+    const dummyData: Bill[] = [
         {
             id: 'INV-001',
             title: 'Tagihan Maret 2025',
@@ -49,113 +156,43 @@ export default function BillList(){
         }
     ];
 
-    const handleViewInvoice = (invoiceId: string, title: string, plan: string, seat: number, price: number, dueDate: string, status: string) => {
-        const data = {
-            id: invoiceId,
-            title,
-            plan,
-            seat,
-            price,
-            dueDate,
-            status,
-            amount: seat * price
+    const handleViewInvoice = (data: Bill) => {
+        const invoiceData = {
+            ...data,
+            amount: data.seat * data.price
         };
-        router.push(`/payment/invoice?data=${encodeURIComponent(JSON.stringify(data))}`);
+        router.push(`/payment/invoice?data=${encodeURIComponent(JSON.stringify(invoiceData))}`);
     };
 
-    const filteredBills = bills.filter(bill => 
-        showHistory ? bill.status === 'paid' : bill.status !== 'paid'
-    );
+    // Filter data based on search text, status and history toggle
+    const filteredData = useMemo(() => {
+        return dummyData.filter((item) => {
+            const matchesSearch = item.title.toLowerCase().includes(filterText.toLowerCase()) ||
+                                item.plan.toLowerCase().includes(filterText.toLowerCase());
+            const matchesStatus = !filterStatus || item.status === filterStatus;
+            return matchesSearch && matchesStatus;
+        });
+    }, [filterText, filterStatus, showHistory]);
 
-    return(
-        <div className="flex flex-col px-6 py-6 gap-4 w-full h-fit bg-[#F8F8F8] rounded-2xl">
-            {/* Bill header */}
-            <div className="flex flex-row w-full items-center justify-between">
-                <h3 className="text-2xl font-bold text-blue-950">
-                    {showHistory ? 'Payment History' : 'App Billing'}
-                </h3>
-                {/* button container */}
-                <div className="flex flex-row gap-3">
-                    <button 
-                        onClick={() => setShowHistory(!showHistory)}
-                        className={`flex items-center justify-center gap-2 ${
-                            showHistory 
-                                ? 'bg-[#2D8EFF] hover:bg-[#2D8EFF]/90 text-white' 
-                                : 'hover:bg-gray-200 text-gray-900'
-                        } px-4 py-2.5 rounded-lg border border-[#141414]/30 transition-colors`}
-                    >
-                        <GoHistory size={20}/>
-                        <span className="font-medium">{showHistory ? 'History' : 'History'}</span>
-                    </button>
-                    <button 
-                        onClick={() => router.push('/dashboard')}
-                        className="flex items-center justify-center gap-2 bg-[#2D8EFF] hover:bg-[#2D8EFF]/90 text-white px-4 py-2.5 rounded-lg border-[#141414]/30 transition-colors"
-                    >
-                        <IoArrowBackOutline size={20}/>
-                        <span className="font-medium">Kembali</span>
-                    </button>
-                </div>
-            </div>
-            {/* Table Bill field data */}
-            <div className="flex-1 overflow-auto">
-                <table className="w-full border-collapse">
-                    <tbody>
-                        {filteredBills.map((bill) => (
-                            <tr key={bill.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                                <td className="px-4 py-3 text-[#141414] text-[16px] font-bold min-w-[360px]">{bill.title}</td>
-                                <td className="px-4 py-3 text-[#141414] text-[16px]">{bill.plan}</td>
-                                <td className="px-4 py-3 text-[#141414] text-[16px]">{bill.seat} Seat</td>
-                                <td className="px-4 py-3 text-[#141414] text-[16px]">Rp {bill.price.toLocaleString()}/seat</td>
-                                <td className="px-4 py-3 text-[#141414] text-[16px]">Due: {bill.dueDate}</td>
-                                <td className="px-4 py-3 text-center">
-                                    <span className={`px-2 py-2 text-white rounded-lg text-sm inline-block ${
-                                        bill.status === 'paid' ? 'bg-[#257047]' :
-                                        bill.status === 'overdue' ? 'bg-[#C11106]' :
-                                        'bg-[#FFAB00]'
-                                    }`}>
-                                        {bill.status}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-3 text-center">
-                                    <button 
-                                        onClick={() => handleViewInvoice(
-                                            bill.id,
-                                            bill.title,
-                                            bill.plan,
-                                            bill.seat,
-                                            bill.price,
-                                            bill.dueDate,
-                                            bill.status
-                                        )}
-                                        className={`px-2 py-2 ${
-                                            bill.status === 'paid'
-                                                ? 'bg-gray-400'
-                                                : 'bg-[#2D8EFF]/90 hover:bg-[#2D8EFF]'
-                                        } text-white rounded-lg text-sm border border-[#141414]/30`}
-                                    >
-                                        Detail
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                <div className="text-sm text-gray-700">
-                    Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredBills.length}</span> of <span className="font-medium">{filteredBills.length}</span> records
-                </div>
-                <div className="flex items-center gap-2">
-                    <button className="flex items-center justify-center w-8 h-8 border border-[#7CA5BF] rounded-lg text-[#7CA5BF] hover:bg-[#7CA5BF] hover:text-white transition-colors">
-                        <IoIosArrowBack size={20}/>
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 border border-[#7CA5BF] rounded-lg text-[#7CA5BF] hover:bg-[#7CA5BF] hover:text-white transition-colors">
-                        1
-                    </button>
-                    <button className="flex items-center justify-center w-8 h-8 border border-[#7CA5BF] rounded-lg text-[#7CA5BF] hover:bg-[#7CA5BF] hover:text-white transition-colors">
-                        <IoIosArrowForward size={20}/>
-                    </button>
+    return (
+        <div className="min-h-screen flex flex-col gap-4">
+            <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
+                <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+                    <DataTableHeader
+                        title={showHistory ? 'Payment History' : 'App Billing'}
+                        hasSearch={true}
+                        hasSecondFilter={true}
+                        hasHistoryToggle={true}
+                        hasExport={true}
+                        hasImport={true}
+                        hasAdd={true}
+                        searchValue={filterText}
+                        onSearch={setFilterText}
+                        secondFilterValue={filterStatus}
+                        onSecondFilterChange={setFilterStatus}
+                        secondFilterOptions={statusFilters}
+                    />
+                    <DataTable columns={billColumns} data={filteredData}/>
                 </div>
             </div>
         </div>

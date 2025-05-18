@@ -19,11 +19,8 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
             pathname.startsWith("/dashboard")||
             pathname.startsWith("/employee") ||
             pathname.startsWith("/jadwal") ||
-            pathname.startsWith("/approval")
-    }
-
-    const usesNavBar = () => {
-        return pathname.startsWith("/payment")
+            pathname.startsWith("/approval") ||
+            pathname.startsWith("/payment")
     }
 
     // Handle special layout for lupa_password and link_expired
@@ -50,22 +47,6 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
                     <link rel="icon" href="/favicon.ico" />
                 </Head>
                 <SidebarApp />
-                <div className="flex-1 flex flex-col bg-gray-300">
-                    <Navbar3 />
-                    <div className="flex-1">
-                        <main>{children}</main>
-                    </div>
-                </div>
-            </SidebarProvider>
-        )
-    }
-
-    if (usesNavBar()){
-        return(
-            <SidebarProvider>
-                <Head>
-                    <link rel="icon" href="/favicon.ico" />
-                </Head>
                 <div className="flex-1 flex flex-col bg-gray-300">
                     <Navbar3 />
                     <div className="flex-1">
