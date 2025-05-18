@@ -20,10 +20,12 @@ type DataTableHeaderProps = {
   hasExport?: boolean;
   hasImport?: boolean;
   hasAdd?: boolean;
+  hasSecondFilter?: boolean;
 
   // Handlers (only needed if feature is enabled)
   onSearch?: (value: string) => void;
   onFilterChange?: (value: string) => void;
+  onSecondFilterChange?: (value: string) => void;
   onDateFilterChange?: (value: string) => void;
   onExport?: () => void;
   onImport?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -32,30 +34,36 @@ type DataTableHeaderProps = {
   // State values
   searchValue?: string;
   filterValue?: string;
+  secondFilterValue?: string;
   dateFilterValue?: string;
 
-  // Custom filter option agar bisa diisi data filter lain
+  // Custom filter options
   filterOptions?: FilterOption[];
+  secondFilterOptions?: FilterOption[];
 };
 
 const DataTableHeader: React.FC<DataTableHeaderProps> = ({
   title,
   hasSearch = true,
   hasFilter = true,
+  hasSecondFilter = false,
   hasDateFilter = false,
   hasExport = true,
   hasImport = true,
   hasAdd = true,
   onSearch,
   onFilterChange,
+  onSecondFilterChange,
   onDateFilterChange,
   onExport,
   onImport,
   onAdd,
   searchValue = '',
   filterValue = '',
+  secondFilterValue = '',
   dateFilterValue = '',
   filterOptions,
+  secondFilterOptions,
 }) => {
   return (
     <div className="flex flex-row gap-4 w-full">
@@ -90,7 +98,7 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
           </Button>
         )}
 
-        {/* Filter Button */}
+        {/* Filter Buttons */}
         {hasFilter && onFilterChange && (
           <Button variant="tableFeatureButton">
             <MdTune size={16} />
@@ -116,6 +124,37 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
                 <option value="">Filter</option>
                 <option value="Laki-laki">Laki-laki</option>
                 <option value="Perempuan">Perempuan</option>
+              </select>
+            )}
+          </Button>
+        )}
+
+        {/* Second Filter Button */}
+        {hasSecondFilter && onSecondFilterChange && (
+          <Button variant="tableFeatureButton">
+            <MdTune size={16} />
+            {secondFilterOptions ? (
+              <select
+                value={secondFilterValue}
+                onChange={(e) => onSecondFilterChange?.(e.target.value)}
+                className="border-none bg-transparent text-[#1E3A5F] outline-none text-sm cursor-pointer"
+              >
+                <option value="">Status</option>
+                {secondFilterOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <select
+                value={secondFilterValue}
+                onChange={(e) => onSecondFilterChange(e.target.value)}
+                className="border-none bg-transparent text-[#1E3A5F] outline-none text-sm cursor-pointer"
+              >
+                <option value="">Status</option>
+                <option value="Aktif">Aktif</option>
+                <option value="Tidak Aktif">Tidak Aktif</option>
               </select>
             )}
           </Button>

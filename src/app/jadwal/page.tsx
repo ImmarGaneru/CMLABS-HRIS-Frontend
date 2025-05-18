@@ -7,51 +7,6 @@ import DataTableHeader from "@/components/DatatableHeader";
 import { FaEdit, FaEye } from "react-icons/fa";
 import * as XLSX from "xlsx";
 
-// objek schedule
-type Schedule = {
-  id: number;
-  namaJadwal: string;
-  hariKerja: string;
-  jamKerja: string;
-  tanggalEfektif: string;
-  tipeJadwal: string;
-};
-
-// Dummy data schedule berdasarkan type
-const schedulesData: Schedule[] = [
-  {
-    id: 1,
-    namaJadwal: "Jadwal Kantor",
-    hariKerja: "5 Hari",
-    jamKerja: "180 h",
-    tanggalEfektif: "01/01/2025",
-    tipeJadwal: "WFO",
-  },
-  {
-    id: 2,
-    namaJadwal: "Shift Pagi",
-    hariKerja: "6 Hari",
-    jamKerja: "200 h",
-    tanggalEfektif: "01/01/2025",
-    tipeJadwal: "WFO",
-  },
-  {
-    id: 3,
-    namaJadwal: "Shift Malam",
-    hariKerja: "5 Hari",
-    jamKerja: "180 h",
-    tanggalEfektif: "01/01/2025",
-    tipeJadwal: "WFO",
-  },
-  {
-    id: 4,
-    namaJadwal: "Kontrak 6 bulan",
-    hariKerja: "4 Hari",
-    jamKerja: "160 h",
-    tanggalEfektif: "01/01/2025",
-    tipeJadwal: "WFH",
-  },
-];
 
 export default function JadwalTablePage() {
   const router = useRouter();
@@ -60,47 +15,23 @@ export default function JadwalTablePage() {
   const [filterTanggal, setFilterTanggal] = useState("");
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  
+  const jadwalFilters = [
+    { label: 'WFO', value: 'WFO' },
+    { label: 'WFH', value: 'WFH' }
+  ];
 
-  // Function to handle CSV export
-  const handleExportCSV = () => {
-    const worksheet = XLSX.utils.json_to_sheet(schedulesData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Schedules");
-    XLSX.writeFile(workbook, "schedules_data.xlsx");
+  // objek schedule
+  type Schedule = {
+    id: number;
+    namaJadwal: string;
+    hariKerja: string;
+    jamKerja: string;
+    tanggalEfektif: string;
+    tipeJadwal: string;
   };
 
-  // Function to handle CSV import
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          console.log('Imported data:', jsonData);
-        } catch (error) {
-          console.error('Error importing file:', error);
-          alert('Error importing file. Please check the file format.');
-        }
-      };
-      reader.readAsBinaryString(file);
-    }
-  };
-
-  // Filter data based on search text, tipe jadwal, and tanggal
-  const filteredData = useMemo(() => {
-    return schedulesData.filter((item) => {
-      const matchesSearch = item.namaJadwal.toLowerCase().includes(filterText.toLowerCase());
-      const matchesTipeJadwal = !filterTipeJadwal || item.tipeJadwal === filterTipeJadwal;
-      const matchesTanggal = !filterTanggal || item.tanggalEfektif === filterTanggal;
-      return matchesSearch && matchesTipeJadwal && matchesTanggal;
-    });
-  }, [filterText, filterTipeJadwal, filterTanggal]);
-
+  //Kolom untuk Tabel jadwal
   const jadwalColumns = useMemo<ColumnDef<Schedule>[]>(
     () => [
       {
@@ -199,11 +130,85 @@ export default function JadwalTablePage() {
     []
   );
 
-  const jadwalFilters = [
-    { label: 'WFO', value: 'WFO' },
-    { label: 'WFH', value: 'WFH' }
+  // Dummy data schedule berdasarkan type Schedule
+  const schedulesData: Schedule[] = [
+    {
+      id: 1,
+      namaJadwal: "Jadwal Kantor",
+      hariKerja: "5 Hari",
+      jamKerja: "180 h",
+      tanggalEfektif: "01/01/2025",
+      tipeJadwal: "WFO",
+    },
+    {
+      id: 2,
+      namaJadwal: "Shift Pagi",
+      hariKerja: "6 Hari",
+      jamKerja: "200 h",
+      tanggalEfektif: "01/01/2025",
+      tipeJadwal: "WFO",
+    },
+    {
+      id: 3,
+      namaJadwal: "Shift Malam",
+      hariKerja: "5 Hari",
+      jamKerja: "180 h",
+      tanggalEfektif: "01/01/2025",
+      tipeJadwal: "WFO",
+    },
+    {
+      id: 4,
+      namaJadwal: "Kontrak 6 bulan",
+      hariKerja: "4 Hari",
+      jamKerja: "160 h",
+      tanggalEfektif: "01/01/2025",
+      tipeJadwal: "WFH",
+    },
   ];
 
+//FUNGSI-FUNGSI FILTER==
+
+  // Function to handle CSV export
+  const handleExportCSV = () => {
+    const worksheet = XLSX.utils.json_to_sheet(schedulesData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Schedules");
+    XLSX.writeFile(workbook, "schedules_data.xlsx");
+  };
+
+  // Function to handle CSV import
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          console.log('Imported data:', jsonData);
+        } catch (error) {
+          console.error('Error importing file:', error);
+          alert('Error importing file. Please check the file format.');
+        }
+      };
+      reader.readAsBinaryString(file);
+    }
+  };
+
+  // Filter data based on search text, tipe jadwal, and tanggal
+  const filteredData = useMemo(() => {
+    return schedulesData.filter((item) => {
+      const matchesSearch = item.namaJadwal.toLowerCase().includes(filterText.toLowerCase());
+      const matchesTipeJadwal = !filterTipeJadwal || item.tipeJadwal === filterTipeJadwal;
+      const matchesTanggal = !filterTanggal || item.tanggalEfektif === filterTanggal;
+      return matchesSearch && matchesTipeJadwal && matchesTanggal;
+    });
+  }, [filterText, filterTipeJadwal, filterTanggal]);
+
+//RETURN CLASS MAIN FUNCTION== 
   return (
     <div className="p-4 min-h-screen flex flex-col gap-4">
       {/* Second Section: Schedule Information */}

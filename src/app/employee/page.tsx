@@ -10,166 +10,36 @@ import { FaEdit, FaEye } from "react-icons/fa";
 import EmployeeCardSum from "./component_employee/employee_card_sum";
 import DataTableHeader from "@/components/DatatableHeader";
 
-// Objek Employee
-type Employee = {
-  id: number
-  nama: string
-  jenisKelamin: string
-  notelp: string
-  cabang: string
-  jabatan: string
-  status: string
-  
-}
-
-// Dummy data employee berdasarkan objek/type yg dibuat
-const dummyData: Employee[] = [
-  {
-    id: 1,
-    nama: "Ahmad",
-    jenisKelamin: "Laki-laki",
-    notelp: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-  {
-    id: 2,
-    nama: "Luna Christina ajeng",
-    jenisKelamin: "Perempuan",
-    notelp: "085850219981",
-    cabang: "Malang Selatan",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-  {
-    id: 3,
-    nama: "Didik Putra Utarlana Mahmud",
-    jenisKelamin: "Laki-laki",
-    notelp: "085850219981",
-    cabang: "Surabaya",
-    jabatan: "Manager",
-    status: "Tidak Aktif",
-  },
-  {
-    id: 4,
-    nama: "Nirmala Sukma",
-    jenisKelamin: "Perempuan",
-    notelp: "085850219981",
-    cabang: "Malang Kabupaten",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-  {
-    id: 4,
-    nama: "Nirmala Sukma",
-    jenisKelamin: "Perempuan",
-    notelp: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-  {
-    id: 4,
-    nama: "Nirmala Sukma",
-    jenisKelamin: "Perempuan",
-    notelp: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-  {
-    id: 4,
-    nama: "Nirmala Sukma",
-    jenisKelamin: "Perempuan",
-    notelp: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-  {
-    id: 4,
-    nama: "Nirmala Sukma",
-    jenisKelamin: "Perempuan",
-    notelp: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-  {
-    id: 4,
-    nama: "Nirmala Sukma",
-    jenisKelamin: "Perempuan",
-    notelp: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-  {
-    id: 4,
-    nama: "Nirmala Sukma",
-    jenisKelamin: "Perempuan",
-    notelp: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: "Aktif",
-  },
-];
-
 
 export default function EmployeeTablePage() {
+  const router = useRouter();
   const [filterText, setFilterText] = useState("");
   const [filterGender, setFilterGender] = useState("");
-  const router = useRouter();
+  const [filterStatus, setFilterStatus] = useState("");
 
-  // Function to handle CSV export
-  const handleExportCSV = () => {
-    // Convert data to worksheet
-    const worksheet = XLSX.utils.json_to_sheet(dummyData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+  const employeeFilters = [
+    {label: 'Laki-laki', value: 'Laki-laki'},
+    {label: 'Perempuan', value: 'Perempuan'},
+  ];
+
+  const statusFilters = [
+    {label: 'Aktif', value: 'Aktif'},
+    {label: 'Tidak Aktif', value: 'Tidak Aktif'},
+  ];
+
+  // Objek Employee
+  type Employee = {
+    id: number
+    nama: string
+    jenisKelamin: string
+    notelp: string
+    cabang: string
+    jabatan: string
+    status: string
     
-    // Generate and download file
-    XLSX.writeFile(workbook, "employees_data.xlsx");
-  };
+  }
 
-  // Function to handle CSV import
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          
-          // Here you would typically update your data state with the imported data
-          console.log('Imported data:', jsonData);
-          // TODO: Add your data update logic here
-        } catch (error) {
-          console.error('Error importing file:', error);
-          alert('Error importing file. Please check the file format.');
-        }
-      };
-      reader.readAsBinaryString(file);
-    }
-  };
-
-  // Filter data based on search text and gender
-  const filteredData = useMemo(() => {
-    return dummyData.filter((item) => {
-      const matchesSearch = item.nama.toLowerCase().includes(filterText.toLowerCase()) ||
-                          item.cabang.toLowerCase().includes(filterText.toLowerCase()) ||
-                          item.jabatan.toLowerCase().includes(filterText.toLowerCase());
-      const matchesGender = !filterGender || item.jenisKelamin === filterGender;
-      return matchesSearch && matchesGender;
-    });
-  }, [filterText, filterGender]);
-  
-  // Kolom tabel berdasarkan data dummy
+  // Kolom tabel Employee
   const employeeColumns = useMemo<ColumnDef<Employee>[]>(
     () => [
       {
@@ -235,10 +105,8 @@ export default function EmployeeTablePage() {
 
           //Mapping jenis status
           const statusStyle: Record<string, string> = {
-            Aktif: "bg-green-100 text-green-800",
+            "Aktif": "bg-green-100 text-green-800",
             "Tidak Aktif": "bg-red-100 text-red-800",
-            Pending: "bg-yellow-100 text-yellow-800",
-            Cuti: "bg-blue-100 text-blue-800",
           };
           return(
           <div className="flex justify-center w-[120px]">
@@ -278,39 +146,191 @@ export default function EmployeeTablePage() {
     []
   )
 
-return (
-  <div className="p-4 min-h-screen flex flex-col gap-4">
-    {/* Label card informasi data karyawan bagian atas */}
-    <EmployeeCardSum/>
-    {/* Second Section: Employee Information */}
-    <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
-      <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
-        {/* Tabel Halaman Start */}
+  // Dummy data employee berdasarkan objek/type yg dibuat
+  const dummyData: Employee[] = [
+    {
+      id: 1,
+      nama: "Ahmad",
+      jenisKelamin: "Laki-laki",
+      notelp: "085850219981",
+      cabang: "Malang",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+    {
+      id: 2,
+      nama: "Luna Christina Ajeng",
+      jenisKelamin: "Perempuan",
+      notelp: "085850219981",
+      cabang: "Malang Selatan",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+    {
+      id: 3,
+      nama: "Didik Putra Utarlana Mahmud",
+      jenisKelamin: "Laki-laki",
+      notelp: "085850219981",
+      cabang: "Surabaya",
+      jabatan: "CEO",
+      status: "Tidak Aktif",
+    },
+    {
+      id: 4,
+      nama: "Nirmala Sukma",
+      jenisKelamin: "Perempuan",
+      notelp: "085850219981",
+      cabang: "Malang Kabupaten",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+    {
+      id: 4,
+      nama: "Nirmala Sukma",
+      jenisKelamin: "Perempuan",
+      notelp: "085850219981",
+      cabang: "Malang",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+    {
+      id: 4,
+      nama: "Nirmala Sukma",
+      jenisKelamin: "Perempuan",
+      notelp: "085850219981",
+      cabang: "Malang",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+    {
+      id: 4,
+      nama: "Nirmala Sukma",
+      jenisKelamin: "Perempuan",
+      notelp: "085850219981",
+      cabang: "Malang",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+    {
+      id: 4,
+      nama: "Nirmala Sukma",
+      jenisKelamin: "Perempuan",
+      notelp: "085850219981",
+      cabang: "Malang",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+    {
+      id: 4,
+      nama: "Nirmala Sukma",
+      jenisKelamin: "Perempuan",
+      notelp: "085850219981",
+      cabang: "Malang",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+    {
+      id: 4,
+      nama: "Nirmala Sukma",
+      jenisKelamin: "Perempuan",
+      notelp: "085850219981",
+      cabang: "Malang",
+      jabatan: "Manager",
+      status: "Aktif",
+    },
+  ];
 
-          {/* Data Tabel Header */}
-          <DataTableHeader
-            title="Data Karyawan" //Ini nanti sesuaikan tiap halaman
-            hasSearch={true}
-            hasFilter={true}
-            hasExport={true}
-            hasImport={true}
-            hasAdd={true}
-            searchValue={filterText}
-            onSearch={setFilterText}
-            filterValue={filterGender}
-            onFilterChange={setFilterGender}
-            onExport={handleExportCSV}
-            onImport={handleImportCSV}
-            onAdd={() => router.push("/employee/tambah")}
-          />
+//FUNGSI-FUNGSI FILTER==
 
-          {/* Data Tabel Isi Karyawan Menggunakan Component DataTable dummy */}
-          <DataTable columns={employeeColumns} data={filteredData}/>
+  // Function to handle CSV export
+  const handleExportCSV = () => {
+    // Convert data to worksheet
+    const worksheet = XLSX.utils.json_to_sheet(dummyData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+    
+    // Generate and download file
+    XLSX.writeFile(workbook, "employees_data.xlsx");
+  };
 
-        {/* Tabel Halaman End */}
+  // Function to handle CSV import
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          
+          // Here you would typically update your data state with the imported data
+          console.log('Imported data:', jsonData);
+          // TODO: Add your data update logic here
+        } catch (error) {
+          console.error('Error importing file:', error);
+          alert('Error importing file. Please check the file format.');
+        }
+      };
+      reader.readAsBinaryString(file);
+    }
+  };
+
+  // Filter data based on search text, gender and status
+  const filteredData = useMemo(() => {
+    return dummyData.filter((item) => {
+      const matchesSearch = item.nama.toLowerCase().includes(filterText.toLowerCase()) ||
+                          item.cabang.toLowerCase().includes(filterText.toLowerCase()) ||
+                          item.jabatan.toLowerCase().includes(filterText.toLowerCase());
+      const matchesGender = !filterGender || item.jenisKelamin === filterGender;
+      const matchesStatus = !filterStatus || item.status === filterStatus;
+      return matchesSearch && matchesGender && matchesStatus;
+    });
+  }, [filterText, filterGender, filterStatus]);
+
+//END FUNGSI-FUNGSI FILTER==
+
+//RETURN CLASS MAIN FUNCTION==
+  return (
+    <div className="p-4 min-h-screen flex flex-col gap-4">
+      {/* Label card informasi data karyawan bagian atas */}
+      <EmployeeCardSum/>
+      {/* Second Section: Employee Information */}
+      <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
+        <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+          {/* Tabel Halaman Start */}
+
+            {/* Data Tabel Header */}
+            <DataTableHeader
+              title="Data Karyawan"
+              hasSearch={true}
+              hasFilter={true}
+              hasSecondFilter={true}
+              hasExport={true}
+              hasImport={true}
+              hasAdd={true}
+              searchValue={filterText}
+              onSearch={setFilterText}
+              filterValue={filterGender}
+              onFilterChange={setFilterGender}
+              secondFilterValue={filterStatus}
+              onSecondFilterChange={setFilterStatus}
+              filterOptions={employeeFilters}
+              secondFilterOptions={statusFilters}
+              onExport={handleExportCSV}
+              onImport={handleImportCSV}
+              onAdd={() => router.push("/employee/tambah")}
+            />
+
+            {/* Data Tabel Isi Karyawan Menggunakan Component DataTable dummy */}
+            <DataTable columns={employeeColumns} data={filteredData}/>
+
+          {/* Tabel Halaman End */}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 
 }
