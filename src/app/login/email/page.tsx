@@ -1,21 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LuEyeOff } from "react-icons/lu";
+import { LuEye } from "react-icons/lu";
 
 export default function LoginEmailPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
 
+  // Penanganan error Frontend
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setError('');
+
+    // Validasi kosong
+    if (!email || !password){
+      setError('Email dan Password tidak boleh kosong.');
+      return;
+    }
+
+    // Dummy untuk validasi login
+    if (email != 'admin@email.com' || password != 'admin123'){
+      setError('Email atau Password salah.');
+      return;
+    }
+
+    // Dummy ketika valid
+    router.push("/dashboard");
+  };
+
   return (
-    <div className="flex min-h-screen bg-white flex-col md:flex-row">
+    <div className="flex min-h-screen bg-[#f8f8f8] flex-col md:flex-row p-4">
       {/* KIRI: Section HRIS */}
-      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10 bg-white">
+      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10">
         <img
-          src="/icon.jpg"
+          src="/HR_image.png"
           alt="HRIS Icon"
           className="max-w-lg mb-6 object-contain"
         />
@@ -43,13 +73,23 @@ export default function LoginEmailPage() {
             Selamat datang kembali di HRIS cmlabs! Atur semua dengan mudah
           </p>
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
-
-          <form className="space-y-4">
+          
+          {/* Mulai Form */}
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Pesan Error */}
+            {error && (
+              <div className="text-sm text-red-500 bg-red-100 border border-red-300 px-3 py-2 rounded">
+                {error}
+              </div>
+            )}
+            
             {/* Email */}
             <div className="space-y-1">
               <label className="text-sm text-gray-600">Email</label>
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="alamat@email.com"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -61,22 +101,21 @@ export default function LoginEmailPage() {
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="--- --- ---"
                   className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   type="button"
                   onClick={togglePassword}
-                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none"
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none cursor-pointer"
                 >
-                  <img
-                    src={showPassword ? '/password_on.svg' : '/password_off.svg'}
-                    alt="Toggle Password"
-                    className={`w-5 h-5 ${showPassword ? 'text-[#2D8EFF]' : ''}`}
-                    style={{
-                      filter: showPassword ? 'brightness(0) saturate(100%) invert(42%) sepia(100%) saturate(624%) hue-rotate(180deg) brightness(96%) contrast(90%)' : 'none',
-                    }}
-                  />
+                  {showPassword ? (
+                    <LuEye className="w-5 h-5 text-[#2D8EFF]" />
+                  ) : (
+                    <LuEyeOff className="w-5 h-5 text-gray-400" />
+                  )}
                 </button>
               </div>
             </div>
@@ -98,11 +137,9 @@ export default function LoginEmailPage() {
             </div>
 
             {/* Tombol Masuk */}
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
-            >
-              Daftar Sekarang
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md">
+              {/* Daftar Sekarang */}
+              Masuk
             </button>
 
             {/* Divider Metode Lain */}

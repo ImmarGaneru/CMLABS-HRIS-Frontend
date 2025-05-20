@@ -6,6 +6,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import {Input} from "@/components/ui/input";
+import { RiNotification4Fill } from "react-icons/ri";
 
 export function Navbar3() {
     const pathname = usePathname()
@@ -31,6 +32,9 @@ export function Navbar3() {
 
             {/* Right: User avatar + name (example only) */}
             <div className="flex items-center gap-3">
+                <div className="p-4 text-[#1E3A5F] hover:text-[#155A8A] transition duration-200 ease-in-out cursor-pointer">
+                    <RiNotification4Fill size={24}/>
+                </div>
                 <Image
                 src="/avatar.png"
                 alt="User Avatar"

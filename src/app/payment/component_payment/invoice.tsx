@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { IoArrowBackOutline } from "react-icons/io5";
 import { useSearchParams } from 'next/navigation';
+import Button from '@/components/Button';
 
 interface InvoiceData {
     id: string;
@@ -85,10 +86,10 @@ export default function Invoice() {
             {/* Header */}
             <div className="flex flex-row w-full items-center justify-between">
                 <h3 className="text-2xl font-bold text-blue-950">Invoice Details</h3>
-                <button onClick={() => window.history.back()} className="flex items-center justify-center gap-2 bg-[#2D8EFF] hover:bg-[#2D8EFF]/90 text-white px-4 py-2.5 rounded-lg border-[#141414]/30 transition-colors">
+                <Button onClick={() => window.history.back()} variant='redirectButton'>
                     <IoArrowBackOutline size={20}/>
                     <span className="font-medium">Kembali</span>
-                </button>
+                </Button>
             </div>
 
             {/* Invoice Details */}

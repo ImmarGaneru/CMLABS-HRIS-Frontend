@@ -1,248 +1,257 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useMemo, useState, useEffect } from "react";
-import DataTable from "react-data-table-component";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  FaEdit,
-  FaTrash,
-  FaSearch,
-  FaPlusCircle,
-  FaFilter,
-  FaEye,
-} from "react-icons/fa";
+import React, { useMemo, useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/Datatable";
+import DataTableHeader from "@/components/DatatableHeader";
+import { FaEdit, FaEye } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
-const schedules = [
-  {
-    id: 1,
-    namaJadwal: "Jadwal Kantor",
-    hariKerja: "5 Hari",
-    jamKerja: "180 h",
-    tanggalEfektif: "01/01/2025",
-  },
-  {
-    id: 2,
-    namaJadwal: "Shift Pagi",
-    hariKerja: "6 Hari",
-    jamKerja: "200 h",
-    tanggalEfektif: "01/01/2025",
-  },
-  {
-    id: 3,
-    namaJadwal: "Shift Malam",
-    hariKerja: "5 Hari",
-    jamKerja: "180 h",
-    tanggalEfektif: "01/01/2025",
-  },
-  {
-    id: 4,
-    namaJadwal: "Kontrak 6 bulan",
-    hariKerja: "4 Hari",
-    jamKerja: "160 h",
-    tanggalEfektif: "01/01/2025",
-  },
-];
 
 export default function JadwalTablePage() {
   const router = useRouter();
   const [filterText, setFilterText] = useState("");
-  const [filterHari, setFilterHari] = useState("");
-  const [filteredData, setFilteredData] = useState(schedules);
-
+  const [filterTipeJadwal, setFilterTipeJadwal] = useState("");
+  const [filterTanggal, setFilterTanggal] = useState("");
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  
+  const jadwalFilters = [
+    { label: 'WFO', value: 'WFO' },
+    { label: 'WFH', value: 'WFH' }
+  ];
+
+  // objek schedule
   type Schedule = {
     id: number;
     namaJadwal: string;
     hariKerja: string;
     jamKerja: string;
     tanggalEfektif: string;
+    tipeJadwal: string;
   };
 
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
-    null
-  );
-
-  useEffect(() => {
-    let filtered = schedules;
-
-    if (filterText) {
-      filtered = filtered.filter((item) =>
-        item.namaJadwal.toLowerCase().includes(filterText.toLowerCase())
-      );
-    }
-
-    if (filterHari) {
-      filtered = filtered.filter((item) => item.hariKerja === filterHari);
-    }
-
-    setFilteredData(filtered);
-  }, [filterText, filterHari]);
-
-  const navigateToDetailPage = (id: number) => {
-    router.push(`/jadwal/detail/${id}`);
-  };
-
-  const navigateToAddPage = () => {
-    router.push("/jadwal/tambah");
-  };
-
-  const columns = useMemo(
+  //Kolom untuk Tabel jadwal
+  const jadwalColumns = useMemo<ColumnDef<Schedule>[]>(
     () => [
       {
-        name: "No",
-        selector: (row: { id: number }) => row.id,
-        width: "60px",
-      },
-      {
-        name: "Nama Jadwal",
-        selector: (row: { namaJadwal: string }) => row.namaJadwal,
-        sortable: true,
-      },
-      {
-        name: "Hari Kerja",
-        selector: (row: { hariKerja: string }) => row.hariKerja,
-      },
-      {
-        name: "Work Hours (month)",
-        selector: (row: { jamKerja: string }) => row.jamKerja,
-      },
-      {
-        name: "Tanggal Efektif",
-        selector: (row: { tanggalEfektif: string }) => row.tanggalEfektif,
-      },
-      {
-        name: "Action",
-        cell: (row: { id: number }) => (
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                // Here, you need to make sure that `row` has the full `Schedule` data
-                const fullSchedule = {
-                  id: row.id,
-                  namaJadwal: "Example Schedule", // Replace with actual data
-                  hariKerja: "Monday", // Replace with actual data
-                  jamKerja: "09:00 - 17:00", // Replace with actual data
-                  tanggalEfektif: "2025-01-01", // Replace with actual data
-                };
-                setSelectedSchedule(fullSchedule); // Now, this matches the `Schedule` type
-                setIsDetailOpen(true);
-              }}
-              className="bg-white border border-[#1E3A5F] p-2 rounded text-[#1E3A5F] cursor-pointer"
-            >
-              <FaEye />
-            </button>
-
-            <button
-              onClick={() => navigateToDetailPage(row.id)}
-              className="bg-white border border-[#1E3A5F] p-2 rounded text-[#1E3A5F] cursor-pointer"
-            >
-              <FaEdit />
-            </button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button className="bg-white border border-[#1E3A5F] p-2 rounded text-[#1E3A5F] cursor-pointer">
-                  <FaTrash />
-                </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Yakin ingin menghapus?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Data jadwal ini akan dihapus secara permanen.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Batal</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => console.log("Deleting ID:", row.id)}
-                  >
-                    Hapus
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+        id: "No",
+        header: "No",
+        cell: ({ row }) => (
+          <div className="flex justify-center">
+            {row.index + 1}
           </div>
         ),
-        width: "200px",
+        size: 60,
+      },
+      {
+        accessorKey: "namaJadwal",
+        header: "Nama Jadwal",
+        cell: info => (
+          <div>
+            {info.getValue() as string}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "hariKerja",
+        header: "Hari Kerja",
+        cell: info => (
+          <div className="flex justify-center">
+            {info.getValue() as string}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "jamKerja",
+        header: "Work Hours (month)",
+        cell: info => (
+          <div className="flex justify-center">
+            {info.getValue() as string}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "tanggalEfektif",
+        header: "Tanggal Efektif",
+        cell: info => (
+          <div className="flex justify-center">
+            {info.getValue() as string}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "tipeJadwal",
+        header: "Tipe Jadwal",
+        cell: info => {
+          const tipeJadwal = info.getValue() as string;
+          const style = tipeJadwal === "WFO" 
+            ? "bg-blue-100 text-blue-800" 
+            : "bg-green-100 text-green-800";
+          
+          return (
+            <div className="flex justify-center">
+              <span className={`px-2 py-1 text-xs rounded ${style}`}>
+                {tipeJadwal}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "Aksi",
+        cell: ({ row }) => {
+          const data = row.original;
+          return (
+            <div className="flex gap-2">
+              <button
+                title="Detail"
+                onClick={() => {
+                  setSelectedSchedule(data);
+                  setIsDetailOpen(true);
+                }}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+              >
+                <FaEye />
+              </button>
+              <button
+                title="Edit"
+                onClick={() => router.push(`/jadwal/edit/${data.id}`)}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+              >
+                <FaEdit />
+              </button>
+            </div>
+          );
+        },
       },
     ],
     []
   );
 
+  // Dummy data schedule berdasarkan type Schedule
+  const schedulesData: Schedule[] = [
+    {
+      id: 1,
+      namaJadwal: "Jadwal Kantor",
+      hariKerja: "5 Hari",
+      jamKerja: "180 h",
+      tanggalEfektif: "01/01/2025",
+      tipeJadwal: "WFO",
+    },
+    {
+      id: 2,
+      namaJadwal: "Shift Pagi",
+      hariKerja: "6 Hari",
+      jamKerja: "200 h",
+      tanggalEfektif: "01/01/2025",
+      tipeJadwal: "WFO",
+    },
+    {
+      id: 3,
+      namaJadwal: "Shift Malam",
+      hariKerja: "5 Hari",
+      jamKerja: "180 h",
+      tanggalEfektif: "01/01/2025",
+      tipeJadwal: "WFO",
+    },
+    {
+      id: 4,
+      namaJadwal: "Kontrak 6 bulan",
+      hariKerja: "4 Hari",
+      jamKerja: "160 h",
+      tanggalEfektif: "01/01/2025",
+      tipeJadwal: "WFH",
+    },
+  ];
+
+//FUNGSI-FUNGSI FILTER==
+
+  // Function to handle CSV export
+  const handleExportCSV = () => {
+    const worksheet = XLSX.utils.json_to_sheet(schedulesData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Schedules");
+    XLSX.writeFile(workbook, "schedules_data.xlsx");
+  };
+
+  // Function to handle CSV import
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          console.log('Imported data:', jsonData);
+        } catch (error) {
+          console.error('Error importing file:', error);
+          alert('Error importing file. Please check the file format.');
+        }
+      };
+      reader.readAsBinaryString(file);
+    }
+  };
+
+  // Filter data based on search text, tipe jadwal, and tanggal
+  const filteredData = useMemo(() => {
+    return schedulesData.filter((item) => {
+      const matchesSearch = item.namaJadwal.toLowerCase().includes(filterText.toLowerCase());
+      const matchesTipeJadwal = !filterTipeJadwal || item.tipeJadwal === filterTipeJadwal;
+      const matchesTanggal = !filterTanggal || item.tanggalEfektif === filterTanggal;
+      return matchesSearch && matchesTipeJadwal && matchesTanggal;
+    });
+  }, [filterText, filterTipeJadwal, filterTanggal]);
+
+//RETURN CLASS MAIN FUNCTION== 
   return (
-    <div className="p-10 bg-gray-50 min-h-screen">
-      {/* Title and Action Bar */}
-      <div className="flex flex-wrap gap-2 mb-20 justify-between items-center mt-10">
-        <h3 className="text-lg font-semibold text-[#1E3A5F]">
-          Semua Jadwal Kerja
-        </h3>
+    <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
+      {/* Second Section: Schedule Information */}
+      <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
+        <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+          
+          {/* Data Tabel Header */}
+          <DataTableHeader
+            title="Informasi Jadwal"
+            hasSearch={true}
+            hasFilter={true}
+            hasDateFilter={true}
+            hasExport={true}
+            hasImport={true}
+            hasAdd={true}
+            searchValue={filterText}
+            onSearch={setFilterText}
+            filterValue={filterTipeJadwal}
+            onFilterChange={setFilterTipeJadwal}
+            // dateFilterValue={filterTanggal}
+            // onDateFilterChange={setFilterTanggal}
+            filterOptions={jadwalFilters}
+            onExport={handleExportCSV}
+            onImport={handleImportCSV}
+            onAdd={() => router.push("/jadwal/tambah")}
+          />
 
-        <div className="flex gap-2 flex-wrap w-full sm:w-auto justify-end">
-          {/* Search Input */}
-          <div className="relative w-full sm:w-1/3">
-            <FaSearch className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Cari jadwal..."
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              className="w-full h-10 pl-8 pr-2 py-2 border border-[#1E3A5F] rounded-md text-sm"
-            />
-          </div>
+          {/* Data Tabel Isi Jadwal */}
+          <DataTable columns={jadwalColumns} data={filteredData}/>
 
-          {/* Filter Hari Kerja */}
-          <div className="flex items-center gap-2 p-2 border border-[#1E3A5F] rounded text-[#1E3A5F] w-full sm:w-1/4">
-            <FaFilter />
-            <select
-              value={filterHari}
-              onChange={(e) => setFilterHari(e.target.value)}
-              className="bg-transparent border-none outline-none text-[#1E3A5F] cursor-pointer text-sm w-full"
-            >
-              <option value="">Semua</option>
-              <option value="4 Hari">4 Hari</option>
-              <option value="5 Hari">5 Hari</option>
-              <option value="6 Hari">6 Hari</option>
-            </select>
-          </div>
-
-          {/* Add Button */}
-          <button
-            onClick={navigateToAddPage}
-            className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md w-full sm:w-auto"
-          >
-            <FaPlusCircle className="text-lg" />
-            <span className="font-medium">Tambah Data</span>
-          </button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="relative bg-white rounded-xl p-4 shadow-md">
-        <DataTable columns={columns} data={filteredData} pagination />
-      </div>
-
+      {/* Detail Modal */}
       {isDetailOpen && selectedSchedule && (
         <>
-          {/* Overlay */}
           <div
             onClick={() => setIsDetailOpen(false)}
             className="fixed inset-0 bg-black opacity-50 z-40"
           />
-
-          {/* Panel detail */}
           <div
             className="fixed top-0 right-0 h-screen w-[600px] bg-white border border-gray-300 rounded-l-lg shadow-lg z-50 p-5 font-sans overflow-auto"
-            onClick={(e) => e.stopPropagation()} // Supaya klik dalam panel tidak menutup panel
+            onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-[#1E3A5F] text-2xl font-bold mb-4 border-b border-gray-200 pb-2">
               Detail Jadwal
@@ -260,7 +269,7 @@ export default function JadwalTablePage() {
               <span role="img" aria-label="calendar" className="mr-2">
                 📅
               </span>
-              {selectedSchedule.tanggalEfektif || "27/04/2025"}
+              {selectedSchedule.tanggalEfektif}
             </div>
 
             <table className="w-full border-collapse text-sm text-[#1E3A5F] border border-gray-200">
