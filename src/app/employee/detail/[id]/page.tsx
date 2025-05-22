@@ -34,49 +34,49 @@ type Karyawan = {
 };
 
 export default function DetailKaryawan() {
-  const router = useRouter();
+  const [, setEmployees] = useState<Karyawan[]>([]);
   const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
   const employeeDocuments = [
     { name: "KTP", file: "ktp_ahmad.pdf" },
     { name: "Ijazah", file: "ijazah_s2.pdf" },
     { name: "Kontrak Kerja", file: "kontrak_2020.pdf" },
   ];
+
   useEffect(() => {
-    // Simulate fetching the employee data (use API for real data)
-    // Replace with real data fetching from an API
-    const fetchedKaryawan: Karyawan = {
-      id: "1",
-      name: "John Doe",
-      photo: "/default.jpg",
-      position: "Manager",
-      nik: "1234567890",
-      address: "Jl. Merdeka No. 10",
-      birthdate: "1990-01-01",
-      birthplace: "Jakarta",
-      gender: "Male",
-      education: "S1 Teknik Informatika",
-      email: "johndoe@example.com",
-      phone: "08123456789",
-      startDate: "2020-01-01",
-      tenure: "5 years",
-      endDate: "",
-      schedule: "Monday - Friday, 9 AM - 5 PM",
-      contractType: "Permanent",
-      branch: "Head Office",
-      status: "Active",
-      effectiveDate: "2020-01-01",
-      bank: "BCA",
-      bankAccount: "1234567890123456",
-      basicSalary: "10000000",
-      overtimePay: "2000000",
-      latePenalty: "500000",
-      totalSalary: "12000000",
+    const fetchEmployees = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/employee", {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`Error: ${res.status}`);
+        const data = await res.json();
+        setEmployees(data.data);
+        setKaryawan(data.data[0]); // sementara ambil yang pertama
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
     };
-    setKaryawan(fetchedKaryawan);
+
+    fetchEmployees();
   }, []);
 
   const formatRupiah = (value: string | number | undefined) =>
     value ? `Rp ${Number(value).toLocaleString("id-ID")}` : "-";
+
+  if (loading) return <div className="p-6">Loading...</div>;
+  if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
 
   return (
     <div className="p-6 bg-white rounded shadow w-full mt-2 font-sans">
@@ -104,14 +104,14 @@ export default function DetailKaryawan() {
         </button>
       </div>
 
-      {karyawan ? (
+      {karyawan && (
         <div className="flex flex-col md:flex-row gap-20 items-start">
           {/* Foto dan Identitas */}
-          <div className="flex flex-col items-start justify-start mb-6">
-            <div className="w-40 h-40 overflow-hidden mb-3 bg-gray-200 rectangle-full">
+          <div className="flex flex-col items-start mb-6">
+            <div className="w-40 h-40 overflow-hidden mb-3 bg-gray-200 rounded-full">
               <Image
                 src={karyawan.photo || "/default.jpg"}
-                alt={karyawan.name || "Karyawan"}
+                alt={karyawan.name}
                 width={160}
                 height={160}
                 className="w-full h-full object-cover"
@@ -121,133 +121,86 @@ export default function DetailKaryawan() {
             <p className="text-sm text-gray-500">{karyawan.position}</p>
           </div>
 
-          {/* Info Detail */}
+          {/* Detail Info */}
           <div className="flex-1 flex flex-col gap-y-10">
-            {/* Informasi Pribadi */}
-            <div>
-              <h2 className="text-xl font-semibold text-[#141414] mb-4">
-                Informasi Pribadi
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-                <FieldRow label="NIK" value={karyawan.nik} />
-                <FieldRow label="Alamat" value={karyawan.address} />
-                <FieldRow
-                  label="Tempat, Tgl Lahir"
-                  value={`${karyawan.birthplace}, ${karyawan.birthdate}`}
-                />
-                <FieldRow label="Jenis Kelamin" value={karyawan.gender} />
-                <FieldRow
-                  label="Pendidikan Terakhir"
-                  value={karyawan.education}
-                />
-                <FieldRow label="Email" value={karyawan.email} />
-                <FieldRow label="No Telp" value={karyawan.phone} />
-              </div>
-            </div>
+            <Section title="Informasi Pribadi">
+              <FieldRow label="NIK" value={karyawan.nik} />
+              <FieldRow label="Alamat" value={karyawan.address} />
+              <FieldRow
+                label="Tempat, Tgl Lahir"
+                value={`${karyawan.birthplace}, ${karyawan.birthdate}`}
+              />
+              <FieldRow label="Jenis Kelamin" value={karyawan.gender} />
+              <FieldRow label="Pendidikan Terakhir" value={karyawan.education} />
+              <FieldRow label="Email" value={karyawan.email} />
+              <FieldRow label="No Telp" value={karyawan.phone} />
+            </Section>
 
-            {/* Informasi Kepegawaian dan Payroll */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Kepegawaian */}
-              <div>
-                <h2 className="text-xl font-semibold text-[#141414] mb-4">
-                  Informasi Kepegawaian
-                </h2>
-                <div className="grid grid-cols-1 gap-y-2">
-                  <FieldRow label="Mulai Kerja" value={karyawan.startDate} />
-                  <FieldRow label="Masa Kerja" value={karyawan.tenure || "-"} />
-                  <FieldRow
-                    label="Akhir Kerja"
-                    value={karyawan.endDate || "-"}
-                  />
-                  <FieldRow label="Jadwal Kerja" value={karyawan.schedule} />
-                  <FieldRow
-                    label="Tipe Kontrak"
-                    value={karyawan.contractType}
-                  />
-                  <FieldRow label="Jabatan" value={karyawan.position} />
-                  <FieldRow label="Cabang" value={karyawan.branch} />
-                  <FieldRow label="Status Kerja" value={karyawan.status} />
-                </div>
-              </div>
+              <Section title="Informasi Kepegawaian">
+                <FieldRow label="Mulai Kerja" value={karyawan.startDate} />
+                <FieldRow label="Masa Kerja" value={karyawan.tenure || "-"} />
+                <FieldRow label="Akhir Kerja" value={karyawan.endDate || "-"} />
+                <FieldRow label="Jadwal Kerja" value={karyawan.schedule} />
+                <FieldRow label="Tipe Kontrak" value={karyawan.contractType} />
+                <FieldRow label="Jabatan" value={karyawan.position} />
+                <FieldRow label="Cabang" value={karyawan.branch} />
+                <FieldRow label="Status Kerja" value={karyawan.status} />
+              </Section>
 
-              {/* Payroll */}
-              <div>
-                <h2 className="text-xl font-semibold text-[#141414] mb-4">
-                  Payroll
-                </h2>
-                <div className="grid grid-cols-1 gap-y-2">
-                  <FieldRow
-                    label="Tanggal Efektif"
-                    value={karyawan.effectiveDate}
-                  />
-                  <FieldRow label="Bank" value={karyawan.bank} />
-                  <FieldRow
-                    label="Nomer Rekening"
-                    value={karyawan.bankAccount}
-                  />
-                  <FieldRow
-                    label="Gaji Pokok"
-                    value={formatRupiah(karyawan.basicSalary)}
-                  />
-                  <FieldRow
-                    label="Uang Lembur"
-                    value={formatRupiah(karyawan.overtimePay)}
-                  />
-                  <FieldRow
-                    label="Denda Terlambat"
-                    value={formatRupiah(karyawan.latePenalty)}
-                  />
-                  <FieldRow
-                    label="Total"
-                    value={
-                      <span className="font-bold">
-                        {formatRupiah(karyawan.totalSalary)}
-                      </span>
-                    }
-                  />
-                </div>
-              </div>
+              <Section title="Payroll">
+                <FieldRow label="Tanggal Efektif" value={karyawan.effectiveDate} />
+                <FieldRow label="Bank" value={karyawan.bank} />
+                <FieldRow label="Nomer Rekening" value={karyawan.bankAccount} />
+                <FieldRow
+                  label="Gaji Pokok"
+                  value={formatRupiah(karyawan.basicSalary)}
+                />
+                <FieldRow
+                  label="Uang Lembur"
+                  value={formatRupiah(karyawan.overtimePay)}
+                />
+                <FieldRow
+                  label="Denda Terlambat"
+                  value={formatRupiah(karyawan.latePenalty)}
+                />
+                <FieldRow
+                  label="Total"
+                  value={
+                    <span className="font-bold">
+                      {formatRupiah(karyawan.totalSalary)}
+                    </span>
+                  }
+                />
+              </Section>
             </div>
 
-
-              {/* Dokumen */}
-              <div className="mt-6">
-                <h2 className="text-xl font-semibold text-[#141414] mb-4">
-                  Dokumen Karyawan
-                </h2>
-
-                <div className="space-y-3">
-                  {employeeDocuments.map((doc, index) => (
-                    <div
-                      key={index}
-                      className="max-w-[480px] w-full p-1 rounded-lg bg-[#7CA5BF]/60"
-                    >
-                      <div className="flex justify-between items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-[180px]">
-                            <a
-                              href={`/uploads/${doc.file}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[18px] text-[#141414] font-normal hover:underline"
-                            >
-                              {doc.name}
-                            </a>
-                          </div>
-                        </div>
-                        <p className="text-[16px] text-[#141414] opacity-60 font-normal">
-                          uploaded at -
-                        </p>
-                      </div>
+            <Section title="Dokumen Karyawan">
+              <div className="space-y-3">
+                {employeeDocuments.map((doc, index) => (
+                  <div
+                    key={index}
+                    className="max-w-[480px] w-full p-2 rounded-lg bg-[#7CA5BF]/60"
+                  >
+                    <div className="flex justify-between items-center">
+                      <a
+                        href={`/uploads/${doc.file}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[18px] text-[#141414] font-medium hover:underline"
+                      >
+                        {doc.name}
+                      </a>
+                      <p className="text-[14px] text-[#141414] opacity-60 font-normal">
+                        uploaded at -
+                      </p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            </Section>
           </div>
-        
-      ) : (
-        <div>Loading...</div>
+        </div>
       )}
     </div>
   );
@@ -255,10 +208,27 @@ export default function DetailKaryawan() {
 
 function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-start">
-      <p className="font-normal text-[16px]">{label}</p>
-      <p className="font-bold text-[16px]">:</p>
-      <p className="font-normal text-[16px]">{value}</p>
+    <div className="flex text-[16px]">
+      <div className="w-48 font-normal">{label}</div>
+      <div className="font-bold">:</div>
+      <div className="ml-2">{value}</div>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <h2 className="text-xl font-semibold text-[#141414] mb-4">{title}</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+        {children}
+      </div>
     </div>
   );
 }
