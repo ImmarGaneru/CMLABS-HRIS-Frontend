@@ -4,7 +4,7 @@ import { FaEye } from "react-icons/fa";
 
 export default function ApprovalSum(){
     return (
-        <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full h-[440px] px-8 py-8 gap-4 rounded-2xl'>
+        <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full h-[440px] px-8 py-8 gap-4 rounded-2xl shadow-md'>
             {/* Top bar */}
             <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4 pb-4'>
                 <div className='flex flex-col gap-2'>

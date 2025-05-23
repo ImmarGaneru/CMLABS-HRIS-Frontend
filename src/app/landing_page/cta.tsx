@@ -23,42 +23,18 @@ export default function CTA() {
 
         <div className="flex gap-4">
           {/* Tombol Hubungi Kami */}
-          <div
-            className="rounded-[24px] p-[2px]"
-            style={{
-              background: 'linear-gradient(to right, #7CA5BF, #1E3A5F)',
-              border: '1px solid transparent',
-            }}
-          >
-            <div
-              className="rounded-[22px] px-6 py-2 text-sm font-medium"
-              style={{
-                backgroundColor: 'white',
-                color: '#1E3A5F',
-              }}
-            >
+          <Link href="#" className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-[24px] p-1 text-white items-center">
+            <span className="inline-block bg-white text-[#1E3A5F] rounded-[20px] px-6 py-2 text-sm font-medium">
               Hubungi Kami
-            </div>
-          </div>
+            </span>
+          </Link>
 
           {/* Tombol Demo Gratis */}
-          <div
-            className="rounded-[24px] p-[2px]"
-            style={{
-              background: 'linear-gradient(to right, #7CA5BF, #1E3A5F)',
-              border: '1px solid transparent',
-            }}
-          >
-            <div
-              className="rounded-[22px] px-6 py-2 text-sm font-medium"
-              style={{
-                backgroundColor: 'white',
-                color: '#1E3A5F',
-              }}
-            >
+          <Link href="#" className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-[24px] p-1 text-white items-center">
+            <span className="inline-block bg-white text-[#1E3A5F] rounded-[20px] px-6 py-2 text-sm font-medium">
               Demo Gratis
-            </div>
-          </div>
+            </span>
+          </Link>
         </div>
       </div>
 

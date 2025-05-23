@@ -1,10 +1,10 @@
 'use client';
 
-import BillList from "../component/payment/billing";
+import BillList from "./component_payment/billing";
 
 export default function PaymentPage(){
     return(
-        <section className="bg-gray-300 flex flex-col px-4 py-2 gap-6 w-full h-fit">
+        <section className="flex flex-col px-2 py-4 gap-6 w-full h-fit">
             {/* Halaman Billing*/}
             <BillList/>
         </section>

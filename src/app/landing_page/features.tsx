@@ -15,7 +15,7 @@ export default function Features() {
     ];
   
     return (
-      <section className="px-8 py-16 bg-gray-50 text-center">
+      <section className="px-8 py-16 bg-[#f8f8f8] text-center">
         <h2
           className="mb-6 font-bold leading-tight"
           style={{
@@ -45,10 +45,10 @@ export default function Features() {
               <div
                 className="h-full rounded-[20px] p-6 text-left"
                 style={{
-                  backgroundColor: "white"
+                  backgroundColor: "#f8f8f8"
                 }}
               >
-                <h3 className="font-semibold text-blue-900 mb-2 text-lg">
+                <h3 className="font-semibold text-[#1E3A5F] mb-2 text-lg">
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 text-sm">{feature.desc}</p>
