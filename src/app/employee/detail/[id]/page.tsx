@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import Image from "next/image";
+import { getEmployee } from "../../../../../utils/employee"; // import fungsi fetch
 
 type Karyawan = {
   id: string;
@@ -33,50 +34,46 @@ type Karyawan = {
   totalSalary: string;
 };
 
-export default function DetailKaryawan() {
-  const [, setEmployees] = useState<Karyawan[]>([]);
-  const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function DetailKaryawan({ id }: { id: string }) {
   const router = useRouter();
-
-  const employeeDocuments = [
-    { name: "KTP", file: "ktp_ahmad.pdf" },
-    { name: "Ijazah", file: "ijazah_s2.pdf" },
-    { name: "Kontrak Kerja", file: "kontrak_2020.pdf" },
-  ];
+  const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchEmployees = async () => {
+    if (!id) {
+      setError("ID karyawan tidak tersedia");
+      return;
+    }
+
+    const fetchEmployee = async () => {
       setLoading(true);
       setError(null);
+
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/employee", {
-          cache: "no-store",
-        });
-        if (!res.ok) throw new Error(`Error: ${res.status}`);
-        const data = await res.json();
-        setEmployees(data.data);
-        setKaryawan(data.data[0]); // sementara ambil yang pertama
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Unknown error occurred");
-        }
+        const data = await getEmployee(id);
+        setKaryawan(data);
+      } catch (err: any) {
+        setError(err.message || "Gagal mengambil data karyawan");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEmployees();
-  }, []);
+    fetchEmployee();
+  }, [id]);
 
   const formatRupiah = (value: string | number | undefined) =>
     value ? `Rp ${Number(value).toLocaleString("id-ID")}` : "-";
 
   if (loading) return <div className="p-6">Loading...</div>;
   if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
+  if (!karyawan) return <div className="p-6">Tidak ada data karyawan</div>;
+
+
+  if (loading) return <div className="p-6">Loading...</div>;
+  if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
+  if (!karyawan) return <div className="p-6">Data karyawan tidak ditemukan.</div>;
 
   return (
     <div className="p-6 bg-white rounded shadow w-full mt-2 font-sans">
@@ -104,104 +101,102 @@ export default function DetailKaryawan() {
         </button>
       </div>
 
-      {karyawan && (
-        <div className="flex flex-col md:flex-row gap-20 items-start">
-          {/* Foto dan Identitas */}
-          <div className="flex flex-col items-start mb-6">
-            <div className="w-40 h-40 overflow-hidden mb-3 bg-gray-200 rounded-full">
-              <Image
-                src={karyawan.photo || "/default.jpg"}
-                alt={karyawan.name}
-                width={160}
-                height={160}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <p className="font-bold text-lg">{karyawan.name}</p>
-            <p className="text-sm text-gray-500">{karyawan.position}</p>
+      <div className="flex flex-col md:flex-row gap-20 items-start">
+        {/* Foto dan Identitas */}
+        <div className="flex flex-col items-start mb-6">
+          <div className="w-40 h-40 overflow-hidden mb-3 bg-gray-200 rounded-full">
+            <Image
+              src={karyawan.photo || "/default.jpg"}
+              alt={karyawan.name}
+              width={160}
+              height={160}
+              className="w-full h-full object-cover"
+            />
           </div>
-
-          {/* Detail Info */}
-          <div className="flex-1 flex flex-col gap-y-10">
-            <Section title="Informasi Pribadi">
-              <FieldRow label="NIK" value={karyawan.nik} />
-              <FieldRow label="Alamat" value={karyawan.address} />
-              <FieldRow
-                label="Tempat, Tgl Lahir"
-                value={`${karyawan.birthplace}, ${karyawan.birthdate}`}
-              />
-              <FieldRow label="Jenis Kelamin" value={karyawan.gender} />
-              <FieldRow label="Pendidikan Terakhir" value={karyawan.education} />
-              <FieldRow label="Email" value={karyawan.email} />
-              <FieldRow label="No Telp" value={karyawan.phone} />
-            </Section>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Section title="Informasi Kepegawaian">
-                <FieldRow label="Mulai Kerja" value={karyawan.startDate} />
-                <FieldRow label="Masa Kerja" value={karyawan.tenure || "-"} />
-                <FieldRow label="Akhir Kerja" value={karyawan.endDate || "-"} />
-                <FieldRow label="Jadwal Kerja" value={karyawan.schedule} />
-                <FieldRow label="Tipe Kontrak" value={karyawan.contractType} />
-                <FieldRow label="Jabatan" value={karyawan.position} />
-                <FieldRow label="Cabang" value={karyawan.branch} />
-                <FieldRow label="Status Kerja" value={karyawan.status} />
-              </Section>
-
-              <Section title="Payroll">
-                <FieldRow label="Tanggal Efektif" value={karyawan.effectiveDate} />
-                <FieldRow label="Bank" value={karyawan.bank} />
-                <FieldRow label="Nomer Rekening" value={karyawan.bankAccount} />
-                <FieldRow
-                  label="Gaji Pokok"
-                  value={formatRupiah(karyawan.basicSalary)}
-                />
-                <FieldRow
-                  label="Uang Lembur"
-                  value={formatRupiah(karyawan.overtimePay)}
-                />
-                <FieldRow
-                  label="Denda Terlambat"
-                  value={formatRupiah(karyawan.latePenalty)}
-                />
-                <FieldRow
-                  label="Total"
-                  value={
-                    <span className="font-bold">
-                      {formatRupiah(karyawan.totalSalary)}
-                    </span>
-                  }
-                />
-              </Section>
-            </div>
-
-            <Section title="Dokumen Karyawan">
-              <div className="space-y-3">
-                {employeeDocuments.map((doc, index) => (
-                  <div
-                    key={index}
-                    className="max-w-[480px] w-full p-2 rounded-lg bg-[#7CA5BF]/60"
-                  >
-                    <div className="flex justify-between items-center">
-                      <a
-                        href={`/uploads/${doc.file}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[18px] text-[#141414] font-medium hover:underline"
-                      >
-                        {doc.name}
-                      </a>
-                      <p className="text-[14px] text-[#141414] opacity-60 font-normal">
-                        uploaded at -
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Section>
-          </div>
+          <p className="font-bold text-lg">{karyawan.name}</p>
+          <p className="text-sm text-gray-500">{karyawan.position}</p>
         </div>
-      )}
+
+        {/* Detail Info */}
+        <div className="flex-1 flex flex-col gap-y-10">
+          <Section title="Informasi Pribadi">
+            <FieldRow label="NIK" value={karyawan.nik} />
+            <FieldRow label="Alamat" value={karyawan.address} />
+            <FieldRow
+              label="Tempat, Tgl Lahir"
+              value={`${karyawan.birthplace}, ${karyawan.birthdate}`}
+            />
+            <FieldRow label="Jenis Kelamin" value={karyawan.gender} />
+            <FieldRow label="Pendidikan Terakhir" value={karyawan.education} />
+            <FieldRow label="Email" value={karyawan.email} />
+            <FieldRow label="No Telp" value={karyawan.phone} />
+          </Section>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Section title="Informasi Kepegawaian">
+              <FieldRow label="Mulai Kerja" value={karyawan.startDate} />
+              <FieldRow label="Masa Kerja" value={karyawan.tenure || "-"} />
+              <FieldRow label="Akhir Kerja" value={karyawan.endDate} />
+              <FieldRow label="Jadwal Kerja" value={karyawan.schedule} />
+              <FieldRow label="Tipe Kontrak" value={karyawan.contractType} />
+              <FieldRow label="Jabatan" value={karyawan.position} />
+              <FieldRow label="Cabang" value={karyawan.branch} />
+              <FieldRow label="Status Kerja" value={karyawan.status} />
+            </Section>
+
+            <Section title="Payroll">
+              <FieldRow label="Tanggal Efektif" value={karyawan.effectiveDate} />
+              <FieldRow label="Bank" value={karyawan.bank} />
+              <FieldRow label="Nomer Rekening" value={karyawan.bankAccount} />
+              <FieldRow
+                label="Gaji Pokok"
+                value={formatRupiah(karyawan.basicSalary)}
+              />
+              <FieldRow
+                label="Uang Lembur"
+                value={formatRupiah(karyawan.overtimePay)}
+              />
+              <FieldRow
+                label="Denda Terlambat"
+                value={formatRupiah(karyawan.latePenalty)}
+              />
+              <FieldRow
+                label="Total"
+                value={
+                  <span className="font-bold">
+                    {formatRupiah(karyawan.totalSalary)}
+                  </span>
+                }
+              />
+            </Section>
+          </div>
+
+          <Section title="Dokumen Karyawan">
+            <div className="space-y-3">
+              {employeeDocuments.map((doc, index) => (
+                <div
+                  key={index}
+                  className="max-w-[480px] w-full p-2 rounded-lg bg-[#7CA5BF]/60"
+                >
+                  <div className="flex justify-between items-center">
+                    <a
+                      href={`/uploads/${doc.file}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[18px] text-[#141414] font-medium hover:underline"
+                    >
+                      {doc.name}
+                    </a>
+                    <p className="text-[14px] text-[#141414] opacity-60 font-normal">
+                      uploaded at -
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+        </div>
+      </div>
     </div>
   );
 }

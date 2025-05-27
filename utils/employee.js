@@ -14,7 +14,9 @@ export async function getEmployee(id) {
 export async function createEmployee(payload) {
   const { data } = await api.post("/employee", payload);
   return data;
+  
 }
+
 
 export async function updateEmployee(id, payload) {
   const { data } = await api.put(`/employee/${id}`, payload);

@@ -6,13 +6,13 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import { RxAvatar } from "react-icons/rx";
-import { FaEdit, FaEye } from "react-icons/fa";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import EmployeeCardSum from "./component_employee/employee_card_sum";
 import DataTableHeader from "@/components/DatatableHeader";
 
 // Pindahkan tipe di luar komponen
 type Employee = {
-  id: number;
+  id: number;           // <-- Di API ID kamu tipe string UUID, tapi di frontend kamu pakai number
   nama: string;
   jenisKelamin: string;
   notelp: string;
@@ -21,7 +21,10 @@ type Employee = {
   status: string;
 };
 
+
+
 export default function EmployeeTablePage() {
+  
   const router = useRouter();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -41,7 +44,28 @@ export default function EmployeeTablePage() {
     { label: "active", value: "active" },
     { label: "inactive", value: "inactive" },
   ];
+   const handleSoftDelete = async (id: number | string) => {
+    if (!confirm("Apakah anda yakin ingin menghapus data ini?")) return;
 
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Gagal menghapus data");
+      }
+
+      alert("Data berhasil dihapus (soft delete).");
+
+      // **Update state employees dengan menghapus employee yang sudah softdelete**
+      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+    } catch (error) {
+      alert(`Gagal menghapus data: ${error.message}`);
+      console.error(error);
+    }
+  };
   // Fetch data dari backend
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -154,6 +178,14 @@ export default function EmployeeTablePage() {
               >
                 <FaEdit />
               </button>
+           <button
+  title="Hapus"
+  onClick={() => handleSoftDelete(data.id)} // Kirim id disini
+  className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
+>
+  <FaTrash />
+</button>
+
             </div>
           );
         },
@@ -225,6 +257,7 @@ export default function EmployeeTablePage() {
     });
   }, [employees, filterText, filterGender, filterStatus]);
 
+  
   return (
     <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
       <EmployeeCardSum employees={employees} />
