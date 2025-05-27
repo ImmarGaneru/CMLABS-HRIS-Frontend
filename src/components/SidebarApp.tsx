@@ -11,6 +11,7 @@ import {
     Clock,
     CalendarDays,
     ClipboardCheck,
+    CreditCard,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -23,6 +24,7 @@ import {
     SidebarMenuButton, SidebarFooter, SidebarHeader,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const sidebarNavItems = [
     {
@@ -42,7 +44,7 @@ const sidebarNavItems = [
     },
     {
         title: "Jadwal",
-        url: "/schedule",
+        url: "/jadwal",
         icon: CalendarDays,
     },
     {
@@ -54,6 +56,7 @@ const sidebarNavItems = [
 
 export function SidebarApp() {
     const pathname = usePathname();
+    const router = useRouter();
 
     return (
         <Sidebar>
@@ -75,6 +78,7 @@ export function SidebarApp() {
                                                 "flex items-center rounded-full px-4 py-2 w-full text-4xl font-medium text-[#1E3A5F] hover:bg-accent hover:text-accent-foreground",
                                                 pathname === item.url ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
                                             )}
+                                            replace
                                         >
                                             <item.icon className="mr-2 h-4 w-4"/>
                                             <span>{item.title}</span>
@@ -91,18 +95,26 @@ export function SidebarApp() {
                     href="/settings"
                     className={cn(
                         "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                        pathname === "/settings" ? "bg-accent" : "transparent"
+                        pathname === "/settings" ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
                     )}
                 >
                     <Settings className="mr-2 h-4 w-4"/>
                     <span>Settings</span>
                 </Link>
+                <Link
+                    href="/payment"
+                    className={cn(
+                        "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                        pathname === "/payment" ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
+                    )}
+                >
+                    <CreditCard className="mr-2 h-4 w-4"/>
+                    <span>App Payment</span>
+                </Link>
                 <Button
                     variant="ghost"
                     className="w-full justify-start"
-                    onClick={() => {
-
-                    }}
+                    onClick={() => {router.push("/")}}
                 >
                     <LogOut className="mr-2 h-4 w-4"/>
                     Log out
