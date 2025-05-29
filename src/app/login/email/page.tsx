@@ -14,8 +14,45 @@ export default function LoginEmailPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const togglePassword = () => {
-    setShowPassword((prev) => !prev);
+  const togglePassword = () => setShowPassword((prev) => !prev);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await response.json();
+
+      console.log('Response result:', result);
+
+      if (response.ok && result.meta?.success) {
+        const token = result.data?.token;
+
+        if (token) {
+          localStorage.setItem('token', token);
+
+          // Simpan data user jika diperlukan
+          if (result.data.user) {
+            localStorage.setItem('user', JSON.stringify(result.data.user));
+          }
+
+          alert('Login berhasil!');
+          router.push('/dashboard');
+        } else {
+          throw new Error('Token tidak ditemukan dalam response.');
+        }
+      } else {
+        const errorMessage = result.meta?.message || 'Login gagal.';
+        throw new Error(errorMessage);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat login');
+    }
   };
 
   // Penanganan error Frontend
@@ -63,15 +100,11 @@ export default function LoginEmailPage() {
         </p>
       </div>
 
-      {/* KANAN: Kotak Form Login */}
+      {/* KANAN */}
       <div className="md:w-1/2 w-full flex items-center justify-center p-6">
-        <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-sm rounded-xl p-8 w-full max-w-md">
-          <h2 className="text-[32px] font-bold text-gray-800 mb-2 leading-tight">
-            Masuk HRIS
-          </h2>
-          <p className="text-sm text-gray-600 mb-2">
-            Selamat datang kembali di HRIS cmlabs! Atur semua dengan mudah
-          </p>
+        <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] rounded-xl p-8 w-full max-w-md">
+          <h2 className="text-[32px] font-bold text-gray-800 mb-2 leading-tight">Masuk HRIS</h2>
+          <p className="text-sm text-gray-600 mb-2">Selamat datang kembali di HRIS cmlabs!</p>
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
           
           {/* Mulai Form */}
@@ -91,11 +124,11 @@ export default function LoginEmailPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="alamat@email.com"
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                required
               />
             </div>
 
-            {/* Password */}
             <div className="space-y-1">
               <label className="text-sm text-gray-600">Password</label>
               <div className="relative">
@@ -104,7 +137,8 @@ export default function LoginEmailPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="--- --- ---"
-                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm"
+                  required
                 />
                 <button
                   type="button"
@@ -120,20 +154,12 @@ export default function LoginEmailPage() {
               </div>
             </div>
 
-            {/* Ingat saya + Lupa Password */}
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="remember" className="w-4 h-4" />
-                <label htmlFor="remember" className="text-sm text-gray-600">
-                  Ingat saya
-                </label>
+                <label htmlFor="remember" className="text-sm text-gray-600">Ingat saya</label>
               </div>
-              <Link
-                href="/login/notifikasi/lupa_password"
-                className="text-xs text-blue-500 hover:underline"
-              >
-                Lupa Password?
-              </Link>
+              <Link href="/login/notifikasi/lupa_password" className="text-xs text-blue-500 hover:underline">Lupa Password?</Link>
             </div>
 
             {/* Tombol Masuk */}
@@ -142,40 +168,36 @@ export default function LoginEmailPage() {
               Masuk
             </button>
 
-            {/* Divider Metode Lain */}
             <div className="flex items-center gap-2 my-3">
               <div className="flex-grow h-px bg-blue-300" />
-              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">
-                Metode Lain
-              </span>
+              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">Metode Lain</span>
               <div className="flex-grow h-px bg-blue-300" />
             </div>
 
-            {/* Tombol alternatif */}
             <Link href="/login/id_karyawan">
-              <button className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300">
+              <button type="button" className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2">
                 Masuk dengan ID Karyawan
               </button>
             </Link>
 
             <Link href="/login/nomor_telepon">
-              <button className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300">
+              <button type="button" className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2">
                 Masuk dengan Nomor Telepon
               </button>
             </Link>
 
             <button
+              type="button"
               onClick={() => {
                 window.location.href = '/api/auth/google';
               }}
-              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm"
             >
               <span>Masuk dengan akun Google</span>
               <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
             </button>
           </form>
 
-          {/* Link Daftar */}
           <p className="text-sm text-center mt-4 text-gray-600">
             Belum memiliki akun?{' '}
             <Link href="/register" className="text-blue-600 font-medium hover:underline">

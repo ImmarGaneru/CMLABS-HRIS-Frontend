@@ -31,8 +31,10 @@ type RegisterForm = {
 const fields: { label: string; key: keyof RegisterForm }[] = [
   { label: 'Nama Depan', key: 'first_name' },
   { label: 'Nama Belakang', key: 'last_name' },
+  // { label: 'Address company', key: 'address' },
   // { label: 'Nama Perusahaan', key: 'username_perusahaan' },
   { label: 'Address', key: 'address' },
+  // { label: 'Address Company', key: 'address' },
   { label: 'Email', key: 'email' },
   { label: 'Nomor Telepon', key: 'phone_number' },
 ];
@@ -294,7 +296,9 @@ export default function RegisterPage() {
             </div>
 
             <button
-              onClick={() => (window.location.href = '/api/auth/google')}
+              onClick={() => {
+                window.location.href = '/google/register';
+              }}
               type="button"
               className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm"
             >
