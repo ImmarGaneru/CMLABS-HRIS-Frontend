@@ -5,35 +5,20 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 type RegisterForm = {
-  first_name: string;
-  last_name: string;
-  // username_perusahaan: string,
-  address: string;
-  email: string;
+  username_perusahaan: string;
+  address: string; // Alamat pribadi
+  address_company: string;
   phone_number: string;
   password: string;
   confirmPassword: string;
 };
 
-const fields: { label: string; key: keyof RegisterForm }[] = [
-  { label: 'Nama Depan', key: 'first_name' },
-  { label: 'Nama Belakang', key: 'last_name' },
-  // { label: 'Address company', key: 'address' },
-  // { label: 'Nama Perusahaan', key: 'username_perusahaan' },
-  { label: 'Address', key: 'address' },
-  // { label: 'Address Company', key: 'address' },
-  { label: 'Email', key: 'email' },
-  { label: 'Nomor Telepon', key: 'phone_number' },
-];
-
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState<RegisterForm>({
-    first_name: '',
-    last_name: '',
-    // username_perusahaan: '',
+    username_perusahaan: '',
     address: '',
-    email: '',
+    address_company: '',
     phone_number: '',
     password: '',
     confirmPassword: '',
@@ -42,15 +27,26 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleChange = (
-    key: keyof RegisterForm,
-    value: string
-  ) => {
+  const handleChange = (key: keyof RegisterForm, value: string) => {
     setFormData({ ...formData, [key]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validasi input kosong
+    const isAnyFieldEmpty = Object.values(formData).some((value) => value.trim() === '');
+    if (isAnyFieldEmpty) {
+      alert('Mohon lengkapi semua data!');
+      return;
+    }
+
+    // Validasi password
+    if (formData.password !== formData.confirmPassword) {
+      alert('Password dan konfirmasi password tidak cocok!');
+      return;
+    }
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
         method: 'POST',
@@ -66,7 +62,6 @@ export default function RegisterPage() {
       alert('Pendaftaran berhasil!');
       console.log(result);
 
-      // Redirect ke dashboard
       router.push('/login/email');
     } catch (error: any) {
       alert(error.message);
@@ -84,9 +79,7 @@ export default function RegisterPage() {
         />
         <h1
           className="text-5xl font-bold text-transparent bg-clip-text"
-          style={{
-            backgroundImage: 'linear-gradient(to right, #7CA5BF, #1E3A5F)',
-          }}
+          style={{ backgroundImage: 'linear-gradient(to right, #7CA5BF, #1E3A5F)' }}
         >
           HRIS
         </h1>
@@ -98,23 +91,53 @@ export default function RegisterPage() {
       {/* Kanan */}
       <div className="md:w-1/2 w-full flex items-center justify-center p-6">
         <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-sm rounded-xl p-8 w-full max-w-md">
-          <h2 className="text-[32px] font-bold text-gray-800 mb-2">Daftar HRIS</h2>
-          <p className="text-sm text-gray-600 mb-2">Daftarkan akunmu dan manage karyawan dengan mudah dengan HRIS</p>
-          <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
+          <h2 className="text-[32px] font-bold text-gray-800 mb-2">Daftar Akun Google</h2>
+          <p className="text-sm text-gray-600 mb-4">Daftarkan akunmu dan manage karyawan dengan mudah dengan HRIS</p>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            {fields.map(({ label, key }) => (
-              <div key={key} className="space-y-1">
-                <label className="text-sm text-gray-600">{label}</label>
-                <input
-                  type="text"
-                  placeholder={label}
-                  value={formData[key]}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
-                />
-              </div>
-            ))}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Username Perusahaan</label>
+              <input
+                type="text"
+                value={formData.username_perusahaan}
+                onChange={(e) => handleChange('username_perusahaan', e.target.value)}
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                placeholder="Username Perusahaan"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Alamat Pribadi</label>
+              <input
+                type="text"
+                value={formData.address}
+                onChange={(e) => handleChange('address', e.target.value)}
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                placeholder="Alamat Pribadi"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Alamat Perusahaan</label>
+              <input
+                type="text"
+                value={formData.address_company}
+                onChange={(e) => handleChange('address_company', e.target.value)}
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                placeholder="Alamat Perusahaan"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Nomor Telepon</label>
+              <input
+                type="text"
+                value={formData.phone_number}
+                onChange={(e) => handleChange('phone_number', e.target.value)}
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                placeholder="Nomor Telepon"
+              />
+            </div>
 
             {/* Password */}
             <div className="space-y-1">
@@ -122,10 +145,10 @@ export default function RegisterPage() {
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
                   value={formData.password}
                   onChange={(e) => handleChange('password', e.target.value)}
                   className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm pr-10"
+                  placeholder="Password"
                 />
                 <button
                   type="button"
@@ -141,16 +164,16 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Konfirmasi Password */}
+            {/* Confirm Password */}
             <div className="space-y-1">
               <label className="text-sm text-gray-600">Konfirmasi Password</label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Konfirmasi Password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleChange('confirmPassword', e.target.value)}
                   className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm pr-10"
+                  placeholder="Konfirmasi Password"
                 />
                 <button
                   type="button"
@@ -168,34 +191,16 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md mt-4 mb-3"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md mt-4"
             >
               Daftar Sekarang
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex-grow h-px bg-blue-300" />
-              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">Metode Lain</span>
-              <div className="flex-grow h-px bg-blue-300" />
-            </div>
-
-            <button
-              onClick={() => {
-                window.location.href = '/google/register';
-              }}
-              type="button"
-              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm"
-            >
-              <span>Masuk dengan akun Google</span>
-              <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
             </button>
           </form>
 
           <p className="text-sm text-center mt-4 text-gray-600">
             Sudah pernah daftar?{' '}
             <Link href="/login/email" className="text-blue-600 font-medium">
-              Masuk disini
+              Masuk di sini
             </Link>
           </p>
           <p className="text-xs text-center text-gray-500 mt-2">

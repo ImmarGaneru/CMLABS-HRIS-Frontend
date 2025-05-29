@@ -7,24 +7,24 @@ import Link from 'next/link';
 export default function LoginEmailPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ password }), // hanya kirim password
       });
 
       const result = await response.json();
-
       console.log('Response result:', result);
 
       if (response.ok && result.meta?.success) {
@@ -33,7 +33,6 @@ export default function LoginEmailPage() {
         if (token) {
           localStorage.setItem('token', token);
 
-          // Simpan data user jika diperlukan
           if (result.data.user) {
             localStorage.setItem('user', JSON.stringify(result.data.user));
           }
@@ -49,6 +48,8 @@ export default function LoginEmailPage() {
       }
     } catch (err: any) {
       alert(err.message || 'Terjadi kesalahan saat login');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,18 +70,6 @@ export default function LoginEmailPage() {
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <label className="text-sm text-gray-600">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="alamat@email.com"
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
-                required
-              />
-            </div>
-
             <div className="space-y-1">
               <label className="text-sm text-gray-600">Password</label>
               <div className="relative">
@@ -121,38 +110,14 @@ export default function LoginEmailPage() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
+              disabled={isLoading}
+      in        className={`w-full text-white font-semibold py-2 rounded-md transition-colors ${
+                isLoading
+                  ? 'bg-blue-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              Masuk Sekarang
-            </button>
-
-            <div className="flex items-center gap-2 my-3">
-              <div className="flex-grow h-px bg-blue-300" />
-              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">Metode Lain</span>
-              <div className="flex-grow h-px bg-blue-300" />
-            </div>
-
-            <Link href="/login/id_karyawan">
-              <button type="button" className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2">
-                Masuk dengan ID Karyawan
-              </button>
-            </Link>
-
-            <Link href="/login/nomor_telepon">
-              <button type="button" className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2">
-                Masuk dengan Nomor Telepon
-              </button>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => {
-                window.location.href = '/api/auth/google';
-              }}
-              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm"
-            >
-              <span>Masuk dengan akun Google</span>
-              <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
+              {isLoading ? 'Memproses...' : 'Login Sekarang'}
             </button>
           </form>
 
