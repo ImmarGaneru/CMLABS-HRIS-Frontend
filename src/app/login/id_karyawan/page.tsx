@@ -1,135 +1,178 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LuEyeOff } from "react-icons/lu";
-import { LuEye } from "react-icons/lu";
 
-export default function LoginIDKaryawanPage() {
+export default function LoginIdKaryawanPage() {
+  const router = useRouter();
+
+  const [employeeId, setEmployeeId] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Penyamaan menggunakan togglePassword
-  const togglePassword = () => {
-    setShowPassword((prev) => !prev);
+  const togglePassword = () => setShowPassword((prev) => !prev);
+  const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      alert('Password dan konfirmasi password tidak cocok.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employee_id: employeeId, password }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.meta?.success) {
+        const token = result.data?.token;
+
+        if (token) {
+          localStorage.setItem('token', token);
+          if (result.data.user) {
+            localStorage.setItem('user', JSON.stringify(result.data.user));
+          }
+
+          alert('Login berhasil!');
+          router.push('/dashboard');
+        } else {
+          throw new Error('Token tidak ditemukan.');
+        }
+      } else {
+        throw new Error(result.meta?.message || 'Login gagal.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat login.');
+    }
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f8f8f8] flex-col md:flex-row p-4">
-      {/* KIRI: Section HRIS */}
-      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10">
-        <img
-          src="/HR_image.png"
-          alt="HRIS Icon"
-          className="max-w-lg mb-6 object-contain"
-        />
-        <h1
-          className="text-5xl font-bold text-transparent bg-clip-text"
-          style={{
-            backgroundImage: 'linear-gradient(to right, #7CA5BF, #1E3A5F)',
-          }}
-        >
-          HRIS
-        </h1>
-        <p className="mt-4 text-center max-w-md text-gray-700 text-lg">
-          Platform HRIS all-in-one untuk otomatisasi payroll, absensi, dan
-          analitik SDM — bantu tim HR fokus pada strategi, bukan administrasi.
-        </p>
+    <div className="flex min-h-screen bg-white flex-col md:flex-row">
+      {/* KIRI */}
+      <div className="md:w-1/2 w-full flex flex-col items-center justify-start text-white pt-8 p-10 bg-white">
+        <img src="/icon.jpg" alt="HRIS Icon" className="max-w-lg mb-6 object-contain" />
+        <h1 className="text-5xl font-bold text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(to right, #7CA5BF, #1E3A5F)' }}>HRIS</h1>
+        <p className="mt-4 text-center max-w-md text-gray-700 text-lg">Platform HRIS all-in-one untuk otomatisasi payroll, absensi, dan analitik SDM.</p>
       </div>
 
-      {/* KANAN: Kotak Form Login */}
+      {/* KANAN */}
       <div className="md:w-1/2 w-full flex items-center justify-center p-6">
-        <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-sm rounded-xl p-8 w-full max-w-md">
-          <h2 className="text-[32px] font-bold text-gray-800 mb-2 leading-tight">
-            Masuk HRIS
-          </h2>
-          <p className="text-sm text-gray-600 mb-2">
-            Selamat datang kembali di HRIS cmlabs! Atur semua dengan mudah
-          </p>
+        <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] rounded-xl p-8 w-full max-w-md">
+          <h2 className="text-[32px] font-bold text-gray-800 mb-2 leading-tight">Masuk dengan ID Karyawan</h2>
+          <p className="text-sm text-gray-600 mb-2">Selamat datang kembali di HRIS cmlabs!</p>
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
 
-          <form className="space-y-4">
-            {/* Username Perusahaan */}
-            <div className="space-y-1">
-              <label className="text-sm text-gray-600">Username Perusahaan</label>
-              <input
-                type="text"
-                placeholder="PT XXX XXX"
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* ID Karyawan */}
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <label className="text-sm text-gray-600">ID Karyawan</label>
               <input
                 type="text"
-                placeholder="---"
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                placeholder="ID12345"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                required
               />
             </div>
 
-            {/* Password dengan Toggle */}
-            <div className="space-y-1 relative">
+            <div className="space-y-1">
               <label className="text-sm text-gray-600">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="--- --- ---"
-                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm"
+                  required
                 />
                 <button
                   type="button"
                   onClick={togglePassword}
-                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none cursor-pointer"
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none"
                 >
-                  {showPassword ? (
-                    <LuEye className="w-5 h-5 text-[#2D8EFF]" />
-                  ) : (
-                    <LuEyeOff className="w-5 h-5 text-gray-400" />
-                  )}
+                  <img
+                    src={showPassword ? '/password_on.svg' : '/password_off.svg'}
+                    alt="Toggle Password"
+                    className="w-5 h-5"
+                    style={{
+                      filter: showPassword
+                        ? 'brightness(0) saturate(100%) invert(42%) sepia(100%) saturate(624%) hue-rotate(180deg) brightness(96%) contrast(90%)'
+                        : 'none',
+                    }}
+                  />
                 </button>
               </div>
             </div>
 
-            {/* Ingat saya + Lupa Password */}
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Konfirmasi Password</label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="--- --- ---"
+                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={toggleConfirmPassword}
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none"
+                >
+                  <img
+                    src={showConfirmPassword ? '/password_on.svg' : '/password_off.svg'}
+                    alt="Toggle Password"
+                    className="w-5 h-5"
+                    style={{
+                      filter: showConfirmPassword
+                        ? 'brightness(0) saturate(100%) invert(42%) sepia(100%) saturate(624%) hue-rotate(180deg) brightness(96%) contrast(90%)'
+                        : 'none',
+                    }}
+                  />
+                </button>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="remember" className="w-4 h-4" />
-                <label htmlFor="remember" className="text-sm text-gray-600">
-                  Ingat saya
-                </label>
+                <label htmlFor="remember" className="text-sm text-gray-600">Ingat saya</label>
               </div>
-              <Link href="/login/notifikasi/lupa_password" className="text-xs text-blue-500 hover:underline">
-                Lupa Password?
-              </Link>
+              <Link href="/login/notifikasi/lupa_password" className="text-xs text-blue-500 hover:underline">Lupa Password?</Link>
             </div>
 
-            {/* Tombol Masuk */}
             <button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
             >
-              Daftar Sekarang
+              Masuk Sekarang
             </button>
 
-            {/* Divider Metode Lain */}
             <div className="flex items-center gap-2 my-3">
               <div className="flex-grow h-px bg-blue-300" />
-              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">
-                Metode Lain
-              </span>
+              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">Metode Lain</span>
               <div className="flex-grow h-px bg-blue-300" />
             </div>
 
-            {/* Tombol alternatif */}
             <Link href="/login/email">
-              <button className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300">
+              <button type="button" className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2">
                 Masuk dengan Email
               </button>
             </Link>
 
             <Link href="/login/nomor_telepon">
-              <button className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300">
+              <button type="button" className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2">
                 Masuk dengan Nomor Telepon
               </button>
             </Link>
@@ -139,14 +182,13 @@ export default function LoginIDKaryawanPage() {
               onClick={() => {
                 window.location.href = '/api/auth/google';
               }}
-              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm"
             >
               <span>Masuk dengan akun Google</span>
               <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
             </button>
           </form>
 
-          {/* Link Daftar */}
           <p className="text-sm text-center mt-4 text-gray-600">
             Belum memiliki akun?{' '}
             <Link href="/register" className="text-blue-600 font-medium hover:underline">
