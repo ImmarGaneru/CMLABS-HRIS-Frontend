@@ -3,39 +3,41 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { api } from "@/lib/axios";
 
-export default function LoginEmailPage() {
+export default function LoginIdKaryawanPage() {
   const router = useRouter();
 
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const togglePassword = () => setShowPassword((prev) => !prev);
+  const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    if (password !== confirmPassword) {
+      alert("Password dan konfirmasi password tidak cocok.");
+      return;
+    }
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password }), // hanya kirim password
-        }
-      );
+      const response = await api.post("/auth/signin", {
+        phone_number: phoneNumber,
+        password,
+      });
 
-      const result = await response.json();
-      console.log("Response result:", result);
+      const result = await response.data;
 
-      if (response.ok && result.meta?.success) {
+      if (response.data && result.meta?.success) {
         const token = result.data?.token;
 
         if (token) {
           localStorage.setItem("token", token);
-
           if (result.data.user) {
             localStorage.setItem("user", JSON.stringify(result.data.user));
           }
@@ -43,16 +45,13 @@ export default function LoginEmailPage() {
           alert("Login berhasil!");
           router.push("/dashboard");
         } else {
-          throw new Error("Token tidak ditemukan dalam response.");
+          throw new Error("Token tidak ditemukan.");
         }
       } else {
-        const errorMessage = result.meta?.message || "Login gagal.";
-        throw new Error(errorMessage);
+        throw new Error(result.meta?.message || "Login gagal.");
       }
     } catch (err: any) {
-      alert(err.message || "Terjadi kesalahan saat login");
-    } finally {
-      setIsLoading(false);
+      alert(err.message || "Terjadi kesalahan saat login.");
     }
   };
 
@@ -83,7 +82,7 @@ export default function LoginEmailPage() {
       <div className="md:w-1/2 w-full flex items-center justify-center p-6">
         <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] rounded-xl p-8 w-full max-w-md">
           <h2 className="text-[32px] font-bold text-gray-800 mb-2 leading-tight">
-            Masuk HRIS
+            Masuk dengan Nomor Telepon
           </h2>
           <p className="text-sm text-gray-600 mb-2">
             Selamat datang kembali di HRIS cmlabs!
@@ -91,6 +90,18 @@ export default function LoginEmailPage() {
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
 
           <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Nomor Telepon</label>
+              <input
+                type="text"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="ID12345"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                required
+              />
+            </div>
+
             <div className="space-y-1">
               <label className="text-sm text-gray-600">Password</label>
               <div className="relative">
@@ -123,6 +134,42 @@ export default function LoginEmailPage() {
               </div>
             </div>
 
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">
+                Konfirmasi Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="--- --- ---"
+                  className="w-full px-4 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={toggleConfirmPassword}
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none"
+                >
+                  <img
+                    src={
+                      showConfirmPassword
+                        ? "/password_on.svg"
+                        : "/password_off.svg"
+                    }
+                    alt="Toggle Password"
+                    className="w-5 h-5"
+                    style={{
+                      filter: showConfirmPassword
+                        ? "brightness(0) saturate(100%) invert(42%) sepia(100%) saturate(624%) hue-rotate(180deg) brightness(96%) contrast(90%)"
+                        : "none",
+                    }}
+                  />
+                </button>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-2">
                 <input type="checkbox" id="remember" className="w-4 h-4" />
@@ -140,15 +187,49 @@ export default function LoginEmailPage() {
 
             <button
               type="submit"
-              disabled={isLoading}
-              className={`w-full text-white font-semibold py-2 rounded-md transition-colors ${
-                isLoading
-                  ? "bg-blue-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
             >
-              {isLoading ? "Memproses..." : "Login Sekarang"}
+              Masuk Sekarang
             </button>
+
+            <div className="flex items-center gap-2 my-3">
+              <div className="flex-grow h-px bg-blue-300" />
+              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">
+                Metode Lain
+              </span>
+              <div className="flex-grow h-px bg-blue-300" />
+            </div>
+
+            <Link href="/auth/login/email" passHref>
+              <button
+                type="button"
+                className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 cursor-pointer"
+              >
+                Masuk dengan Email
+              </button>
+            </Link>
+
+            <Link href="/auth/login/id_karyawan" passHref>
+              <button
+                type="button"
+                className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 cursor-pointer"
+              >
+                Masuk dengan ID Karyawan
+              </button>
+            </Link>
+
+            <Link
+              href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect`}
+              passHref
+            >
+              <button
+                type="button"
+                className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm cursor-pointer"
+              >
+                <span>Masuk dengan akun Google</span>
+                <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
+              </button>
+            </Link>
           </form>
 
           <p className="text-sm text-center mt-4 text-gray-600">

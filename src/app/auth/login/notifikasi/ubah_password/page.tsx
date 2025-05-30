@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState } from "react";
+import Link from "next/link";
 
 export default function UbahPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +28,7 @@ export default function UbahPasswordPage() {
             </label>
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 id="new-password"
                 placeholder="Masukkan password baru"
                 className="w-full px-3 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -39,13 +39,13 @@ export default function UbahPasswordPage() {
                 className="absolute inset-y-0 right-3 flex items-center"
               >
                 <img
-                  src={showPassword ? '/password_on.svg' : '/password_off.svg'}
+                  src={showPassword ? "/password_on.svg" : "/password_off.svg"}
                   alt="Toggle Password"
                   className="w-5 h-5"
                   style={{
                     filter: showPassword
-                      ? 'brightness(0) saturate(100%) invert(44%) sepia(94%) saturate(747%) hue-rotate(183deg) brightness(101%) contrast(92%)'
-                      : 'none',
+                      ? "brightness(0) saturate(100%) invert(44%) sepia(94%) saturate(747%) hue-rotate(183deg) brightness(101%) contrast(92%)"
+                      : "none",
                   }}
                 />
               </button>
@@ -59,7 +59,7 @@ export default function UbahPasswordPage() {
             </label>
             <div className="relative">
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirmPassword ? "text" : "password"}
                 id="confirm-password"
                 placeholder="Ulangi password baru"
                 className="w-full px-3 py-2 pr-10 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -70,13 +70,17 @@ export default function UbahPasswordPage() {
                 className="absolute inset-y-0 right-3 flex items-center"
               >
                 <img
-                  src={showConfirmPassword ? '/password_on.svg' : '/password_off.svg'}
+                  src={
+                    showConfirmPassword
+                      ? "/password_on.svg"
+                      : "/password_off.svg"
+                  }
                   alt="Toggle Confirm Password"
                   className="w-5 h-5"
                   style={{
                     filter: showConfirmPassword
-                      ? 'brightness(0) saturate(100%) invert(44%) sepia(94%) saturate(747%) hue-rotate(183deg) brightness(101%) contrast(92%)'
-                      : 'none',
+                      ? "brightness(0) saturate(100%) invert(44%) sepia(94%) saturate(747%) hue-rotate(183deg) brightness(101%) contrast(92%)"
+                      : "none",
                   }}
                 />
               </button>
@@ -85,7 +89,7 @@ export default function UbahPasswordPage() {
 
           {/* Tombol Submit */}
           <Link
-            href="/login/notifikasi/sukses_password"
+            href="/auth/login/notifikasi/sukses_password"
             className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
           >
             Ubah Password
@@ -94,7 +98,7 @@ export default function UbahPasswordPage() {
 
         {/* Link Kembali */}
         <Link
-          href="/login/email"
+          href="/auth/login/email"
           className="text-xs text-blue-600 hover:underline mt-3 inline-block"
         >
           Kembali ke halaman Login

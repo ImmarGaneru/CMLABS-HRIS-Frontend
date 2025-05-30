@@ -3,34 +3,34 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LuEyeOff } from "react-icons/lu";
+import { LuEye } from "react-icons/lu";
+import { api } from "@/lib/axios";
 
 export default function LoginEmailPage() {
   const router = useRouter();
 
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password }), // hanya kirim password
-        }
-      );
+      const response = await api.post("/auth/signin", {
+        email,
+        password,
+      });
 
-      const result = await response.json();
+      const result = await response.data;
+
       console.log("Response result:", result);
 
-      if (response.ok && result.meta?.success) {
+      if (response.data && result.meta?.success) {
         const token = result.data?.token;
 
         if (token) {
@@ -51,8 +51,6 @@ export default function LoginEmailPage() {
       }
     } catch (err: any) {
       alert(err.message || "Terjadi kesalahan saat login");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -92,6 +90,18 @@ export default function LoginEmailPage() {
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-1">
+              <label className="text-sm text-gray-600">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="alamat@email.com"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
               <label className="text-sm text-gray-600">Password</label>
               <div className="relative">
                 <input
@@ -105,7 +115,7 @@ export default function LoginEmailPage() {
                 <button
                   type="button"
                   onClick={togglePassword}
-                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none"
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none cursor-pointer"
                 >
                   <img
                     src={
@@ -140,15 +150,49 @@ export default function LoginEmailPage() {
 
             <button
               type="submit"
-              disabled={isLoading}
-              className={`w-full text-white font-semibold py-2 rounded-md transition-colors ${
-                isLoading
-                  ? "bg-blue-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
             >
-              {isLoading ? "Memproses..." : "Login Sekarang"}
+              Masuk Sekarang
             </button>
+
+            <div className="flex items-center gap-2 my-3">
+              <div className="flex-grow h-px bg-blue-300" />
+              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">
+                Metode Lain
+              </span>
+              <div className="flex-grow h-px bg-blue-300" />
+            </div>
+
+            <Link href="/auth/login/id_karyawan">
+              <button
+                type="button"
+                className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 cursor-pointer"
+              >
+                Masuk dengan ID Karyawan
+              </button>
+            </Link>
+
+            <Link href="/auth/login/nomor_telepon">
+              <button
+                type="button"
+                className="w-full border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm mb-2 cursor-pointer"
+              >
+                Masuk dengan Nomor Telepon
+              </button>
+            </Link>
+
+            <Link
+              href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect`}
+              passHref
+            >
+              <button
+                type="button"
+                className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm cursor-pointer"
+              >
+                <span>Masuk dengan akun Google</span>
+                <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
+              </button>
+            </Link>
           </form>
 
           <p className="text-sm text-center mt-4 text-gray-600">

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function LupaPasswordPage() {
   return (
@@ -30,7 +30,7 @@ export default function LupaPasswordPage() {
           </div>
 
           <Link
-            href="/login/notifikasi/cek_email"
+            href="/auth/login/notifikasi/cek_email"
             className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
           >
             Reset Password
@@ -38,7 +38,7 @@ export default function LupaPasswordPage() {
         </form>
 
         <Link
-          href="/login/email"
+          href="/auth/login/email"
           className="text-sm text-blue-600 hover:underline mt-4 inline-block"
         >
           Kembali ke halaman Login
