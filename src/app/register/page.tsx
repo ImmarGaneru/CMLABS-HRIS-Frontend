@@ -17,6 +17,26 @@ function isPasswordValid(password: string): boolean {
 }
 
 
+type RegisterForm = {
+  first_name: string;
+  last_name: string;
+  // username_perusahaan: string,
+  address: string;
+  email: string;
+  phone_number: string;
+  password: string;
+  confirmPassword: string;
+};
+
+const fields: { label: string; key: keyof RegisterForm }[] = [
+  { label: 'Nama Depan', key: 'first_name' },
+  { label: 'Nama Belakang', key: 'last_name' },
+  // { label: 'Nama Perusahaan', key: 'username_perusahaan' },
+  { label: 'Address', key: 'address' },
+  { label: 'Email', key: 'email' },
+  { label: 'Nomor Telepon', key: 'phone_number' },
+];
+
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -99,20 +119,15 @@ export default function RegisterPage() {
           HRIS
         </h1>
         <p className="mt-4 text-center max-w-md text-gray-700 text-lg">
-          Platform HRIS all-in-one untuk otomatisasi payroll, absensi, dan
-          analitik SDM — bantu tim HR fokus pada strategi, bukan administrasi.
+          Platform HRIS all-in-one untuk otomatisasi payroll, absensi, dan analitik SDM — bantu tim HR fokus pada strategi, bukan administrasi.
         </p>
       </div>
 
-      {/* KANAN: Form Register */}
+      {/* Kanan */}
       <div className="md:w-1/2 w-full flex items-center justify-center p-6">
         <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-sm rounded-xl p-8 w-full max-w-md">
-          <h2 className="text-[32px] font-bold text-gray-800 mb-2 leading-tight">
-            Daftar HRIS
-          </h2>
-          <p className="text-sm text-gray-600 mb-2">
-            Daftarkan akunmu dan manage karyawan dengan mudah dengan HRIS
-          </p>
+          <h2 className="text-[32px] font-bold text-gray-800 mb-2">Daftar HRIS</h2>
+          <p className="text-sm text-gray-600 mb-2">Daftarkan akunmu dan manage karyawan dengan mudah dengan HRIS</p>
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
 
           {/* Form login dan register harus memiliki style form yang sama */}
@@ -129,7 +144,9 @@ export default function RegisterPage() {
                 <input
                   type="text"
                   placeholder={label}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={formData[key]}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
                 />
               </div>
             ))} */}
@@ -204,7 +221,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div className="space-y-1">
               <label className="text-sm text-gray-600">Password</label>
               <div className="relative">
@@ -272,18 +289,14 @@ export default function RegisterPage() {
             {/* Divider */}
             <div className="flex items-center gap-2 mb-2">
               <div className="flex-grow h-px bg-blue-300" />
-              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">
-                Metode Lain
-              </span>
+              <span className="text-sm font-semibold text-blue-400 whitespace-nowrap">Metode Lain</span>
               <div className="flex-grow h-px bg-blue-300" />
             </div>
 
-            {/* Login Google */}
             <button
-              onClick={() => {
-                window.location.href = '/api/auth/google';
-              }}
-              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-300"
+              onClick={() => (window.location.href = '/api/auth/google')}
+              type="button"
+              className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm"
             >
               <span>Masuk dengan akun Google</span>
               <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
@@ -291,7 +304,6 @@ export default function RegisterPage() {
           </form>
           {/* End Form */}
 
-          {/* Footer */}
           <p className="text-sm text-center mt-4 text-gray-600">
             Sudah pernah daftar?{' '}
             <Link href="/login/email" className="text-blue-600 font-medium">
@@ -300,9 +312,7 @@ export default function RegisterPage() {
           </p>
           <p className="text-xs text-center text-gray-500 mt-2">
             Dengan menekan tombol daftar, saya telah membaca dan menyetujui serta patuh kepada{' '}
-            <a href="#" className="text-blue-600">
-              Syarat & Ketentuan HRIS
-            </a>
+            <a href="#" className="text-blue-600">Syarat & Ketentuan HRIS</a>
           </p>
         </div>
       </div>
