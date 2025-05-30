@@ -36,39 +36,36 @@ type Karyawan = {
 export default function EditKaryawan({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
-
+  const [, setEmployees] = useState<Karyawan[]>([]);
+  const [, setLoading] = useState(false);
+  const [, setError] = useState<string | null>(null);
+  
   useEffect(() => {
-    // Simulate fetching the employee data (use API for real data)
-    const fetchedKaryawan: Karyawan = {
-      id: params.id,
-      name: "John Doe",
-      photo: "/default.jpg",
-      position: "Manager",
-      nik: "1234567890",
-      address: "Jl. Merdeka No. 10",
-      birthdate: "1990-01-01",
-      birthplace: "Jakarta",
-      gender: "Male",
-      education: "S1 Teknik Informatika",
-      email: "johndoe@example.com",
-      phone: "08123456789",
-      startDate: "2020-01-01",
-      tenure: "5 years",
-      endDate: "",
-      schedule: "Monday - Friday, 9 AM - 5 PM",
-      contractType: "Permanent",
-      branch: "Head Office",
-      status: "Active",
-      effectiveDate: "2020-01-01",
-      bank: "BCA",
-      bankAccount: "1234567890123456",
-      basicSalary: "10000000",
-      overtimePay: "2000000",
-      latePenalty: "500000",
-      totalSalary: "12000000",
+    const fetchEmployees = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/employee", {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`Error: ${res.status}`);
+        const data = await res.json();
+        setEmployees(data.data);
+        setKaryawan(data.data[0]); // sementara ambil yang pertama
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
     };
-    setKaryawan(fetchedKaryawan);
+
+    fetchEmployees();
   }, [params.id]);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
