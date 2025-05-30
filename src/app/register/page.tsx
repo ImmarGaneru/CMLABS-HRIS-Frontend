@@ -189,7 +189,7 @@ export default function RegisterPage() {
             </div>
 
             <button
-              onClick={() => (window.location.href = '/api/auth/google')}
+              onClick={() => (window.location.href = '/google/register')}
               type="button"
               className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm"
             >

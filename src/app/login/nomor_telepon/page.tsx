@@ -180,7 +180,7 @@ export default function LoginIdKaryawanPage() {
             <button
               type="button"
               onClick={() => {
-                window.location.href = '/api/auth/google';
+                window.location.href = '/google/login';
               }}
               className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm"
             >
