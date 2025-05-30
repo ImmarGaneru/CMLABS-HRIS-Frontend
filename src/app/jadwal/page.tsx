@@ -12,7 +12,7 @@ export default function JadwalTablePage() {
   const router = useRouter();
   const [filterText, setFilterText] = useState("");
   const [filterTipeJadwal, setFilterTipeJadwal] = useState("");
-  const [filterTanggal, setFilterTanggal] = useState("");
+  const [filterTanggal] = useState("");
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
   
