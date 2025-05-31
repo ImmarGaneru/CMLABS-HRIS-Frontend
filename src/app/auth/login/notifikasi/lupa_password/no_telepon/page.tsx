@@ -29,8 +29,9 @@ export default function LupaPasswordPage() {
       <div className="bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.15)] p-8 w-full max-w-md text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Lupa Password</h1>
         <p className="text-sm text-gray-600 mb-4">
-          Jangan khawatir ketika anda lupa password. Kirimkan email terdaftar
-          anda, kami akan kirimkan link reset password
+          Jangan khawatir ketika anda lupa password. Kirimkan nomor telepon
+          terdaftar anda, kami akan kirimkan kode verifikasi untuk reset
+          password anda.
         </p>
 
         {/* Garis gradasi */}
@@ -38,13 +39,12 @@ export default function LupaPasswordPage() {
 
         <form className="text-left space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-1">
-            <label htmlFor="email" className="text-sm text-gray-700">
-              Email
+            <label htmlFor="phone_number" className="text-sm text-gray-700">
+              No Telepon
             </label>
             <input
-              type="email"
-              id="email"
-              placeholder="alamat@email.com"
+              id="phone_number"
+              placeholder="0812-3456-7890"
               className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

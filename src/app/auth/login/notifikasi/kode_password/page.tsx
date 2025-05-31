@@ -49,7 +49,7 @@ export default function KodePasswordPage() {
             </a>
           </p>
           <Link
-            href="/auth/login"
+            href="/auth/login/email"
             className="text-[#248BE2] text-xs mt-1 inline-block"
           >
             Kembali ke halaman Login

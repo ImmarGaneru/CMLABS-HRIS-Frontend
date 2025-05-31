@@ -23,7 +23,7 @@ export default function LinkExpiredPage() {
 
         {/* Tombol ke Halaman Login */}
         <Link
-          href="/auth/login"
+          href="/auth/login/email"
           className="bg-[#248BE2] hover:bg-[#1a6fc2] text-white font-semibold py-2 px-4 rounded-md block"
         >
           Ke Halaman Login

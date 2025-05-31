@@ -9,6 +9,7 @@ export default function LoginIdKaryawanPage() {
   const router = useRouter();
 
   const [employeeId, setEmployeeId] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -90,6 +91,18 @@ export default function LoginIdKaryawanPage() {
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
 
           <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-1">
+              <label className="text-sm text-gray-600">Nama Perusahaan</label>
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="ID12345"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
+                required
+              />
+            </div>
+
             <div className="space-y-1">
               <label className="text-sm text-gray-600">ID Karyawan</label>
               <input
