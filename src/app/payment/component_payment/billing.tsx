@@ -1,25 +1,75 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
 import { ColumnDef } from "@tanstack/react-table";
 import { FaEye } from "react-icons/fa";
 
 export default function BillList() {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     const router = useRouter();
     const [showHistory, setShowHistory] = useState(false);
     const [filterText, setFilterText] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
+    const [data, setData] = useState<Bill[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [token] = useState("1|9Ny3Cr0O9j33h1z9vjxzg7tX9dDMs6RHig9m85T9f10d093a");
+
+    useEffect(() => {
+        
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`http://localhost:8000/api/admin/invoices`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.status === 403) {
+                    router.push('/unauthorized');
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const json = await response.json();
+                console.log('Response data:', json); // Debug log
+                
+                // Check if the response is an array
+                if (Array.isArray(json)) {
+                    setData(json);
+                } else if (json.data && Array.isArray(json.data)) {
+                    // If the API returns { data: [...] }
+                    setData(json.data);
+                } else {
+                    console.error('Unexpected API response format:', json);
+                    setData([]);
+                }
+            } catch (error) {
+                console.error('Error fetching invoices:', error);
+                setData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [token, router]);
 
     type Bill = {
         id: string;
-        title: string;
-        plan: string;
-        seat: number;
-        price: number;
-        dueDate: string;
+        // title: string;
+        total_amount: number;
+        due_datetime: string;
         status: 'unpaid' | 'paid' | 'overdue';
+        deleted_at: string | null;
+        xendit_invoice_id: string;
+        invoice_url: string;
     };
 
     const statusFilters = [
@@ -41,8 +91,8 @@ export default function BillList() {
                 size: 60,
             },
             {
-                accessorKey: "title",
-                header: "Title",
+                accessorKey: "id",
+                header: "Invoice ID",
                 cell: info => (
                     <div className="truncate w-[200px] font-bold">
                         {info.getValue() as string}
@@ -50,38 +100,20 @@ export default function BillList() {
                 ),
             },
             {
-                accessorKey: "plan",
-                header: "Plan",
+                accessorKey: "total_amount",
+                header: "Total Amount",
                 cell: info => (
                     <div className="flex justify-center">
-                        {info.getValue() as string}
+                        Rp {(info.getValue() as number).toLocaleString()}
                     </div>
                 ),
             },
             {
-                accessorKey: "seat",
-                header: "Seat",
-                cell: info => (
-                    <div className="flex justify-center">
-                        {info.getValue() as number} Seat
-                    </div>
-                ),
-            },
-            {
-                accessorKey: "price",
-                header: "Price",
-                cell: info => (
-                    <div className="flex justify-center">
-                        Rp {(info.getValue() as number).toLocaleString()}/seat
-                    </div>
-                ),
-            },
-            {
-                accessorKey: "dueDate",
+                accessorKey: "due_datetime",
                 header: "Due Date",
                 cell: info => (
                     <div className="flex justify-center">
-                        {info.getValue() as string}
+                        {new Date(info.getValue() as string).toLocaleDateString()}
                     </div>
                 ),
             },
@@ -112,8 +144,8 @@ export default function BillList() {
                     return (
                         <div className="flex gap-2 justify-center">
                             <button
-                                title="Detail"
-                                onClick={() => handleViewInvoice(data)}
+                                title="View Invoice"
+                                onClick={() => window.open(data.invoice_url, '_blank')}
                                 className={"border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"}
                             >
                                 <FaEye />
@@ -125,54 +157,37 @@ export default function BillList() {
         ],
         []
     );
-
+    
+    //CONTOH
     const dummyData: Bill[] = [
         {
-            id: 'INV-001',
-            title: 'Tagihan Maret 2025',
-            plan: 'Premium',
-            seat: 280,
-            price: 18000,
-            dueDate: '03/04/2025',
-            status: 'unpaid'
-        },
-        {
-            id: 'INV-002',
-            title: 'Tagihan Februari 2025',
-            plan: 'Premium',
-            seat: 256,
-            price: 18000,
-            dueDate: '03/03/2025',
-            status: 'overdue'
-        },
-        {
-            id: 'INV-003',
-            title: 'Tagihan Januari 2025',
-            plan: 'Premium',
-            seat: 200,
-            price: 18000,
-            dueDate: '03/02/2025',
-            status: 'paid'
+            id: "01972105-bf1d-71e4-beee-3216431860c5",
+            total_amount: 60000,
+            due_datetime: "2025-06-01T12:00:00.000000Z",
+            status: "unpaid",
+            deleted_at: null,
+            xendit_invoice_id: "68399b1100410a83e05ba067",
+            invoice_url: "https://checkout-staging.xendit.co/web/68399b1100410a83e05ba067"
         }
     ];
 
     const handleViewInvoice = (data: Bill) => {
-        const invoiceData = {
-            ...data,
-            amount: data.seat * data.price
-        };
-        router.push(`/payment/invoice?data=${encodeURIComponent(JSON.stringify(invoiceData))}`);
+        router.push(`/payment/invoice?data=${encodeURIComponent(JSON.stringify(data))}`);
     };
 
     // Filter data based on search text, status and history toggle
     const filteredData = useMemo(() => {
-        return dummyData.filter((item) => {
-            const matchesSearch = item.title.toLowerCase().includes(filterText.toLowerCase()) ||
-                                item.plan.toLowerCase().includes(filterText.toLowerCase());
+        if (!Array.isArray(data)) {
+            console.error('Data is not an array:', data);
+            return [];
+        }
+        
+        return data.filter((item) => {
+            const matchesSearch = item.id.toLowerCase().includes(filterText.toLowerCase());
             const matchesStatus = !filterStatus || item.status === filterStatus;
             return matchesSearch && matchesStatus;
         });
-    }, [filterText, filterStatus, showHistory]);
+    }, [data, filterText, filterStatus, showHistory]);
 
     return (
         <div className="min-h-screen flex flex-col gap-4">
@@ -192,7 +207,13 @@ export default function BillList() {
                         onSecondFilterChange={setFilterStatus}
                         secondFilterOptions={statusFilters}
                     />
-                    <DataTable columns={billColumns} data={filteredData}/>
+                    {loading ? (
+                        <div className="flex justify-center items-center w-full h-64">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E3A5F]"></div>
+                        </div>
+                    ) : (
+                        <DataTable columns={billColumns} data={filteredData}/>
+                    )}
                 </div>
             </div>
         </div>
