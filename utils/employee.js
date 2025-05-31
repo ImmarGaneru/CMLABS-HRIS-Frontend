@@ -11,12 +11,19 @@ export async function getEmployee(id) {
   return data;
 }
 
-export async function createEmployee(payload) {
-  const { data } = await api.post("/employee", payload);
-  return data;
-  
-}
 
+// export async function createEmployee(payload) {
+//   const { data } = await api.post("/employee", payload);
+//   return data;
+  
+// }
+export const createEmployee = (formData) => {
+  return api.post('/employee', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
 
 export async function updateEmployee(id, payload) {
   const { data } = await api.put(`/employee/${id}`, payload);

@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation"; // tambahkan useParams
 import Image from "next/image";
 import { getEmployee } from "../../../../../utils/employee"; // import fungsi fetch
-
+type Dokumen = {
+  name: string;
+  file: string;
+  uploaded_at?: string;
+};
 type Karyawan = {
   id: string;
   name: string;
@@ -18,6 +22,7 @@ type Karyawan = {
   education: string;
   email: string;
   phone: string;
+  documents: Dokumen[];
   startDate: string;
   tenure: string;
   endDate: string;
@@ -32,36 +37,70 @@ type Karyawan = {
   overtimePay: string;
   latePenalty: string;
   totalSalary: string;
+  
 };
 
 export default function DetailKaryawan({ id }: { id: string }) {
   const router = useRouter();
-  const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+    const params = useParams();
+    const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    
+    useEffect(() => {
+    const id = params?.id as string; // ambil id dari URL
+  if (!id) {
+    setError("ID karyawan tidak tersedia");
+    return;
+  }
 
-  useEffect(() => {
-    if (!id) {
-      setError("ID karyawan tidak tersedia");
-      return;
+  const fetchEmployee = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const rawData = await getEmployee(id);
+
+      const mappedData: Karyawan = {
+        id: rawData.id_user,
+        name: `${rawData.first_name} ${rawData.last_name}`,
+        photo: rawData.avatar ? `http://localhost:8000/storage/${rawData.avatar}` : '/default.jpg',
+        position: rawData.jabatan,
+        nik: rawData.nik || '-',
+        address: rawData.address,
+        birthplace: rawData.tempatLahir,
+        birthdate: rawData.tanggalLahir,
+        gender: rawData.jenisKelamin,
+        education: rawData.pendidikan,
+        email: rawData.email || '-',
+        phone: rawData.notelp,
+         documents: rawData.documents || [],
+        startDate: rawData.startDate || '-',
+        tenure: rawData.tenure || '-',
+        endDate: rawData.endDate || '-',
+        schedule: rawData.jadwal,
+        contractType: rawData.tipeKontrak,
+        branch: rawData.cabang,
+        status: rawData.status || '-',
+        effectiveDate: rawData.effectiveDate || '-',
+        bank: rawData.bank,
+        bankAccount: rawData.norek,
+        basicSalary: rawData.basicSalary || '0',
+        overtimePay: rawData.overtimePay || '0',
+        latePenalty: rawData.latePenalty || '0',
+        totalSalary: rawData.totalSalary || '0',
+      };
+
+      setKaryawan(mappedData);
+    } catch (err: any) {
+      setError(err.message || "Gagal mengambil data karyawan");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const fetchEmployee = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = await getEmployee(id);
-        setKaryawan(data);
-      } catch (err: any) {
-        setError(err.message || "Gagal mengambil data karyawan");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmployee();
-  }, [id]);
+  fetchEmployee();
+}, [id]);
 
   const formatRupiah = (value: string | number | undefined) =>
     value ? `Rp ${Number(value).toLocaleString("id-ID")}` : "-";
@@ -171,30 +210,36 @@ export default function DetailKaryawan({ id }: { id: string }) {
             </Section>
           </div>
 
-          <Section title="Dokumen Karyawan">
-            <div className="space-y-3">
-              {employeeDocuments.map((doc, index) => (
-                <div
-                  key={index}
-                  className="max-w-[480px] w-full p-2 rounded-lg bg-[#7CA5BF]/60"
-                >
-                  <div className="flex justify-between items-center">
-                    <a
-                      href={`/uploads/${doc.file}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[18px] text-[#141414] font-medium hover:underline"
-                    >
-                      {doc.name}
-                    </a>
-                    <p className="text-[14px] text-[#141414] opacity-60 font-normal">
-                      uploaded at -
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Section>
+<Section title="Dokumen Karyawan">
+ { karyawan.documents && karyawan.documents.length > 0 ? (
+  <div className="space-y-3">
+    {karyawan.documents.map((doc, index) => (
+      <div key={index} className="max-w-[480px] w-full p-2 rounded-lg bg-[#7CA5BF]/60">
+        <div className="flex justify-between items-center">
+          <a
+            href={`http://localhost:8000/storage/${doc.file}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[18px] text-[#141414] font-medium hover:underline"
+          >
+            {doc.name}
+          </a>
+          <p className="text-[14px] text-[#141414] opacity-60 font-normal">
+            uploaded at - {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : '-'}
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+) : (
+  <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
+)}
+
+</Section>
+
+
+
+
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useState, ChangeEvent, useRef } from "react";
+import React, { useState, ChangeEvent, useRef, useEffect } from "react";
 import { FaFileUpload } from "react-icons/fa";
 import { createEmployee } from "../../../../utils/employee"; // pastikan path-nya benar
 
@@ -9,9 +9,29 @@ import { createEmployee } from "../../../../utils/employee"; // pastikan path-ny
 export default function TambahKaryawan() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+const [positions, setPositions] = useState<{id: string; name: string}[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(true);
 
+  // Fetch posisi saat komponen mount
+  useEffect(() => {
+    async function fetchPositions() {
+      try {
+        const res = await fetch('/api/positions');
+        if (!res.ok) throw new Error("Failed to fetch positions");
+        const data = await res.json();
+        setPositions(data);
+      } catch (error) {
+        console.error(error);
+        setPositions([]);
+      } finally {
+        setLoadingPositions(false);
+      }
+    }
+    fetchPositions();
+  }, []);
   const [formData, setFormData] = useState({
     id_user: "",
+  avatar: null as File | null,
     first_name: "",
     last_name: "",
     nik: "",
@@ -32,39 +52,73 @@ export default function TambahKaryawan() {
     dokumen: null as File | null,
   });
 
-  const [preview, setPreview] = useState<string | null>(null);
 
   const handleBack = () => router.push("/employee");
 
   const handleUploadClick = () => fileInputRef.current?.click();
+// Tambahkan fungsi baru untuk handle dokumen
+const [preview, setPreview] = useState<string | null>(null);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, dokumen: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
+const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setFormData((prev) => ({ ...prev, avatar: file }));
+    
+    const reader = new FileReader();
+    reader.onloadend = () => setPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+};
+
+
+const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setFormData((prev) => ({ ...prev, dokumen: file }));
+  }
+};
+
+
+
+  // const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setFormData((prev) => ({ ...prev, dokumen: file }));
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => setPreview(reader.result as string);
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
   };
-
- const handleSubmit = async (event: { preventDefault: () => void; }) => {
+const handleSubmit = async (event: React.FormEvent) => {
   event.preventDefault();
 
   try {
-    await createEmployee(formData);
+    const data = new FormData();
+
+    // Masukkan semua properti kecuali file
+    Object.entries(formData).forEach(([key, value]) => {
+      // Kalau value adalah File, masukkan langsung
+      if (value instanceof File) {
+        data.append(key, value);
+      } else if (value !== null && value !== undefined) {
+        data.append(key, value.toString());
+      }
+    });
+
+    await createEmployee(data);
+
     alert('Data berhasil ditambahkan');
     router.push('/employee');
-  } catch (error) {
+  } catch (error: any) {
     if (error.response && error.response.data) {
-      // Tampilkan detail validasi error dari backend
       alert('Gagal menambahkan data karyawan:\n' + JSON.stringify(error.response.data, null, 2));
       console.error('Detail error:', error.response.data);
     } else {
@@ -73,6 +127,7 @@ export default function TambahKaryawan() {
     }
   }
 };
+
 
   return (
     <div className="mt-3 p-6 bg-white rounded shadow w-full ml-0 mr-auto">
@@ -129,7 +184,7 @@ export default function TambahKaryawan() {
           type="file"
           accept="image/*"
           ref={fileInputRef}
-          onChange={handleFileChange}
+          onChange={handleAvatarChange}
           style={{ display: "none" }}
         />
       </div>
@@ -391,21 +446,28 @@ export default function TambahKaryawan() {
       </div>
 
       <div>
-        <label
-          htmlFor="jabatan"
-          className="block text-[20px] font-bold text-[#141414]"
-        >
-          Jabatan
-        </label>
-        <input
-          id="jabatan"
-          name="jabatan"
-          placeholder="Enter position"
-          onChange={handleChange}
-          className="input"
-          value={formData.jabatan}
-        />
-      </div>
+  <label
+    htmlFor="jabatan"
+    className="block text-[20px] font-bold text-[#141414]"
+  >
+    Jabatan
+  </label>
+  <select
+    id="jabatan"
+    name="jabatan"
+    onChange={handleChange}
+    className="input"
+    value={formData.jabatan}
+  >
+    <option value="">-- Pilih Jabatan --</option>
+    {positions.map((pos) => (
+      <option key={pos.id} value={pos.name}>
+        {pos.name}
+      </option>
+    ))}
+  </select>
+</div>
+
 
       <div>
         <label
@@ -458,21 +520,23 @@ export default function TambahKaryawan() {
         />
       </div>
 
-      <div className="col-span-2">
-        <label className="block text-[20px] font-bold text-[#141414]">
-          Upload Dokumen
-        </label>
-        <div className="relative">
-          <input
-            name="dokumen"
-            type="file"
-            accept=".pdf,.docx"
-            onChange={handleChange}
-            className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
-          />
-          <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
-        </div>
-      </div>
+     <div className="col-span-2">
+  <label className="block text-[20px] font-bold text-[#141414]">
+    Upload Dokumen
+  </label>
+  <div className="relative">
+    <input
+      name="dokumen[]"            // pake array supaya multiple file bisa diterima backend
+      type="file"
+      accept=".pdf,.docx"
+      multiple                    // penting supaya bisa pilih banyak file sekaligus
+      onChange={handleDokumenChange}
+      className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
+    />
+    <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
+  </div>
+</div>
+
 
       <div className="col-span-2 flex justify-end gap-4">
         <button

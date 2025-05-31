@@ -12,7 +12,7 @@ import DataTableHeader from "@/components/DatatableHeader";
 
 // Pindahkan tipe di luar komponen
 type Employee = {
-  id: number;           // <-- Di API ID kamu tipe string UUID, tapi di frontend kamu pakai number
+id: string;      
   nama: string;
   jenisKelamin: string;
   notelp: string;
