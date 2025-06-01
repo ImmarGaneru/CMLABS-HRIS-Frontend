@@ -241,7 +241,6 @@ export default function ApprovalPage() {
                         secondFilterValue={filterStatus}
                         onSecondFilterChange={setFilterStatus}
                         secondFilterOptions={statusFilters}
-                        
                         onAdd={() => router.push("/attendance/create")}
                     />
                     <DataTable columns={approvalColumns} data={filteredData}/>
