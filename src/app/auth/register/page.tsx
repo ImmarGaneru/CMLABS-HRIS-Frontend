@@ -7,7 +7,6 @@ import Link from "next/link";
 type FormFields = {
   first_name: string;
   last_name: string;
-  // address: string;
   company_name: string;
   company_address: string;
   email: string;
@@ -23,7 +22,6 @@ type ValidationErrors = {
 const fields: { label: string; key: keyof FormFields; type?: string }[] = [
   { label: "First Name", key: "first_name" },
   { label: "Last Name", key: "last_name" },
-  // { label: "Address", key: "address" },
   { label: "Company Name", key: "company_name" },
   { label: "Company Address", key: "company_address" },
   { label: "Email", key: "email", type: "email" },
@@ -42,7 +40,6 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState<FormFields>({
     first_name,
     last_name,
-    // address: "",
     company_name: "",
     company_address: "",
     email: initialEmail,
@@ -52,6 +49,11 @@ export default function RegisterPage() {
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const togglePassword = () => setShowPassword((prev) => !prev);
+  const toggleConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -133,24 +135,72 @@ export default function RegisterPage() {
           <div className="w-full h-[3px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            {fields.map(({ label, key, type }) => (
-              <div key={key} className="space-y-1">
-                <label className="text-sm text-gray-600">{label}</label>
-                <input
-                  type={type === "password" ? "password" : type || "text"}
-                  name={key}
-                  placeholder={label}
-                  value={formData[key]}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-2 rounded-md border ${
-                    errors[key] ? "border-red-500" : "border-gray-300"
-                  } bg-white text-sm`}
-                />
-                {errors[key] && (
-                  <p className="text-red-500 text-sm">{errors[key]?.[0]}</p>
-                )}
-              </div>
-            ))}
+            {fields.map(({ label, key, type }) => {
+              const isPassword = key === "password";
+              const isConfirmPassword = key === "password_confirmation";
+
+              if (isPassword || isConfirmPassword) {
+                const show = isPassword ? showPassword : showConfirmPassword;
+                const toggle = isPassword ? togglePassword : toggleConfirmPassword;
+                return (
+                  <div key={key} className="space-y-1">
+                    <label className="text-sm text-gray-600">{label}</label>
+                    <div className="relative">
+                      <input
+                        type={show ? "text" : "password"}
+                        name={key}
+                        placeholder={label}
+                        value={formData[key]}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-2 pr-10 rounded-md border ${
+                          errors[key] ? "border-red-500" : "border-gray-300"
+                        } bg-white text-sm`}
+                      />
+                      <button
+                        type="button"
+                        onClick={toggle}
+                        className="absolute top-1/2 right-3 transform -translate-y-1/2 focus:outline-none"
+                      >
+                        <img
+                          src={
+                            show ? "/password_on.svg" : "/password_off.svg"
+                          }
+                          alt="Toggle Password"
+                          className="w-5 h-5"
+                          style={{
+                            filter: show
+                              ? "brightness(0) saturate(100%) invert(42%) sepia(100%) saturate(624%) hue-rotate(180deg) brightness(96%) contrast(90%)"
+                              : "none",
+                          }}
+                        />
+                      </button>
+                    </div>
+                    {errors[key] && (
+                      <p className="text-red-500 text-sm">{errors[key]?.[0]}</p>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <div key={key} className="space-y-1">
+                  <label className="text-sm text-gray-600">{label}</label>
+                  <input
+                    type={type || "text"}
+                    name={key}
+                    placeholder={label}
+                    value={formData[key]}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 rounded-md border ${
+                      errors[key] ? "border-red-500" : "border-gray-300"
+                    } bg-white text-sm`}
+                  />
+                  {errors[key] && (
+                    <p className="text-red-500 text-sm">{errors[key]?.[0]}</p>
+                  )}
+                </div>
+              );
+            })}
 
             <button
               type="submit"
