@@ -7,7 +7,7 @@ import Link from "next/link";
 type FormFields = {
   first_name: string;
   last_name: string;
-  address: string;
+  // address: string;
   company_name: string;
   company_address: string;
   email: string;
@@ -23,7 +23,7 @@ type ValidationErrors = {
 const fields: { label: string; key: keyof FormFields; type?: string }[] = [
   { label: "First Name", key: "first_name" },
   { label: "Last Name", key: "last_name" },
-  { label: "Address", key: "address" },
+  // { label: "Address", key: "address" },
   { label: "Company Name", key: "company_name" },
   { label: "Company Address", key: "company_address" },
   { label: "Email", key: "email", type: "email" },
@@ -42,7 +42,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState<FormFields>({
     first_name,
     last_name,
-    address: "",
+    // address: "",
     company_name: "",
     company_address: "",
     email: initialEmail,
