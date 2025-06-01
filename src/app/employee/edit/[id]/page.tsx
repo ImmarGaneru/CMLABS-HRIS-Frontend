@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { use } from "react";
 
 type Karyawan = {
   id: string;
@@ -33,14 +34,14 @@ type Karyawan = {
   totalSalary: string;
 };
 
-export default function EditKaryawan({ params }: { params: { id: string } }) {
+export default function EditKaryawan() {
   const router = useRouter();
   const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
 
   useEffect(() => {
     // Simulate fetching the employee data (use API for real data)
     const fetchedKaryawan: Karyawan = {
-      id: params.id,
+      id: "1",
       name: "John Doe",
       photo: "/default.jpg",
       position: "Manager",
@@ -68,7 +69,7 @@ export default function EditKaryawan({ params }: { params: { id: string } }) {
       totalSalary: "12000000",
     };
     setKaryawan(fetchedKaryawan);
-  }, [params.id]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,14 +281,14 @@ export default function EditKaryawan({ params }: { params: { id: string } }) {
   );
 }
 
-function EditableField({ 
-  label, 
-  value, 
-  onChange, 
-  type = "text" 
-}: { 
-  label: string; 
-  value: string; 
+function EditableField({
+  label,
+  value,
+  onChange,
+  type = "text"
+}: {
+  label: string;
+  value: string;
   onChange: (value: string) => void;
   type?: string;
 }) {

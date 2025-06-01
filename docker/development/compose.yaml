@@ -1,0 +1,12 @@
+services:
+  with-docker-multi-env-development:
+    build:
+      context: ../../
+      dockerfile: docker/development/Dockerfile
+    image: with-docker-multi-env-development
+    ports:
+      - "3001:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
