@@ -25,9 +25,18 @@ export default function CekEmailPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Cek Email-mu</h1>
         <p className="text-sm text-gray-700 mb-1">
           Kami mengirimkan tautan pengaturan ulang kata sandi ke email Anda{" "}
-          <span className="font-semibold">
-            ({email ?? "email tidak ditemukan"})
-          </span>
+          {email ? (
+            <a
+              href="https://mail.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 font-semibold hover:underline"
+            >
+              ({email})
+            </a>
+          ) : (
+            <span className="font-semibold">(email tidak ditemukan)</span>
+          )}
         </p>
         <p className="text-sm text-gray-700 mb-4">
           yang berlaku selama 24 jam setelah menerima email. <br />
