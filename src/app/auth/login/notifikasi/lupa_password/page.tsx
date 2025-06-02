@@ -10,11 +10,15 @@ export default function LupaPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const email = (e.target as HTMLFormElement).email.value;
+
     const response = await api.post("/forgot-password", {
-      email: (e.target as HTMLFormElement).email.value,
+      email,
     });
 
     if (response.data.meta.success) {
+      // Simpan email ke localStorage
+      localStorage.setItem("email_reset", email);
       router.push("/auth/login/notifikasi/cek_email");
     } else {
       alert(
@@ -44,7 +48,9 @@ export default function LupaPasswordPage() {
             <input
               type="email"
               id="email"
+              name="email"
               placeholder="alamat@email.com"
+              required
               className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

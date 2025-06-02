@@ -1,6 +1,18 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function CekEmailPage() {
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedEmail = localStorage.getItem("email_reset");
+      setEmail(savedEmail);
+    }
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-white text-gray-800 px-4">
       {/* Card Content */}
@@ -13,7 +25,9 @@ export default function CekEmailPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Cek Email-mu</h1>
         <p className="text-sm text-gray-700 mb-1">
           Kami mengirimkan tautan pengaturan ulang kata sandi ke email Anda{" "}
-          <span className="font-semibold">(yayun435@gmail.com)</span>
+          <span className="font-semibold">
+            ({email ?? "email tidak ditemukan"})
+          </span>
         </p>
         <p className="text-sm text-gray-700 mb-4">
           yang berlaku selama 24 jam setelah menerima email. <br />
