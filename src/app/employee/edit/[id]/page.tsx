@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { use } from "react";
 
 type Karyawan = {
   id: string;
@@ -33,13 +34,13 @@ type Karyawan = {
   totalSalary: string;
 };
 
-export default function EditKaryawan({ params }: { params: { id: string } }) {
+export default function EditKaryawan() {
   const router = useRouter();
   const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
   const [, setEmployees] = useState<Karyawan[]>([]);
   const [, setLoading] = useState(false);
   const [, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const fetchEmployees = async () => {
       setLoading(true);
@@ -64,7 +65,7 @@ export default function EditKaryawan({ params }: { params: { id: string } }) {
     };
 
     fetchEmployees();
-  }, [params.id]);
+  }, []);
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -277,14 +278,14 @@ export default function EditKaryawan({ params }: { params: { id: string } }) {
   );
 }
 
-function EditableField({ 
-  label, 
-  value, 
-  onChange, 
-  type = "text" 
-}: { 
-  label: string; 
-  value: string; 
+function EditableField({
+  label,
+  value,
+  onChange,
+  type = "text"
+}: {
+  label: string;
+  value: string;
   onChange: (value: string) => void;
   type?: string;
 }) {
