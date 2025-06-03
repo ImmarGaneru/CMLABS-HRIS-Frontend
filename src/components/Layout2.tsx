@@ -13,17 +13,32 @@ import { Navbar4 } from "./Navbar4";
 export default function Layout2({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  const usesSidebar = () => {
-    // Define all routes that should use the sidebar
-    return (
-      pathname.startsWith("/attendance") ||
-      pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/employee") ||
-      pathname.startsWith("/jadwal") ||
-      pathname.startsWith("/approval") ||
-      pathname.startsWith("/payment")
-    );
-  };
+    const usesSidebar = () => {
+        // Define all routes that should use the sidebar
+        return pathname.startsWith("/attendance") ||
+            pathname.startsWith("/dashboard")||
+            pathname.startsWith("/employee") ||
+            pathname.startsWith("/jadwal") ||
+            pathname.startsWith("/approval") ||
+            pathname.startsWith("/payment") ||
+            pathname.startsWith("/subscription")
+    }
+
+    // Handle special layout for lupa_password and link_expired
+    if (
+        pathname.startsWith("/login/notifikasi/lupa_password") ||
+        pathname.startsWith("/login/notifikasi/cek_email") ||
+        pathname.startsWith("/login/notifikasi/sukses_password") ||
+        pathname.startsWith("/login/notifikasi/link_expired") ||
+        pathname.startsWith("/login/notifikasi/kode_password") ||
+        pathname.startsWith("/login/notifikasi/ubah_password")
+    ) {
+        return (
+            <Navbar4>
+                {children}
+            </Navbar4>
+        )
+    }
 
   // Handle special layout for lupa_password and link_expired
   if (
