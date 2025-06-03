@@ -1,8 +1,32 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import { api } from "@/lib/axios";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LupaPasswordPage() {
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const email = (e.target as HTMLFormElement).email.value;
+
+    const response = await api.post("/forgot-password", {
+      email,
+    });
+
+    if (response.data.meta.success) {
+      // Simpan email ke localStorage
+      localStorage.setItem("email_reset", email);
+      router.push("/auth/login/notifikasi/cek_email");
+    } else {
+      alert(
+        response.data.meta.message || "Terjadi kesalahan, silakan coba lagi."
+      );
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-white text-gray-800 px-4">
       {/* Card Form */}
@@ -16,7 +40,7 @@ export default function LupaPasswordPage() {
         {/* Garis gradasi */}
         <div className="w-full h-[2px] bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-full mb-4" />
 
-        <form className="text-left space-y-4">
+        <form className="text-left space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-1">
             <label htmlFor="email" className="text-sm text-gray-700">
               Email
@@ -24,21 +48,23 @@ export default function LupaPasswordPage() {
             <input
               type="email"
               id="email"
+              name="email"
               placeholder="alamat@email.com"
+              required
               className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          <Link
-            href="/login/notifikasi/cek_email"
+          <button
+            type="submit"
             className="block text-center w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md"
           >
             Reset Password
-          </Link>
+          </button>
         </form>
 
         <Link
-          href="/login/email"
+          href="/auth/login/email"
           className="text-sm text-blue-600 hover:underline mt-4 inline-block"
         >
           Kembali ke halaman Login
