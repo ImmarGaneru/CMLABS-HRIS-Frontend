@@ -11,7 +11,6 @@ import {
     Clock,
     CalendarDays,
     ClipboardCheck,
-    CreditCard,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -100,16 +99,6 @@ export function SidebarApp() {
                 >
                     <Settings className="mr-2 h-4 w-4"/>
                     <span>Settings</span>
-                </Link>
-                <Link
-                    href="/payment"
-                    className={cn(
-                        "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                        pathname === "/payment" ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
-                    )}
-                >
-                    <CreditCard className="mr-2 h-4 w-4"/>
-                    <span>App Payment</span>
                 </Link>
                 <Button
                     variant="ghost"

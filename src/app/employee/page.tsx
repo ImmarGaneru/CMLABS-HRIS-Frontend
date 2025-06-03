@@ -19,6 +19,8 @@ type Employee = {
   cabang: string;
   jabatan: string;
   status: string;
+  hireDate: string;         // Added to match EmployeeCardSum type
+  employmentType: string;   // Added to match EmployeeCardSum type
 };
 
 
@@ -62,8 +64,13 @@ export default function EmployeeTablePage() {
       // **Update state employees dengan menghapus employee yang sudah softdelete**
       setEmployees((prev) => prev.filter((emp) => emp.id !== id));
     } catch (error) {
-      alert(`Gagal menghapus data: ${error.message}`);
-      console.error(error);
+      if (error instanceof Error) {
+        alert(`Gagal menghapus data: ${error.message}`);
+        console.error(error);
+      } else {
+        alert('Gagal menghapus data: Unknown error occurred');
+        console.error('Unknown error:', error);
+      }
     }
   };
   // Fetch data dari backend
@@ -286,7 +293,7 @@ export default function EmployeeTablePage() {
             onExport={() => handleExportCSV(filteredData)}
             onImport={handleImportCSV}
             onAdd={() => router.push("/employee/tambah")}
-            importInputRef={fileInputRef} // pastikan DataTableHeader menerima prop ini dan pasang di input type="file"
+            importInputRef={fileInputRef}
           />
 
           <DataTable columns={employeeColumns} data={filteredData} />
