@@ -9,10 +9,23 @@ import { RxAvatar } from "react-icons/rx";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import EmployeeCardSum from "./component_employee/employee_card_sum";
 import DataTableHeader from "@/components/DatatableHeader";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  
+} from "@/components/ui/alert-dialog";
+
 
 // Pindahkan tipe di luar komponen
 type Employee = {
-id: string;      
+  id: string;
   nama: string;
   jenisKelamin: string;
   notelp: string;
@@ -23,10 +36,7 @@ id: string;
   employmentType: string;   // Added to match EmployeeCardSum type
 };
 
-
-
 export default function EmployeeTablePage() {
-  
   const router = useRouter();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -43,36 +53,27 @@ export default function EmployeeTablePage() {
   ];
 
   const statusFilters = [
-    { label: "active", value: "active" },
-    { label: "inactive", value: "inactive" },
+    { label: "Aktif", value: "Aktif" },
+    { label: "Non-aktif", value: "Non-aktif" },
   ];
-   const handleSoftDelete = async (id: number | string) => {
-    if (!confirm("Apakah anda yakin ingin menghapus data ini?")) return;
+const handleSoftDelete = async (id: number | string) => {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
+      method: "DELETE",
+    });
 
-    try {
-      const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Gagal menghapus data");
-      }
-
-      alert("Data berhasil dihapus (soft delete).");
-
-      // **Update state employees dengan menghapus employee yang sudah softdelete**
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(`Gagal menghapus data: ${error.message}`);
-        console.error(error);
-      } else {
-        alert('Gagal menghapus data: Unknown error occurred');
-        console.error('Unknown error:', error);
-      }
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Gagal menghapus data");
     }
-  };
+
+    // Update state untuk menghapus employee yang sudah dihapus
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+  } catch (error) {
+    alert(`Gagal menghapus data: ${error.message}`);
+    console.error(error);
+  }
+};
   // Fetch data dari backend
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -113,7 +114,9 @@ export default function EmployeeTablePage() {
       {
         id: "No",
         header: "No",
-        cell: ({ row }) => <div className="flex justify-center">{row.index + 1}</div>,
+        cell: ({ row }) => (
+          <div className="flex justify-center">{row.index + 1}</div>
+        ),
         size: 60,
       },
       {
@@ -128,7 +131,9 @@ export default function EmployeeTablePage() {
       {
         accessorKey: "nama",
         header: "Nama",
-        cell: (info) => <div className="truncate w-[120px]">{info.getValue() as string}</div>,
+        cell: (info) => (
+          <div className="truncate w-[120px]">{info.getValue() as string}</div>
+        ),
       },
       {
         accessorKey: "jenisKelamin",
@@ -143,7 +148,9 @@ export default function EmployeeTablePage() {
       {
         accessorKey: "cabang",
         header: "Cabang",
-        cell: (info) => <div className="truncate w-[80px]">{info.getValue() as string}</div>,
+        cell: (info) => (
+          <div className="truncate w-[80px]">{info.getValue() as string}</div>
+        ),
       },
       {
         accessorKey: "jabatan",
@@ -157,7 +164,11 @@ export default function EmployeeTablePage() {
           const status = info.getValue() as string;
           return (
             <div className="flex justify-center w-[120px]">
-              <span className={`px-2 py-1 text-xs rounded ${getStatusStyle(status)}`}>
+              <span
+                className={`px-2 py-1 text-xs rounded ${getStatusStyle(
+                  status
+                )}`}
+              >
                 {status}
               </span>
             </div>
@@ -185,14 +196,31 @@ export default function EmployeeTablePage() {
               >
                 <FaEdit />
               </button>
-           <button
-  title="Hapus"
-  onClick={() => handleSoftDelete(data.id)} // Kirim id disini
-  className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
->
-  <FaTrash />
-</button>
-
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    title="Hapus"
+                    // onClick={() => handleSoftDelete(data.id)} // Kirim id disini
+                    className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
+                  >
+                    <FaTrash />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                   Yakin menghapus data ini?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Data yang sudah dihapus tidak dapat dikembalikan
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleSoftDelete(data.id)}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           );
         },
@@ -212,38 +240,37 @@ export default function EmployeeTablePage() {
   // Ref input file untuk reset
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Import CSV
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        if (!data) throw new Error("File kosong");
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = e.target?.result;
+      if (!data) throw new Error("File kosong");
 
-        const workbook = XLSX.read(data, { type: "array" }); // gunakan 'array' untuk readAsArrayBuffer
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json<Employee>(worksheet);
-        console.log("Imported data:", jsonData);
-        alert("Import berhasil. Lihat console untuk data.");
-        // Jika ingin langsung update state:
-        // setEmployees(jsonData);
-      } catch (error) {
-        console.error("Error importing file:", error);
-        alert("Error mengimpor file. Pastikan format benar.");
-      } finally {
-        // Reset input supaya bisa import ulang file sama
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json<Employee>(worksheet);
+      console.log("Imported data:", jsonData);
+      alert("Import berhasil!");
+    } catch (error) {
+      console.error("Gagal impor:", error);
+      alert("Terjadi kesalahan saat mengimpor file.");
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
-    };
-
-    reader.readAsArrayBuffer(file);
+    }
   };
+
+  reader.readAsArrayBuffer(file);
+};
+
+
+
 
   // Filter data sesuai filter user
   const filteredData = useMemo(() => {
@@ -264,7 +291,6 @@ export default function EmployeeTablePage() {
     });
   }, [employees, filterText, filterGender, filterStatus]);
 
-  
   return (
     <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
       <EmployeeCardSum employees={employees} />
@@ -276,6 +302,7 @@ export default function EmployeeTablePage() {
 
           <DataTableHeader
             title="Data Karyawan"
+            
             hasSearch={true}
             hasFilter={true}
             hasSecondFilter={true}
@@ -293,7 +320,7 @@ export default function EmployeeTablePage() {
             onExport={() => handleExportCSV(filteredData)}
             onImport={handleImportCSV}
             onAdd={() => router.push("/employee/tambah")}
-            importInputRef={fileInputRef}
+            importInputRef={fileInputRef} // pastikan DataTableHeader menerima prop ini dan pasang di input type="file"
           />
 
           <DataTable columns={employeeColumns} data={filteredData} />
