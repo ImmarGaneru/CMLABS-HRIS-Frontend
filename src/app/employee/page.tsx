@@ -32,6 +32,8 @@ type Employee = {
   cabang: string;
   jabatan: string;
   status: string;
+  hireDate: string;         // Added to match EmployeeCardSum type
+  employmentType: string;   // Added to match EmployeeCardSum type
 };
 
 export default function EmployeeTablePage() {
@@ -72,7 +74,6 @@ const handleSoftDelete = async (id: number | string) => {
     console.error(error);
   }
 };
-
   // Fetch data dari backend
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -319,7 +320,6 @@ const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
             onExport={() => handleExportCSV(filteredData)}
             onImport={handleImportCSV}
             onAdd={() => router.push("/employee/tambah")}
-            
             importInputRef={fileInputRef} // pastikan DataTableHeader menerima prop ini dan pasang di input type="file"
           />
 
