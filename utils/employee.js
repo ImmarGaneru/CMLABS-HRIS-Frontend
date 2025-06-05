@@ -25,10 +25,11 @@ export const createEmployee = (formData) => {
   });
 };
 
-export async function updateEmployee(id, payload) {
-  const { data } = await api.put(`/employee/${id}`, payload);
-  return data;
-}
+export const updateEmployee = (id, formData) => {
+  return api.put(`/employee/${id}`, formData);
+};
+
+
 
 export async function deleteEmployee(id) {
   const { data } = await api.delete(`/employee/${id}`);
