@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { IoArrowBackOutline } from "react-icons/io5";
+import { InvoiceStatus, SubscriptionStatus } from '@/lib/enums';
+import { getStatusClass } from '@/lib/utils';
 import Button from '@/components/Button';
 
 interface Payment {
@@ -30,7 +32,7 @@ interface InvoiceData {
   id: string;
   total_amount: number;
   due_datetime: string;
-  status: 'unpaid' | 'paid' | 'overdue';
+  status: InvoiceStatus;
   invoice_url: string;
   subscription: Subscription;
   payments: Payment[];
@@ -40,7 +42,7 @@ export default function Invoice() {
   const searchParams = useSearchParams();
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [token] = useState("8|DcN7dqelnE4js6rOn6g1VePt26YKixwa1DKrlBJJba4c3347");
+  const [token] = useState("9|CmySPq9oHzxlzpNsWbCXLO6YKOrJhskTj3jOoGi4ff89bed8");
 
   // Fetch invoice by ID from API
   useEffect(() => {
@@ -59,19 +61,28 @@ export default function Invoice() {
     })
       .then((res) => res.json())
       .then((json) => {
-        if (json.meta?.success && json.data) {
-          const invoice = json.data;
-
+        if (json.meta?.success && json.data?.data) {
+          const invoice = json.data.data;
+        
           const formattedData: InvoiceData = {
-            id: invoice.id,
-            total_amount: invoice.total_amount,
-            due_datetime: invoice.due_datetime,
-            status: invoice.status,
-            invoice_url: invoice.invoice_url,
-            subscription: invoice.user?.workplace?.subscription || {},
+            id: invoice.id || 'N/A',
+            total_amount: typeof invoice.total_amount === 'number' ? invoice.total_amount : 0,
+            due_datetime: invoice.due_datetime || new Date().toISOString(),
+            status: invoice.status || InvoiceStatus.Unpaid,
+            invoice_url: invoice.invoice_url || '#',
+            subscription: invoice.user?.workplace?.subscription || {
+              id: '',
+              package_type: 'free',
+              seats: 0,
+              price_per_seat: 0,
+              is_trial: false,
+              trial_ends_at: null,
+              ends_at: null,
+              status: SubscriptionStatus.Expired,
+            },
             payments: Array.isArray(invoice.payments) ? invoice.payments : [],
           };
-
+        
           setInvoiceData(formattedData);
         }
       })
@@ -94,7 +105,9 @@ export default function Invoice() {
   const { id, total_amount, due_datetime, status, invoice_url, subscription, payments } = invoiceData;
 
   const handlePaymentRedirect = () => {
-    window.location.href = invoice_url;
+    if(invoice_url){
+      window.open(invoice_url, '_blank');
+    }
   };
 
   return (
@@ -118,15 +131,23 @@ export default function Invoice() {
               <p><span className="font-medium">Invoice ID:</span> {id}</p>
               <p><span className="font-medium">Jumlah:</span> Rp {total_amount.toLocaleString()}</p>
               <p><span className="font-medium">Tanggal Jatuh Tempo:</span> {new Date(due_datetime).toLocaleDateString()}</p>
-              <p>
-                <span className="font-medium">Status:</span>{' '}
-                <span className={`inline-block px-2 py-1 text-xs rounded text-white ${
-                  status === 'paid' ? 'bg-green-500' :
-                  status === 'overdue' ? 'bg-red-500' : 'bg-yellow-500'
-                }`}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </span>
-              </p>
+                {/* Status Faktur */}
+                <div>
+                  <span className="font-medium">Status Faktur:</span>{' '}
+                  <span className={`inline-block px-2 py-1 text-xs rounded ${getStatusClass(status)}`}>
+                    {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
+                  </span>
+                </div>
+
+                {/* Status Langganan */}
+                {subscription && (
+                  <div>
+                    <span className="font-medium">Status Langganan:</span>{' '}
+                    <span className={`inline-block px-2 py-1 text-xs rounded ${getStatusClass(subscription.status as SubscriptionStatus)}`}>
+                      {subscription.status?.charAt(0).toUpperCase() + subscription.status?.slice(1)}
+                    </span>
+                  </div>
+                )}
             </div>
           </div>
 
@@ -134,10 +155,19 @@ export default function Invoice() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Langganan Terkait</h4>
             <div className="space-y-2">
-              <p><span className="font-medium">Paket:</span> {subscription.package_type}</p>
-              <p><span className="font-medium">Jumlah Seat:</span> {subscription.seats}</p>
-              <p><span className="font-medium">Harga per Seat:</span> Rp {subscription.price_per_seat.toLocaleString()}</p>
-              <p><span className="font-medium">Status:</span> {subscription.status}</p>
+            <p><span className="font-medium">Jumlah:</span> Rp {total_amount.toLocaleString()}</p>
+            <p><span className="font-medium">Tanggal Jatuh Tempo:</span> 
+              {due_datetime ? new Date(due_datetime).toLocaleDateString() : 'Belum ditentukan'}
+            </p>
+
+            {subscription && (
+              <>
+                <p><span className="font-medium">Paket:</span> {subscription.package_type}</p>
+                <p><span className="font-medium">Jumlah Seat:</span> {subscription.seats}</p>
+                <p><span className="font-medium">Harga per Seat:</span> Rp {subscription.price_per_seat.toLocaleString()}</p>
+                <p><span className="font-medium">Status:</span> {subscription.status}</p>
+              </>
+            )}
             </div>
           </div>
         </div>
