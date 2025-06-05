@@ -15,7 +15,7 @@ export default function BillList() {
     const [filterStatus, setFilterStatus] = useState("");
     const [data, setData] = useState<Bill[]>([]);
     const [loading, setLoading] = useState(true);
-    const [token] = useState("33|5LDN0e8AskvPD1suamMTkidN7SYfUSp5CezqlTjp5f8d22dc");
+    const [token] = useState("8|DcN7dqelnE4js6rOn6g1VePt26YKixwa1DKrlBJJba4c3347");
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
@@ -42,16 +42,13 @@ export default function BillList() {
                 const json = await response.json();
                 console.log('Response data:', json); // Debug log
                 
-                // Check if the response is an array
-                if (Array.isArray(json)) {
-                    setData(json);
-                } else if (json.data && Array.isArray(json.data)) {
-                    // If the API returns { data: [...] }
+                if (json && Array.isArray(json.data)) {
                     setData(json.data);
                 } else {
-                    console.error('Unexpected API response format:', json);
+                    console.error('Data format tidak dikenali', json);
                     setData([]);
                 }
+                  
             } catch (error) {
                 console.error('Error fetching invoices:', error);
                 setData([]);
@@ -69,9 +66,9 @@ export default function BillList() {
         total_amount: number;
         due_datetime: string;
         status: 'unpaid' | 'paid' | 'overdue';
-        deleted_at: string | null;
         xendit_invoice_id: string;
         invoice_url: string;
+        deleted_at: string | null;
     };
 
     const statusFilters = [
@@ -147,7 +144,8 @@ export default function BillList() {
                         <div className="flex gap-2 justify-center">
                             <button
                                 title="View Invoice"
-                                onClick={() => window.open(data.invoice_url, '_blank')}
+                                // onClick={() => window.open(data.invoice_url, '_blank')} 
+                                onClick={() => handleViewInvoice(data)} 
                                 className={"border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"}
                             >
                                 <FaEye />
@@ -174,7 +172,7 @@ export default function BillList() {
     ];
 
     const handleViewInvoice = (data: Bill) => {
-        router.push(`/payment/invoice?data=${encodeURIComponent(JSON.stringify(data))}`);
+        router.push(`/subscription/payment/invoice?id=${data.id}`);
     };
 
     // Export to Excel

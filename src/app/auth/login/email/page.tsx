@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LuEyeOff } from "react-icons/lu";
-import { LuEye } from "react-icons/lu";
+// import { LuEyeOff } from "react-icons/lu";
+// import { LuEye } from "react-icons/lu";
 import { api } from "@/lib/axios";
 
 export default function LoginEmailPage() {

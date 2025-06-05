@@ -1,197 +1,176 @@
 'use client';
+
 import { useState, useEffect } from 'react';
-import { IoArrowBackOutline } from "react-icons/io5";
 import { useSearchParams } from 'next/navigation';
+import { IoArrowBackOutline } from "react-icons/io5";
 import Button from '@/components/Button';
 
+interface Payment {
+  id: string;
+  payment_code: string;
+  amount_paid: number;
+  currency: string;
+  status: string;
+  payment_datetime: string;
+  payment_method: string;
+}
+
+interface Subscription {
+  id: string;
+  package_type: string;
+  seats: number;
+  price_per_seat: number;
+  is_trial: boolean;
+  trial_ends_at: string | null;
+  ends_at: string | null;
+  status: 'active' | 'trial' | 'expired';
+}
+
 interface InvoiceData {
-    id: string;
-    title: string;
-    plan: string;
-    seat: number;
-    price: number;
-    dueDate: string;
-    amount: number;
-    status: 'unpaid' | 'paid' | 'overdue';
+  id: string;
+  total_amount: number;
+  due_datetime: string;
+  status: 'unpaid' | 'paid' | 'overdue';
+  invoice_url: string;
+  subscription: Subscription;
+  payments: Payment[];
 }
 
 export default function Invoice() {
-    const searchParams = useSearchParams();
-    const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
-    const [paymentMethod, setPaymentMethod] = useState<string>('');
-    const [isProcessing, setIsProcessing] = useState(false);
+  const searchParams = useSearchParams();
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [token] = useState("8|DcN7dqelnE4js6rOn6g1VePt26YKixwa1DKrlBJJba4c3347");
 
-    useEffect(() => {
-        const data = searchParams.get('data');
-        if (data) {
-            try {
-                const parsedData = JSON.parse(decodeURIComponent(data));
-                setInvoiceData(parsedData);
-            } catch (error) {
-                console.error('Error parsing invoice data:', error);
-            }
-        }
-    }, [searchParams]);
-
-    const handlePayment = async () => {
-        if (!invoiceData) return;
-        
-        try {
-            setIsProcessing(true);
-            
-            const response = await fetch('/api/create-invoice', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    amount: invoiceData.amount,
-                    description: `${invoiceData.title} - ${invoiceData.plan}`,
-                    customer: {
-                        given_names: "Customer Name", // Replace with actual customer data
-                        email: "customer@example.com", // Replace with actual customer data
-                    },
-                    items: [
-                        {
-                            name: invoiceData.plan,
-                            quantity: 1,
-                            price: invoiceData.amount,
-                            category: "Subscription",
-                        },
-                    ],
-                }),
-            });
-
-            const data = await response.json();
-            
-            if (data.invoiceUrl) {
-                window.location.href = data.invoiceUrl;
-            } else {
-                throw new Error('No invoice URL received');
-            }
-        } catch (error) {
-            console.error('Payment error:', error);
-            alert('Failed to process payment. Please try again.');
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    if (!invoiceData) {
-        return <div>Loading...</div>;
+  // Fetch invoice by ID from API
+  useEffect(() => {
+    const invoiceId = searchParams.get('id');
+    if (!invoiceId) {
+      console.error("Invoice ID tidak ditemukan di URL");
+      setLoading(false);
+      return;
     }
 
-    return (
-        <div className="flex flex-col px-6 py-6 gap-4 w-full h-fit bg-[#F8F8F8] rounded-2xl">
-            {/* Header */}
-            <div className="flex flex-row w-full items-center justify-between">
-                <h3 className="text-2xl font-bold text-blue-950">Invoice Details</h3>
-                <Button onClick={() => window.history.back()} variant='redirectButton'>
-                    <IoArrowBackOutline size={20}/>
-                    <span className="font-medium">Kembali</span>
-                </Button>
+    fetch(`http://localhost:8000/api/admin/invoices/${invoiceId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.meta?.success && json.data) {
+          const invoice = json.data;
+
+          const formattedData: InvoiceData = {
+            id: invoice.id,
+            total_amount: invoice.total_amount,
+            due_datetime: invoice.due_datetime,
+            status: invoice.status,
+            invoice_url: invoice.invoice_url,
+            subscription: invoice.user?.workplace?.subscription || {},
+            payments: Array.isArray(invoice.payments) ? invoice.payments : [],
+          };
+
+          setInvoiceData(formattedData);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching invoice:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [searchParams]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!invoiceData) {
+    return <div>Data faktur tidak ditemukan.</div>;
+  }
+
+  const { id, total_amount, due_datetime, status, invoice_url, subscription, payments } = invoiceData;
+
+  const handlePaymentRedirect = () => {
+    window.location.href = invoice_url;
+  };
+
+  return (
+    <div className="flex flex-col px-6 py-6 gap-4 w-full h-fit bg-[#F8F8F8] rounded-2xl">
+      {/* Header */}
+      <div className="flex flex-row w-full items-center justify-between">
+        <h3 className="text-2xl font-bold text-blue-950">Detail Tagihan</h3>
+        <Button onClick={() => window.history.back()} variant='redirectButton'>
+          <IoArrowBackOutline size={20} />
+          <span className="font-medium">Kembali</span>
+        </Button>
+      </div>
+
+      {/* Detail Tagihan */}
+      <div className="bg-white p-6 rounded-lg shadow-sm text-[#141414]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Bagian Kiri - Rincian Faktur */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Rincian Tagihan</h4>
+            <div className="space-y-2">
+              <p><span className="font-medium">Invoice ID:</span> {id}</p>
+              <p><span className="font-medium">Jumlah:</span> Rp {total_amount.toLocaleString()}</p>
+              <p><span className="font-medium">Tanggal Jatuh Tempo:</span> {new Date(due_datetime).toLocaleDateString()}</p>
+              <p>
+                <span className="font-medium">Status:</span>{' '}
+                <span className={`inline-block px-2 py-1 text-xs rounded text-white ${
+                  status === 'paid' ? 'bg-green-500' :
+                  status === 'overdue' ? 'bg-red-500' : 'bg-yellow-500'
+                }`}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+              </p>
             </div>
+          </div>
 
-            {/* Invoice Details */}
-            <div className="bg-white p-6 rounded-lg shadow-sm text-[#141414]">
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <h4 className="text-lg font-semibold mb-4">Invoice Information</h4>
-                        <div className="space-y-2">
-                            <p><span className="font-medium">Invoice ID:</span> {invoiceData.id}</p>
-                            <p><span className="font-medium">Title:</span> {invoiceData.title}</p>
-                            <p><span className="font-medium">Due Date:</span> {invoiceData.dueDate}</p>
-                            <p><span className="font-bold">Plan:</span></p>
-                            <p className='text-[#141414]/60 ml-4'>{invoiceData.plan}</p>
-                            <p className='text-[#141414]/60 ml-4'>{invoiceData.seat} seat</p>
-                            <p className='text-[#141414]/60 ml-4'>Rp {invoiceData.price.toLocaleString()}/seat</p>
-                            <p className='text-[#141414]/60 ml-4'>Rp {invoiceData.price.toLocaleString()} x {invoiceData.seat} seat</p>
-                            <p className='text-[#141414] ml-4 font-bold'><span className="font-bold">Total Amount:</span> Rp {invoiceData.amount.toLocaleString()}</p>
-                            <p>
-                                <span className="font-medium">Status:</span>{' '}
-                                <span className={`px-2 py-1 rounded-lg text-sm ${
-                                    invoiceData.status === 'paid' ? 'bg-[#257047] text-white' :
-                                    invoiceData.status === 'overdue' ? 'bg-[#C11106] text-white' :
-                                    'bg-[#FFAB00] text-white'
-                                }`}>
-                                    {invoiceData.status.charAt(0).toUpperCase() + invoiceData.status.slice(1)}
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Payment Section */}
-                    <div className="border-l pl-6">
-                        <h4 className="text-lg font-semibold mb-4">Payment Information</h4>
-                        {invoiceData.status === 'paid' ? (
-                            <div className="space-y-4">
-                                <div className="bg-green-50 p-4 rounded-lg">
-                                    <p className="text-[#257047] font-medium">Payment Completed</p>
-                                    <p className="text-[#257047]/80 text-sm mt-1">This invoice has been successfully paid</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <p className="text-gray-600">Payment Details:</p>
-                                    <div className="bg-gray-50 p-4 rounded-lg">
-                                        <p className="text-sm text-gray-600">Payment Date: {invoiceData.dueDate}</p>
-                                        <p className="text-sm text-gray-600">Payment Method: Bank Transfer</p>
-                                        <p className="text-sm text-gray-600">Transaction ID: TRX-{invoiceData.id}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="radio"
-                                            name="payment"
-                                            value="credit_card"
-                                            checked={paymentMethod === 'credit_card'}
-                                            onChange={(e) => setPaymentMethod(e.target.value)}
-                                            className="form-radio"
-                                        />
-                                        <span>Credit Card</span>
-                                    </label>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="radio"
-                                            name="payment"
-                                            value="bank_transfer"
-                                            checked={paymentMethod === 'bank_transfer'}
-                                            onChange={(e) => setPaymentMethod(e.target.value)}
-                                            className="form-radio"
-                                        />
-                                        <span>Bank Transfer</span>
-                                    </label>
-                                    <label className="flex items-center space-x-2">
-                                        <input
-                                            type="radio"
-                                            name="payment"
-                                            value="e_wallet"
-                                            checked={paymentMethod === 'e_wallet'}
-                                            onChange={(e) => setPaymentMethod(e.target.value)}
-                                            className="form-radio"
-                                        />
-                                        <span>E-Wallet</span>
-                                    </label>
-                                </div>
-
-                                <button
-                                    onClick={handlePayment}
-                                    disabled={!paymentMethod || isProcessing}
-                                    className={`w-full py-3 rounded-lg text-white font-medium ${
-                                        !paymentMethod || isProcessing
-                                            ? 'bg-gray-400 cursor-not-allowed'
-                                            : 'bg-[#2D8EFF] hover:bg-[#2D8EFF]/90'
-                                    }`}
-                                >
-                                    {isProcessing ? 'Processing...' : 'Pay Now'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
+          {/* Bagian Kanan - Informasi Langganan */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Langganan Terkait</h4>
+            <div className="space-y-2">
+              <p><span className="font-medium">Paket:</span> {subscription.package_type}</p>
+              <p><span className="font-medium">Jumlah Seat:</span> {subscription.seats}</p>
+              <p><span className="font-medium">Harga per Seat:</span> Rp {subscription.price_per_seat.toLocaleString()}</p>
+              <p><span className="font-medium">Status:</span> {subscription.status}</p>
             </div>
+          </div>
         </div>
-    );
-} 
+
+        {/* Pembayaran */}
+        <div className="mt-8">
+          <h4 className="text-lg font-semibold mb-4">Pembayaran</h4>
+          {payments.length > 0 ? (
+            <div className="space-y-4">
+              {payments.map((payment) => (
+                <div key={payment.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="flex justify-between">
+                    <p><span className="font-medium">Metode:</span> {payment.payment_method}</p>
+                    <p><span className="font-medium">Jumlah:</span> Rp {payment.amount_paid.toLocaleString()}</p>
+                  </div>
+                  <p><span className="font-medium">Tanggal:</span> {new Date(payment.payment_datetime).toLocaleString()}</p>
+                  <p><span className="font-medium">Status:</span> {payment.status}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <p className="text-yellow-700">Belum ada pembayaran untuk faktur ini.</p>
+              <button
+                onClick={handlePaymentRedirect}
+                className="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+              >
+                Bayar Sekarang
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { api } from "@/lib/axios";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AxiosError } from "axios";
 
 export default function UbahPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <UbahPasswordForm />
+    </Suspense>
+  );
+}
+
+function UbahPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email");

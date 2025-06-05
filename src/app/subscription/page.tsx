@@ -57,7 +57,7 @@ export default function SubscriptionPage() {
   const [seats, setSeats] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
-  const [token] = useState("33|5LDN0e8AskvPD1suamMTkidN7SYfUSp5CezqlTjp5f8d22dc"); //HARD CODED AWAL TOKEN ADMIN
+  const [token] = useState("8|DcN7dqelnE4js6rOn6g1VePt26YKixwa1DKrlBJJba4c3347"); //HARD CODED AWAL TOKEN ADMIN
   const { handleSubmit } = useForm<SubscriptionForm>();
 
   useEffect(() => {
@@ -151,10 +151,6 @@ export default function SubscriptionPage() {
   
 
   if (hasSubscription) {
-    // setTimeout(() => {
-    //   router.push('subscription/payment');
-    // }, 1000);
-  
     return (
       <section className="flex flex-col px-2 py-4 gap-6 w-full h-fit">
             {/* Halaman Billing*/}
