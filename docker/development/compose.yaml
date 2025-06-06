@@ -1,3 +1,5 @@
+name: hris_frontend-dev
+
 services:
   hris_frontend-dev:
     container_name: hris_frontend-dev
