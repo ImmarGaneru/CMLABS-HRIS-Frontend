@@ -1,12 +1,18 @@
 services:
-  with-docker-multi-env-production:
+  hris_frontend-prod:
+    container_name: hris_frontend-prod 
     build:
       context: ../../
       dockerfile: docker/production/Dockerfile
-    image: with-docker-multi-env-production
+    image: hris_frontend-prod
     ports:
       - "3002:3000"
     deploy:
       resources:
         limits:
           memory: 512m
+    networks:
+      - hris_frontend-prod
+    
+networks:
+  hris_frontend-prod:
