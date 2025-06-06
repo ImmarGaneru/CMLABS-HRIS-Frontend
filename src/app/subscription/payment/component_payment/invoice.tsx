@@ -33,6 +33,7 @@ interface InvoiceData {
   total_amount: number;
   due_datetime: string;
   status: InvoiceStatus;
+  display_status: 'paid'|'unpaid'|'overdue';
   invoice_url: string;
   subscription: Subscription;
   payments: Payment[];
@@ -63,12 +64,14 @@ export default function Invoice() {
       .then((json) => {
         if (json.meta?.success && json.data?.data) {
           const invoice = json.data.data;
+          const isOverdue = invoice.status === 'unpaid' && new Date(invoice.due_datetime) < new Date();
         
           const formattedData: InvoiceData = {
             id: invoice.id || 'N/A',
             total_amount: typeof invoice.total_amount === 'number' ? invoice.total_amount : 0,
             due_datetime: invoice.due_datetime || new Date().toISOString(),
             status: invoice.status || InvoiceStatus.Unpaid,
+            display_status: isOverdue ? 'overdue' : invoice.status,
             invoice_url: invoice.invoice_url || '#',
             subscription: invoice.user?.workplace?.subscription || {
               id: '',
@@ -78,7 +81,7 @@ export default function Invoice() {
               is_trial: false,
               trial_ends_at: null,
               ends_at: null,
-              status: SubscriptionStatus.Expired,
+              status: SubscriptionStatus,
             },
             payments: Array.isArray(invoice.payments) ? invoice.payments : [],
           };
@@ -95,18 +98,33 @@ export default function Invoice() {
   }, [searchParams]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center w-full h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1E3A5F]"></div>
+      </div>
+    );
   }
 
   if (!invoiceData) {
     return <div>Data faktur tidak ditemukan.</div>;
   }
 
-  const { id, total_amount, due_datetime, status, invoice_url, subscription, payments } = invoiceData;
+  const { id, total_amount, due_datetime, status, display_status,invoice_url, subscription, payments } = invoiceData;
 
   const handlePaymentRedirect = () => {
     if(invoice_url){
       window.open(invoice_url, '_blank');
+    }
+  };
+
+  const getStatusClass = (status: string): string => {
+    switch (status) {
+      case 'paid':
+        return 'bg-green-100 text-green-800';
+      case 'overdue':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-yellow-100 text-yellow-800';
     }
   };
 
@@ -129,13 +147,21 @@ export default function Invoice() {
             <h4 className="text-lg font-semibold mb-4">Rincian Tagihan</h4>
             <div className="space-y-2">
               <p><span className="font-medium">Invoice ID:</span> {id}</p>
-              <p><span className="font-medium">Jumlah:</span> Rp {total_amount.toLocaleString()}</p>
-              <p><span className="font-medium">Tanggal Jatuh Tempo:</span> {new Date(due_datetime).toLocaleDateString()}</p>
+              <p><span className="font-medium">Tanggal Jatuh Tempo:</span> {new Date(due_datetime).toLocaleDateString('id-ID',{
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+              })}</p>
                 {/* Status Faktur */}
                 <div>
                   <span className="font-medium">Status Faktur:</span>{' '}
                   <span className={`inline-block px-2 py-1 text-xs rounded ${getStatusClass(status)}`}>
                     {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
+                  </span>
+                  <span className={`inline-block ml-2 px-2 py-1 text-xs rounded ${getStatusClass(display_status)}`}>
+                    {display_status.charAt(0).toUpperCase() + display_status.slice(1)}
                   </span>
                 </div>
 
@@ -153,13 +179,8 @@ export default function Invoice() {
 
           {/* Bagian Kanan - Informasi Langganan */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Langganan Terkait</h4>
+            <h4 className="text-lg font-semibold mb-4">Rincian Langganan</h4>
             <div className="space-y-2">
-            <p><span className="font-medium">Jumlah:</span> Rp {total_amount.toLocaleString()}</p>
-            <p><span className="font-medium">Tanggal Jatuh Tempo:</span> 
-              {due_datetime ? new Date(due_datetime).toLocaleDateString() : 'Belum ditentukan'}
-            </p>
-
             {subscription && (
               <>
                 <p><span className="font-medium">Paket:</span> {subscription.package_type}</p>
@@ -168,6 +189,7 @@ export default function Invoice() {
                 <p><span className="font-medium">Status:</span> {subscription.status}</p>
               </>
             )}
+            <p className='font-bold'><span>Total:</span> Rp {total_amount.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -197,6 +219,13 @@ export default function Invoice() {
               >
                 Bayar Sekarang
               </button>
+            </div>
+          )}
+
+          {/* Info overdue tambahan (opsional) */}
+          {display_status === 'overdue' && (
+            <div className="mt-4 text-sm text-red-600">
+              ⚠️ Invoice ini belum dibayar dan sudah lewat dari tanggal jatuh tempo.
             </div>
           )}
         </div>
