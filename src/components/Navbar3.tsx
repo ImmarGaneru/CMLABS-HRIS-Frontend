@@ -60,7 +60,7 @@ export function Navbar3() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     // Hardcoded token sementara
-    const [token] = useState("8|DcN7dqelnE4js6rOn6g1VePt26YKixwa1DKrlBJJba4c3347");
+    const [token] = useState("9|CmySPq9oHzxlzpNsWbCXLO6YKOrJhskTj3jOoGi4ff89bed8");
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -76,45 +76,38 @@ export function Navbar3() {
                 if (!userResponse.ok) throw new Error('Failed to fetch user');
 
                 const responseJson = await userResponse.json();
-                const userData: UserData = responseJson.data;  // Ambil data dari properti 'data'
+                console.log('Full API Response:', responseJson); // Debug log
+                
+                const userData: UserData = responseJson.data;
 
+                // Debug logs
+                console.log('User Data:', userData);
+                console.log('Employee Data:', userData.employee);
+                console.log('Workplace Data:', userData.workplace);
 
                 // Ambil nama dari employee
                 let nameToShow = 'User';
                 if (userData.employee) {
                     const { first_name, last_name } = userData.employee;
                     nameToShow = `${first_name}${last_name ? ` ${last_name}` : ''}`;
+                } else {
+                    console.log('No employee data found in response');
                 }
 
                 setUserName(nameToShow);
 
                 // Cek subscription jika punya company
                 if (userData.workplace?.id) {
-                    // const subResponse = await fetch(`http://localhost:8000/api/admin/subscription`, {
-                    //     method: 'GET',
-                    //     headers: {
-                    //         'Authorization': `Bearer ${token}`,
-                    //         'Content-Type': 'application/json',
-                    //     },
-                    // });
-
-
-                    // if (subResponse.ok) {
-                    //     const subData = await subResponse.json();
-                    //     console.log('Subscription Data:', subData);
-                    
-                    //     if (subData.data && subData.data.length > 0) {
-                    //         const type = subData.data[0].package_type;
-                    //         console.log('Package Type:', type);
-                    //         setPackageType(type);
-                    //     }
-                    // }
                     if(userData.workplace.subscription?.package_type){
                         setPackageType(userData.workplace.subscription.package_type);
+                    } else {
+                        console.log('No subscription data found in workplace');
                     }
+                } else {
+                    console.log('No workplace data found in user data');
                 }
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Error fetching user data:', error);
             } finally {
                 setIsLoading(false);
             }
