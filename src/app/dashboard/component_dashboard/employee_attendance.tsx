@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { IoMdArrowDropdown } from "react-icons/io";
 import DatePicker from 'react-datepicker';
@@ -45,6 +45,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 const EmployeeAttendancePie: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const total = data.reduce((sum, item) => sum + item.value, 0);
+  const [loading, setLoading] = useState(false);
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
@@ -53,6 +54,54 @@ const EmployeeAttendancePie: React.FC = () => {
       console.log('Selected date:', date);
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // const response = await fetch(`http://localhost:8000/api/`)
+        // TODO: Implement actual API call
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching attendance data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [selectedDate]);
+
+  if (loading) {
+    return (
+      <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
+        <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
+          <div className='flex flex-col gap-2'>
+            <p className='text-[16px]'>Statistik Kehadiran</p>
+            <p className='text-[24px] font-bold'>Rangkuman Kehadiran</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-[16px] text-gray-700">Loading data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
+        <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
+          <div className='flex flex-col gap-2'>
+            <p className='text-[16px]'>Statistik Kehadiran</p>
+            <p className='text-[24px] font-bold'>Rangkuman Kehadiran</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-[16px] text-gray-700 text-center py-8">No attendance data available for the selected date</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
