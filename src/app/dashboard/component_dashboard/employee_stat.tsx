@@ -10,7 +10,7 @@ export default function EmployeeStat() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [token] = useState("9|CmySPq9oHzxlzpNsWbCXLO6YKOrJhskTj3jOoGi4ff89bed8");
+  const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
 
   const handleMonthChange = (date: Date | null) => {
     if (date) {
@@ -22,7 +22,7 @@ export default function EmployeeStat() {
     const colorMap = {
       'Aktif': '#1E3A5F',
       'Baru': '#7CA5BF',
-      'Resign': '#BA3C54'
+      'Tidak Aktif': '#BA3C54'
     };
 
     return colorMap[label as keyof typeof colorMap] || '#ccc';
@@ -34,14 +34,14 @@ export default function EmployeeStat() {
       const month = String(selectedMonth.getMonth() + 1).padStart(2, '0');
       
       try {
-        const res = await fetch(`http://localhost:8000/api/admin/employees/dashboard/employee-stats?month=${month}&year=${year}`,{
+        const res = await fetch(`http://localhost:8000/api/admin/employees/dashboard/status-stats?month=${month}&year=${year}`,{
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         
         const result = await res.json();
-        setChartData(result.data.data);
+        setChartData(result.data);
         setLoading(false);
       } catch (error) {
         console.error('Gagal mengambil data:', error);

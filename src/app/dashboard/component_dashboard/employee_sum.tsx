@@ -9,12 +9,12 @@ export default function EmployeeSumCard() {
     const [data,setData] = useState({
         total: 0,
         active: 0,
-        new: 0,
-        resigned: 0,
+        new_employees: 0,
+        inactive: 0,
         last_updated: ''
     });
     const [loading, setLoading] = useState(true);
-    const [token] = useState("9|CmySPq9oHzxlzpNsWbCXLO6YKOrJhskTj3jOoGi4ff89bed8");
+    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
 
     useEffect(() => {
         const fetchEmployeeData = async () => {
@@ -57,7 +57,7 @@ export default function EmployeeSumCard() {
         );
     }
 
-    if (!data || (data.total === 0 && data.active === 0 && data.new === 0 && data.resigned === 0)) {
+    if (!data || (data.total === 0 && data.active === 0 && data.new_employees === 0 && data.inactive === 0)) {
         return (
             <div className='flex flex-row gap-6 w-full h-fit'>
                 {[1, 2, 3, 4].map((_, index) => (
@@ -104,7 +104,7 @@ export default function EmployeeSumCard() {
                     <MdOutlineGroup size={32} />
                     <p className='text-[14px]'>Karyawan Baru</p>
                 </div>
-                <p className='text-[24px] font-bold'>{data.new ?? 0}</p>
+                <p className='text-[24px] font-bold'>{data.new_employees ?? 0}</p>
                 <p className='text-[14px]'>Update: {data.last_updated ? dayjs(data.last_updated).format('DD MM YYYY') : '-'}</p>
             </div>
 
@@ -115,7 +115,7 @@ export default function EmployeeSumCard() {
                     <MdOutlineGroup size={32} />
                     <p className='text-[14px]'>Karyawan Resign</p>
                 </div>
-                <p className='text-[24px] font-bold'>{data.resigned ?? 0}</p>
+                <p className='text-[24px] font-bold'>{data.inactive ?? 0}</p>
                 <p className='text-[14px]'>Update: {data.last_updated ? dayjs(data.last_updated).format('DD MM YYYY') : '-'}</p>
             </div>
 

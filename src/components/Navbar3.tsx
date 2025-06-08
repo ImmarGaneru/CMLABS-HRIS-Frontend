@@ -60,7 +60,7 @@ export function Navbar3() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     // Hardcoded token sementara
-    const [token] = useState("9|CmySPq9oHzxlzpNsWbCXLO6YKOrJhskTj3jOoGi4ff89bed8");
+    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
 
     useEffect(() => {
         const fetchUserData = async () => {
