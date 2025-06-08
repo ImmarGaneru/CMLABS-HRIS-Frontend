@@ -9,8 +9,16 @@ const nextConfig: NextConfig = {
           },
       ];
   },
+  
+  experimental: {
+    // serverActions: [],
+  },
+  // serverActions: {
+  //   bodySizeLimit: '100mb', // atau sesuai kebutuhan, contoh 10mb
+  // },
 };
 
+module.exports = nextConfig;
 module.exports = {
   output: 'standalone'
 }
