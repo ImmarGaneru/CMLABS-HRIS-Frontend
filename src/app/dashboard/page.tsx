@@ -8,7 +8,6 @@ import EmployeeType from './component_dashboard/employee_type';
 import Tutorial from '@/components/Tutorial';
 import { useEffect, useState } from 'react';
 import ClockStatus from './component_dashboard/clock_status';
-import RecentApprovals from './component_dashboard/recent_approvals';
 import DepartmentDistribution from './component_dashboard/department_distribution';
 
 
@@ -63,7 +62,7 @@ export default function DashboardPage() {
           <EmployeeType/>
         </div>
         <div className="department-distribution">
-          <DepartmentDistribution/>
+          <ApprovalSum/>
         </div>
       </div>
       
@@ -72,13 +71,7 @@ export default function DashboardPage() {
           <ClockStatus/>
         </div>
         <div className="approval-sum">
-          <ApprovalSum/>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="recent-approvals">
-          <RecentApprovals/>
+          <DepartmentDistribution/>
         </div>
       </div>
     </section>

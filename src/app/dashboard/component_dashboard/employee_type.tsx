@@ -58,7 +58,7 @@ export default function EmployeeType() {
         <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
           <div className='flex flex-col gap-2'>
             <p className='text-[16px]'>Statistik Karyawan</p>
-            <p className='text-[24px] font-bold'>Rangkuman Kontrak Karyawan</p>
+            <p className='text-[24px] font-bold'>Kontrak Karyawan</p>
           </div>
         </div>
         <div className="flex items-center justify-center h-full">
@@ -74,7 +74,7 @@ export default function EmployeeType() {
         <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
           <div className='flex flex-col gap-2'>
             <p className='text-[16px]'>Statistik Karyawan</p>
-            <p className='text-[24px] font-bold'>Rangkuman Kontrak Karyawan</p>
+            <p className='text-[24px] font-bold'>Kontrak Karyawan</p>
           </div>
         </div>
         <div className="flex items-center justify-center h-full">
@@ -90,7 +90,7 @@ export default function EmployeeType() {
       <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
         <div className='flex flex-col gap-2'>
           <p className='text-[16px]'>Statistik Karyawan</p>
-          <p className='text-[24px] font-bold'>Rangkuman Kontrak Karyawan</p>
+          <p className='text-[24px] font-bold'>Kontrak Karyawan</p>
         </div>
         <div className="relative">
           <DatePicker
