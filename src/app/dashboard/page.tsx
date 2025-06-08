@@ -9,6 +9,7 @@ import Tutorial from '@/components/Tutorial';
 import { useEffect, useState } from 'react';
 import ClockStatus from './component_dashboard/clock_status';
 import DepartmentDistribution from './component_dashboard/department_distribution';
+import { dashboardTutorialSteps } from '../tutorial/dashboard_tutorial';
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +39,13 @@ export default function DashboardPage() {
 
   return (
     <section className="flex flex-col px-4 py-6 gap-6 w-full h-fit">
+      <Tutorial 
+        steps={dashboardTutorialSteps}
+        storageKey="dashboardTutorialCompleted"
+        buttonPosition="bottom-right"
+        buttonVariant="floating"
+      />
+      
       {/* Top Row - Summary Cards */}
       <div className="grid grid-cols-1 gap-4">
         <div className="employee-sum-card">
@@ -60,7 +68,7 @@ export default function DashboardPage() {
         <div className="employee-type">
           <EmployeeType/>
         </div>
-        <div className="department-distribution">
+        <div className="approval-sum">
           <ApprovalSum/>
         </div>
       </div>
@@ -69,7 +77,7 @@ export default function DashboardPage() {
         <div className="clock-status">
           <ClockStatus/>
         </div>
-        <div className="approval-sum">
+        <div className="department-distribution">
           <DepartmentDistribution/>
         </div>
       </div>

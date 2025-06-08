@@ -77,7 +77,7 @@ const EmployeeAttendancePie: React.FC = () => {
         <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
           <div className='flex flex-col gap-2'>
             <p className='text-[16px]'>Statistik Kehadiran</p>
-            <p className='text-[24px] font-bold'>Rangkuman Kehadiran</p>
+            <p className='text-[24px] font-bold'>Data Kehadiran</p>
           </div>
         </div>
         <div className="flex items-center justify-center h-full">
@@ -93,7 +93,7 @@ const EmployeeAttendancePie: React.FC = () => {
         <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
           <div className='flex flex-col gap-2'>
             <p className='text-[16px]'>Statistik Kehadiran</p>
-            <p className='text-[24px] font-bold'>Rangkuman Kehadiran</p>
+            <p className='text-[24px] font-bold'>Data Kehadiran</p>
           </div>
         </div>
         <div className="flex items-center justify-center h-full">
@@ -109,7 +109,7 @@ const EmployeeAttendancePie: React.FC = () => {
       <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
         <div className='flex flex-col gap-2'>
           <p className='text-[16px]'>Statistik Kehadiran</p>
-          <p className='text-[24px] font-bold'>Rangkuman Kehadiran</p>
+          <p className='text-[24px] font-bold'>Data Kehadiran</p>
         </div>
         <div className="relative">
           <DatePicker
