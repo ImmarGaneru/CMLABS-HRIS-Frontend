@@ -1,37 +1,25 @@
 "use client"
 
 import { useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
 import {FaArrowLeft, FaDownload, FaEye} from "react-icons/fa";
-import axios from "axios";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import { useApproval, Approval } from "@/contexts/ApprovalContext";
 
 
 export default function ApprovalPage() {
+    const { approvals, approveRequest, rejectRequest } = useApproval();
     const router = useRouter();
-    const [approvals, setApprovals] = useState<Approval[]>([]);
     const [filterText, setFilterText] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
     const [filterType, setFilterType] = useState("");
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedApproval, setSelectedApproval] = useState<Approval | null>(null);
-
-    useEffect(() => {
-        axios.get("/api/approvals", {
-            headers: {
-                Authorization: 'Bearer 23|GGSrPg7AggLwzWW1IWyQZC5k2iSFC0ytxWay6q76917fd0aa', // Replace with your token
-            },
-        }).then((response) => {
-            setApprovals(response.data.data);
-        }).catch((error) => {
-            console.error("Error fetching approvals:", error);
-        });
-    }, []);
 
     const statusFilters = [
         {label: 'Waiting Approval', value: 'pending'},
@@ -46,24 +34,17 @@ export default function ApprovalPage() {
         {label: 'Perubahan Data', value: 'Perubahan Data'},
     ];
 
-    type Approval = {
-        id: number
-        id_user: string
-        request_type: string
-        created_at: string
-        status: string
-        start_date: string
-        end_date: string
-        reason: string
-        employee: {
-            id: string
-            first_name: string
-            last_name: string
-            position: {
-                name: string
-            }
-        }
-    }
+    const handleApprove = async (id: string | undefined) => {
+        if (!id) return;
+        await approveRequest(id);
+        setIsDetailOpen(false);
+    };
+
+    const handleReject = async (id: string | undefined) => {
+        if (!id) return;
+        await rejectRequest(id);
+        setIsDetailOpen(false);
+    };
 
     const approvalColumns = useMemo<ColumnDef<Approval>[]>(
         () => [
@@ -123,7 +104,7 @@ export default function ApprovalPage() {
                     const status = info.getValue() as string;
                     const statusStyle: Record<string, string> = {
                         "pending": "bg-yellow-100 text-yellow-800",
-                        "Rejected": "bg-red-100 text-red-800",
+                        "rejected": "bg-red-100 text-red-800",
                         "approved": "bg-green-100 text-green-800",
                     };
                     return (
@@ -326,17 +307,26 @@ export default function ApprovalPage() {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex justify-end gap-4">
-                            <button className="bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700">
-                                Tolak
-                            </button>
-                            <button className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700">
-                                Terima
-                            </button>
-                        </div>
+                        {selectedApproval.status === "pending" && (
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    className="bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700"
+                                    onClick={() => handleReject(selectedApproval.id)}
+                                >
+                                    Tolak
+                                </button>
+                                <button
+                                    className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700"
+                                    onClick={() => handleApprove(selectedApproval.id)}
+                                >
+                                    Terima
+                                </button>
+                            </div>
+                        )}
+
                     </div>
                 </>
-            )};
+            )}
         </div>
     );
 }

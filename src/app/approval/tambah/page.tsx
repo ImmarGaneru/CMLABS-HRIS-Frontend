@@ -6,7 +6,6 @@ import { FaArrowLeft } from "react-icons/fa";
 import {z} from "zod";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import {
     Form,
     FormControl,
@@ -17,11 +16,10 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
-import { useState } from "react";
 import ClientOnlySelect, { OptionType } from "@/components/ClientOnlySelect";
 import { debounce } from "lodash";
-import { format } from "date-fns";
+import { useApproval } from "@/contexts/ApprovalContext";
+import {useEffect, useState} from "react";
 
 const FormSchema = z.object({
     id_user: z
@@ -48,32 +46,15 @@ const FormSchema = z.object({
 })
 
 export default function TambahApproval(){
+    const { fetchUsers, submitApproval, options, isLoading } = useApproval();
     const router = useRouter();
-    const [options, setOptions] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const token = "23|GGSrPg7AggLwzWW1IWyQZC5k2iSFC0ytxWay6q76917fd0aa";
+    const [hydrated, setHydrated] = useState(false);
 
-    const fetchUsers = async (inputValue: string) => {
-        setIsLoading(true);
-        try {
-            const response = await axios.get("/api/approvals/create", {
-                params: { search: inputValue.toLowerCase() || ""},
-                headers: {
-                    Authorization: `Bearer ${token}`, // Replace with your token
-                },
-            });
-            const users = response.data.data.data.map((user: { id: string; employee: { first_name: string; last_name: string }}) => ({
-                value: user.id,
-                label: `${user.employee.first_name} ${user.employee.last_name}`.toLowerCase(),
-            }));
-            setOptions(users);
-        } catch (error) {
-            console.error("Error fetching users:", error);
-            toast.error("Gagal memuat data karyawan.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    useEffect(() => {
+        setHydrated(true);
+    }, []);
+
+
 
     const debouncedFetchUsers = debounce(fetchUsers, 300);
 
@@ -84,49 +65,29 @@ export default function TambahApproval(){
         { value: "overtime", label: "Lembur" },
     ];
 
-
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
     })
 
+    const startDateField = form.control.register("start_date");
+    const endDateField = form.control.register("end_date");
+    const startTimeField = form.control.register("start_time");
+    const endTimeField = form.control.register("end_time");
+    const overtimeDatesField = form.control.register("overtime_dates");
+
     const selectedType = form.watch("request_type");
 
+    if (!hydrated) {
+        return null; // Render nothing until the component is hydrated
+    }
     function onSubmit(data: z.infer<typeof FormSchema>) {
-        let transformedData = { ...data};
-
-        if (data.request_type === "overtime") {
-            transformedData.start_date = format(new Date(`${data.overtime_dates} ${data.start_time}`), "yyyy-MM-dd HH:mm");
-            transformedData.end_date = format(new Date(`${data.overtime_dates} ${data.end_time}`), "yyyy-MM-dd HH:mm");
-            delete transformedData.overtime_dates;
-            delete transformedData.start_time;
-            delete transformedData.end_time;
-        } else {
-            if (data.start_date) {
-                transformedData.start_date = format(new Date(data.start_date), "yyyy-MM-dd HH:mm");
-            }
-            if (data.end_date) {
-                transformedData.end_date = format(new Date(data.end_date), "yyyy-MM-dd HH:mm");
-            }
-        }
-
-        axios.post("/api/approvals", transformedData, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-            },
-        })
-        .then((response) => {
-            toast.success("Data berhasil disimpan!");
-            console.log("Response:", response.data);
+        submitApproval(data).then(() => {
             router.back();
-        })
-        .catch ((error) => {
-            toast.error("Gagal menyimpan data!");
-            console.error("Error:", error);
         });
     }
 
     return (
+
         <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
                 <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
@@ -213,11 +174,8 @@ export default function TambahApproval(){
                                                 <FormControl>
                                                     <Input
                                                         type="date"
-                                                        {...field}
-                                                        onChange={(e) => {
-                                                            const date = e.target.value;
-                                                            form.setValue("start_date", `${date} 00:00`);
-                                                        }}
+                                                        value={field.value || ""}
+                                                        onChange={(e) => field.onChange(e.target.value)}
                                                     />
                                                 </FormControl>
                                                 <FormDescription>
@@ -235,11 +193,8 @@ export default function TambahApproval(){
                                                 <FormLabel>End Date</FormLabel>
                                                 <FormControl>
                                                     <Input type="date"
-                                                           {...field}
-                                                           onChange={(e) => {
-                                                               const date = e.target.value;
-                                                               form.setValue("start_date", `${date} 00:00`);
-                                                           }}
+                                                           value={field.value || ""}
+                                                           onChange={(e) => field.onChange(e.target.value)}
                                                     />
                                                 </FormControl>
                                                 <FormDescription>
@@ -260,7 +215,10 @@ export default function TambahApproval(){
                                             <FormItem>
                                                 <FormLabel>Start Time</FormLabel>
                                                 <FormControl>
-                                                    <Input type="time" {...field} />
+                                                    <Input
+                                                        type="time"
+                                                        value={field.value || ""}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>
                                                     Masukkan jam mulai lembur.
@@ -276,7 +234,10 @@ export default function TambahApproval(){
                                             <FormItem>
                                                 <FormLabel>End Time</FormLabel>
                                                 <FormControl>
-                                                    <Input type="time" {...field} />
+                                                    <Input
+                                                        type="time"
+                                                        value={field.value || ""}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>
                                                     Masukkan jam berakhir lembur.
@@ -292,7 +253,11 @@ export default function TambahApproval(){
                                             <FormItem>
                                                 <FormLabel>Overtime Dates</FormLabel>
                                                 <FormControl>
-                                                    <Input type="date" multiple {...field} />
+                                                    <Input
+                                                        type="date"
+                                                        value={field.value || ""}
+                                                        onChange={(e) => field.onChange(e.target.value)}
+                                                    />
                                                 </FormControl>
                                                 <FormDescription>
                                                     Pilih hari lembur.
