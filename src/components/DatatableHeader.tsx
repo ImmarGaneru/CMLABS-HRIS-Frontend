@@ -44,6 +44,9 @@ type DataTableHeaderProps = {
   // Custom filter options
   filterOptions?: FilterOption[];
   secondFilterOptions?: FilterOption[];
+
+  // File input ref
+  importInputRef?: React.RefObject<HTMLInputElement | null>;
 };
 
 const DataTableHeader: React.FC<DataTableHeaderProps> = ({
@@ -71,6 +74,7 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
   showHistory = false,
   filterOptions,
   secondFilterOptions,
+  importInputRef,
 }) => {
   return (
     <div className="flex flex-row gap-4 w-full">
@@ -199,6 +203,7 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
               accept=".xlsx,.xls,.csv"
               onChange={onImport}
               className="hidden"
+              ref={importInputRef}
             />
           </Button>
         )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { FEEmployee } from "@/types/employee";
 import * as XLSX from "xlsx";
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { ColumnDef } from "@tanstack/react-table";
@@ -9,25 +10,43 @@ import { RxAvatar } from "react-icons/rx";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import EmployeeCardSum from "./component_employee/employee_card_sum";
 import DataTableHeader from "@/components/DatatableHeader";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  
+} from "@/components/ui/alert-dialog";
 
-// Pindahkan tipe di luar komponen
-type Employee = {
-  id: number;           // <-- Di API ID kamu tipe string UUID, tapi di frontend kamu pakai number
-  nama: string;
-  jenisKelamin: string;
-  notelp: string;
-  cabang: string;
-  jabatan: string;
-  status: string;
+
+type EmployeeFromAPI = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  employment_status: "active" | "inactive" | "resign";
+  created_at: string;
+  address: string;
+  id_position: string | null;
+  tipe_kontrak: string | null;
+
+  // tambahan
+  user?: {email: string};
+  position? : {name: string};
+  notelp : string;
+  cabang : string;
+  jabatan : string;
 };
 
 
-
 export default function EmployeeTablePage() {
-  
   const router = useRouter();
 
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employees, setEmployees] = useState<FEEmployee[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,31 +60,36 @@ export default function EmployeeTablePage() {
   ];
 
   const statusFilters = [
-    { label: "active", value: "active" },
-    { label: "inactive", value: "inactive" },
+    { label: "Aktif", value: "Aktif" },
+    { label: "Non-aktif", value: "Non-aktif" },
   ];
-   const handleSoftDelete = async (id: number | string) => {
-    if (!confirm("Apakah anda yakin ingin menghapus data ini?")) return;
+const handleSoftDelete = async (id: number | string) => {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
+      method: "DELETE",
+    });
 
-    try {
-      const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Gagal menghapus data");
-      }
-
-      alert("Data berhasil dihapus (soft delete).");
-
-      // **Update state employees dengan menghapus employee yang sudah softdelete**
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-    } catch (error) {
-      alert(`Gagal menghapus data: ${error.message}`);
-      console.error(error);
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Gagal menghapus data");
     }
-  };
+
+    // Update state untuk menghapus employee yang sudah dihapus
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+  } catch (error) {
+    let errorMessage = "Gagal menghapus data";
+  
+    if (error instanceof Error) {
+      errorMessage += `: ${error.message}`;
+    } else if (typeof error === "object" && error !== null && "message" in error) {
+      errorMessage += `: ${(error as { message: string }).message}`;
+    }
+  
+    alert(errorMessage);
+    console.error(error);
+  }
+};
+
   // Fetch data dari backend
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -76,8 +100,24 @@ export default function EmployeeTablePage() {
           next: { revalidate: 0 },
         });
         if (!res.ok) throw new Error(`Error: ${res.status}`);
-        const data = await res.json();
-        setEmployees(data.data);
+        
+        const apiData: EmployeeFromAPI[] = await res.json();
+
+        const feData = apiData.map((emp) => ({
+          id: emp.id,
+          nama: `${emp.first_name} ${emp.last_name}`,
+          jenisKelamin: '-', // kosong dulu
+          notelp: emp.notelp || '-',
+          // cabang: emp.position?.name || '-',
+          // jabatan: emp.position?.name || '-',
+          cabang: emp.cabang || '-',
+          jabatan: emp.jabatan || '-',
+          status: emp.employment_status,
+          hireDate: emp.created_at,
+          employmentType: emp.tipe_kontrak || '-',
+        }));
+        setEmployees(feData);
+
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
@@ -96,18 +136,21 @@ export default function EmployeeTablePage() {
   const getStatusStyle = (status: string) => {
     const styles: Record<string, string> = {
       Aktif: "bg-green-100 text-green-800",
-      "Tidak Aktif": "bg-red-100 text-red-800",
+      "Non-Aktif": "bg-red-100 text-red-800",
+      Resign: "bg-gray-100 text-gray-800",
     };
     return styles[status] ?? "bg-gray-100 text-gray-800";
   };
 
-  const employeeColumns = useMemo<ColumnDef<Employee>[]>(
+  const employeeColumns = useMemo<ColumnDef<FEEmployee>[]>(
     () => [
       {
         id: "No",
         header: "No",
-        cell: ({ row }) => <div className="flex justify-center">{row.index + 1}</div>,
-        size: 60,
+        cell: ({ row }) => (
+          <div className="flex justify-center">{row.index + 1}</div>
+        ),
+        size: 20,
       },
       {
         id: "Avatar",
@@ -117,45 +160,62 @@ export default function EmployeeTablePage() {
             <RxAvatar size={24} />
           </div>
         ),
+        size: 40,
       },
       {
         accessorKey: "nama",
         header: "Nama",
-        cell: (info) => <div className="truncate w-[120px]">{info.getValue() as string}</div>,
+        cell: (info) => (
+          <div className="truncate max-w-[120px]">{info.getValue() as string}</div>
+        ),
+        size: 120,
       },
       {
         accessorKey: "jenisKelamin",
         header: "Jenis Kelamin",
-        cell: (info) => <div>{info.getValue() as string}</div>,
+        cell: (info) => <div className="truncate max-w-[100px]">{info.getValue() as string}</div>,
+        size: 100,
       },
       {
         accessorKey: "notelp",
         header: "Nomor Telepon",
-        cell: (info) => info.getValue(),
+        cell: (info) => <div className="truncate max-w-[120px]">{info.getValue() as string}</div>,
+        size: 120,
       },
       {
         accessorKey: "cabang",
         header: "Cabang",
-        cell: (info) => <div className="truncate w-[80px]">{info.getValue() as string}</div>,
+        cell: (info) => (
+          <div className="truncate max-w-[100px]">{info.getValue() as string}</div>
+        ),
+        size: 100,
       },
       {
         accessorKey: "jabatan",
         header: "Jabatan",
-        cell: (info) => info.getValue(),
+        cell: (info) => <div className="truncate max-w-[120px]">{info.getValue() as string}</div>,
+        size: 120,
       },
       {
         accessorKey: "status",
         header: "Status",
         cell: (info) => {
-          const status = info.getValue() as string;
+          const status = info.getValue() as "active" | "inactive" | "resign";
+      
+          let displayStatus = "Unknown";
+          if (status === "active") displayStatus = "Aktif";
+          else if (status === "inactive") displayStatus = "Non-Aktif";
+          else if (status === "resign") displayStatus = "Resign";
+      
           return (
-            <div className="flex justify-center w-[120px]">
-              <span className={`px-2 py-1 text-xs rounded ${getStatusStyle(status)}`}>
-                {status}
+            <div className="flex justify-center w-[100px]">
+              <span className={`px-2 py-1 text-xs rounded ${getStatusStyle(displayStatus)}`}>
+                {displayStatus}
               </span>
             </div>
           );
         },
+        size: 100,
       },
       {
         id: "actions",
@@ -163,7 +223,7 @@ export default function EmployeeTablePage() {
         cell: ({ row }) => {
           const data = row.original;
           return (
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-center w-[120px]">
               <button
                 title="Detail"
                 onClick={() => router.push(`/employee/detail/${data.id}`)}
@@ -178,92 +238,107 @@ export default function EmployeeTablePage() {
               >
                 <FaEdit />
               </button>
-           <button
-  title="Hapus"
-  onClick={() => handleSoftDelete(data.id)} // Kirim id disini
-  className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
->
-  <FaTrash />
-</button>
-
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    title="Hapus"
+                    className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
+                  >
+                    <FaTrash />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                   Yakin menghapus data ini?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Data yang sudah dihapus tidak dapat dikembalikan
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleSoftDelete(data.id)}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           );
         },
+        size: 120,
       },
     ],
     [router]
   );
 
-  // Export CSV
-  const handleExportCSV = (dataToExport: Employee[]) => {
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
-    XLSX.writeFile(workbook, "employees_data.xlsx");
-  };
+// Export CSV
+// const handleExportCSV = (dataToExport: Employee[]) => {
+//   const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+//   const workbook = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+//   XLSX.writeFile(workbook, "employees_data.xlsx");
+// };
 
-  // Ref input file untuk reset
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+// Ref input file untuk reset
+const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Import CSV
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+// const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+//   const file = event.target.files?.[0];
+//   if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        if (!data) throw new Error("File kosong");
+//   const reader = new FileReader();
+//   reader.onload = (e) => {
+//     try {
+//       const data = e.target?.result;
+//       if (!data) throw new Error("File kosong");
 
-        const workbook = XLSX.read(data, { type: "array" }); // gunakan 'array' untuk readAsArrayBuffer
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json<Employee>(worksheet);
-        console.log("Imported data:", jsonData);
-        alert("Import berhasil. Lihat console untuk data.");
-        // Jika ingin langsung update state:
-        // setEmployees(jsonData);
-      } catch (error) {
-        console.error("Error importing file:", error);
-        alert("Error mengimpor file. Pastikan format benar.");
-      } finally {
-        // Reset input supaya bisa import ulang file sama
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-      }
-    };
+//       const workbook = XLSX.read(data, { type: "array" });
+//       const sheetName = workbook.SheetNames[0];
+//       const worksheet = workbook.Sheets[sheetName];
+//       const jsonData = XLSX.utils.sheet_to_json<Employee>(worksheet);
+//       console.log("Imported data:", jsonData);
+//       alert("Import berhasil!");
+//     } catch (error) {
+//       console.error("Gagal impor:", error);
+//       alert("Terjadi kesalahan saat mengimpor file.");
+//     } finally {
+//       if (fileInputRef.current) {
+//         fileInputRef.current.value = "";
+//       }
+//     }
+//   };
 
-    reader.readAsArrayBuffer(file);
-  };
+//   reader.readAsArrayBuffer(file);
+// };
 
-  // Filter data sesuai filter user
-  const filteredData = useMemo(() => {
-    return employees.filter((item) => {
-      const nama = item.nama ?? "";
-      const cabang = item.cabang ?? "";
-      const jabatan = item.jabatan ?? "";
 
-      const matchesSearch =
-        nama.toLowerCase().includes(filterText.toLowerCase()) ||
-        cabang.toLowerCase().includes(filterText.toLowerCase()) ||
-        jabatan.toLowerCase().includes(filterText.toLowerCase());
 
-      const matchesGender = !filterGender || item.jenisKelamin === filterGender;
-      const matchesStatus = !filterStatus || item.status === filterStatus;
 
-      return matchesSearch && matchesGender && matchesStatus;
-    });
-  }, [employees, filterText, filterGender, filterStatus]);
+// Filter data sesuai filter user
+const filteredData = useMemo(() => {
+  return employees.filter((item) => {
+    const nama = item.nama ?? "";
+    const cabang = item.cabang ?? "";
+    const jabatan = item.jabatan ?? "";
 
-  
+    const matchesSearch =
+      nama.toLowerCase().includes(filterText.toLowerCase()) ||
+      cabang.toLowerCase().includes(filterText.toLowerCase()) ||
+      jabatan.toLowerCase().includes(filterText.toLowerCase());
+
+    const matchesGender = !filterGender || item.jenisKelamin === filterGender;
+    const matchesStatus = !filterStatus || item.status === filterStatus;
+
+    return matchesSearch && matchesGender && matchesStatus;
+  });
+}, [employees, filterText, filterGender, filterStatus]);
+
   return (
     <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
-      <EmployeeCardSum employees={employees} />
+      <EmployeeCardSum employeesCard={employees} />
 
-      <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
-        <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md mt-6 w-full overflow-x-auto">
+        <div className="flex flex-col gap-4 min-w-0">
           {loading && <p>Loading data...</p>}
           {error && <p className="text-red-600">Error: {error}</p>}
 
@@ -283,13 +358,13 @@ export default function EmployeeTablePage() {
             onSecondFilterChange={setFilterStatus}
             filterOptions={employeeFilters}
             secondFilterOptions={statusFilters}
-            onExport={() => handleExportCSV(filteredData)}
-            onImport={handleImportCSV}
             onAdd={() => router.push("/employee/tambah")}
-            importInputRef={fileInputRef} // pastikan DataTableHeader menerima prop ini dan pasang di input type="file"
+            importInputRef={fileInputRef}
           />
 
-          <DataTable columns={employeeColumns} data={filteredData} />
+          <div className="w-full overflow-x-auto">
+            <DataTable columns={employeeColumns} data={filteredData} />
+          </div>
         </div>
       </div>
     </div>

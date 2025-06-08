@@ -11,17 +11,25 @@ export async function getEmployee(id) {
   return data;
 }
 
-export async function createEmployee(payload) {
-  const { data } = await api.post("/employee", payload);
-  return data;
+
+// export async function createEmployee(payload) {
+//   const { data } = await api.post("/employee", payload);
+//   return data;
   
-}
+// }
+export const createEmployee = (formData) => {
+  return api.post('/employee', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+export const updateEmployee = (id, formData) => {
+  return api.put(`/employee/${id}`, formData);
+};
 
 
-export async function updateEmployee(id, payload) {
-  const { data } = await api.put(`/employee/${id}`, payload);
-  return data;
-}
 
 export async function deleteEmployee(id) {
   const { data } = await api.delete(`/employee/${id}`);
