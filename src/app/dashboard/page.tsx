@@ -10,7 +10,6 @@ import { useEffect, useState } from 'react';
 import ClockStatus from './component_dashboard/clock_status';
 import DepartmentDistribution from './component_dashboard/department_distribution';
 
-
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
