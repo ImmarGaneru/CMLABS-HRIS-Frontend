@@ -1,432 +1,372 @@
 "use client";
 
-
-import React, { useMemo, useState } from "react";
-import DataTable from "react-data-table-component";
+import { useRouter } from "next/navigation";
+import { FEEmployee } from "@/types/employee";
+import * as XLSX from "xlsx";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/Datatable";
+import { RxAvatar } from "react-icons/rx";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import EmployeeCardSum from "./component_employee/employee_card_sum";
+import DataTableHeader from "@/components/DatatableHeader";
 import {
-  FaEye,
-  FaEdit,
-  FaTrash,
-  FaSearch,
-  FaCloudDownloadAlt,
-  FaCloudUploadAlt,
-  FaPlusCircle,
-  FaFilter,
-} from "react-icons/fa"; // Import the icons
-const employees = [
-  {
-    id: 1,
-    nama: "Ahmad",
-    jenisKelamin: "Laki-laki",
-    nomor: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: true,
-  },
-  {
-    id: 2,
-    nama: "Luna Christina aj",
-    jenisKelamin: "Perempuan",
-    nomor: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: true,
-  },
-  {
-    id: 3,
-    nama: "Didik Putra Utar",
-    jenisKelamin: "Laki-laki",
-    nomor: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: true,
-  },
-  {
-    id: 4,
-    nama: "Nirmala Sukma",
-    jenisKelamin: "Perempuan",
-    nomor: "085850219981",
-    cabang: "Malang",
-    jabatan: "Manager",
-    status: false,
-  }];
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  
+} from "@/components/ui/alert-dialog";
+
+
+type EmployeeFromAPI = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  employment_status: "active" | "inactive" | "resign";
+  created_at: string;
+  address: string;
+  id_position: string | null;
+  tipe_kontrak: string | null;
+
+  // tambahan
+  user?: {email: string};
+  position? : {name: string};
+  notelp : string;
+  cabang : string;
+  jabatan : string;
+};
 
 
 export default function EmployeeTablePage() {
+  const router = useRouter();
+
+  const [employees, setEmployees] = useState<FEEmployee[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [filterText, setFilterText] = useState("");
-  const [filterGender, setFilterGender] = useState(""); // ✅ pindahkan ke sini
-  const [statusData, setStatusData] = useState(employees);
+  const [filterGender, setFilterGender] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
-  const filteredEmployees = statusData.filter(
-    (item) =>
-      item.nama.toLowerCase().includes(filterText.toLowerCase()) &&
-      (filterGender === "" || item.jenisKelamin === filterGender)
-  );
+  const employeeFilters = [
+    { label: "Laki-laki", value: "Laki-laki" },
+    { label: "Perempuan", value: "Perempuan" },
+  ];
 
-  const toggleStatus = (id: number) => {
-    setStatusData((prev) =>
-      prev.map((emp) => (emp.id === id ? { ...emp, status: !emp.status } : emp))
-    );
+  const statusFilters = [
+    { label: "Aktif", value: "Aktif" },
+    { label: "Non-aktif", value: "Non-aktif" },
+  ];
+const handleSoftDelete = async (id: number | string) => {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Gagal menghapus data");
+    }
+
+    // Update state untuk menghapus employee yang sudah dihapus
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+  } catch (error) {
+    let errorMessage = "Gagal menghapus data";
+  
+    if (error instanceof Error) {
+      errorMessage += `: ${error.message}`;
+    } else if (typeof error === "object" && error !== null && "message" in error) {
+      errorMessage += `: ${(error as { message: string }).message}`;
+    }
+  
+    alert(errorMessage);
+    console.error(error);
+  }
+};
+
+  // Fetch data dari backend
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/employee", {
+          next: { revalidate: 0 },
+        });
+        if (!res.ok) throw new Error(`Error: ${res.status}`);
+        
+        const apiData: EmployeeFromAPI[] = await res.json();
+
+        const feData = apiData.map((emp) => ({
+          id: emp.id,
+          nama: `${emp.first_name} ${emp.last_name}`,
+          jenisKelamin: '-', // kosong dulu
+          notelp: emp.notelp || '-',
+          // cabang: emp.position?.name || '-',
+          // jabatan: emp.position?.name || '-',
+          cabang: emp.cabang || '-',
+          jabatan: emp.jabatan || '-',
+          status: emp.employment_status,
+          hireDate: emp.created_at,
+          employmentType: emp.tipe_kontrak || '-',
+        }));
+        setEmployees(feData);
+
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+
+  // Style status untuk reuse
+  const getStatusStyle = (status: string) => {
+    const styles: Record<string, string> = {
+      Aktif: "bg-green-100 text-green-800",
+      "Non-Aktif": "bg-red-100 text-red-800",
+      Resign: "bg-gray-100 text-gray-800",
+    };
+    return styles[status] ?? "bg-gray-100 text-gray-800";
   };
 
-  const columns = useMemo(
+  const employeeColumns = useMemo<ColumnDef<FEEmployee>[]>(
     () => [
       {
-        name: "No",
-        selector: (row: { id: any }) => row.id,
-        width: "60px",
+        id: "No",
+        header: "No",
+        cell: ({ row }) => (
+          <div className="flex justify-center">{row.index + 1}</div>
+        ),
+        size: 20,
       },
       {
-        name: "Avatar",
+        id: "Avatar",
+        header: "Avatar",
         cell: () => (
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "9999px",
-              background: "#E5E7EB",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-            }}
-          >
-            👤
+          <div className="flex items-center justify-center text-lg">
+            <RxAvatar size={24} />
           </div>
         ),
-        width: "80px",
+        size: 40,
       },
       {
-        name: "Nama",
-        selector: (row: { nama: any }) => row.nama,
-        sortable: true,
-      },
-      {
-        name: "Jenis Kelamin",
-        selector: (row: { jenisKelamin: any }) => row.jenisKelamin,
-        sortable: true,
-      },
-      {
-        name: "Nomor Telepon",
-        selector: (row: { nomor: any }) => row.nomor,
-      },
-      {
-        name: "Cabang",
-        selector: (row: { cabang: any }) => row.cabang,
-      },
-      {
-        name: "Jabatan",
-        selector: (row: { jabatan: any }) => row.jabatan,
-      },
-      {
-        name: "Status",
-        cell: (row: { status: boolean | undefined; id: number }) => (
-          <label
-            style={{
-              display: "inline-block",
-              width: 40,
-              height: 20,
-              position: "relative",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={row.status}
-              onChange={() => toggleStatus(row.id)}
-              style={{ opacity: 0, width: 0, height: 0 }}
-            />
-            <span
-              style={{
-                position: "absolute",
-                cursor: "pointer",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: row.status ? "#16a34a" : "#dc2626",
-                borderRadius: 20,
-                transition: "0.4s",
-              }}
-            >
-              <span
-                style={{
-                  position: "absolute",
-                  height: 16,
-                  width: 16,
-                  left: row.status ? 20 : 4,
-                  bottom: 2,
-                  backgroundColor: "white",
-                  borderRadius: "50%",
-                  transition: "0.4s",
-                }}
-              ></span>
-            </span>
-          </label>
+        accessorKey: "nama",
+        header: "Nama",
+        cell: (info) => (
+          <div className="truncate max-w-[120px]">{info.getValue() as string}</div>
         ),
-        width: "100px",
+        size: 120,
       },
       {
-        name: "Action",
-        cell: (row: { nama: any }) => (
-          <div style={{ display: "flex", gap: "6px" }}>
-            <button
-              title="Lihat"
-              onClick={() => alert(`Lihat ${row.nama}`)}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #1E3A5F",
-                padding: "6px 12px",
-                borderRadius: 6,
-                color: "#1E3A5F",
-              }}
-            >
-              <FaEye />
-            </button>
-            <button
-              title="Edit"
-              onClick={() => alert(`Edit ${row.nama}`)}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #1E3A5F",
-                padding: "6px 12px",
-                borderRadius: 6,
-                color: "#1E3A5F",
-              }}
-            >
-              <FaEdit />
-            </button>
-            <button
-              title="Hapus"
-              onClick={() => alert(`Hapus ${row.nama}`)}
-              style={{
-                backgroundColor: "white",
-                border: "1px solid #1E3A5F",
-                padding: "6px 12px",
-                borderRadius: 6,
-                color: "#1E3A5F",
-              }}
-            >
-              <FaTrash />
-            </button>
-          </div>
+        accessorKey: "jenisKelamin",
+        header: "Jenis Kelamin",
+        cell: (info) => <div className="truncate max-w-[100px]">{info.getValue() as string}</div>,
+        size: 100,
+      },
+      {
+        accessorKey: "notelp",
+        header: "Nomor Telepon",
+        cell: (info) => <div className="truncate max-w-[120px]">{info.getValue() as string}</div>,
+        size: 120,
+      },
+      {
+        accessorKey: "cabang",
+        header: "Cabang",
+        cell: (info) => (
+          <div className="truncate max-w-[100px]">{info.getValue() as string}</div>
         ),
+        size: 100,
+      },
+      {
+        accessorKey: "jabatan",
+        header: "Jabatan",
+        cell: (info) => <div className="truncate max-w-[120px]">{info.getValue() as string}</div>,
+        size: 120,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: (info) => {
+          const status = info.getValue() as "active" | "inactive" | "resign";
+      
+          let displayStatus = "Unknown";
+          if (status === "active") displayStatus = "Aktif";
+          else if (status === "inactive") displayStatus = "Non-Aktif";
+          else if (status === "resign") displayStatus = "Resign";
+      
+          return (
+            <div className="flex justify-center w-[100px]">
+              <span className={`px-2 py-1 text-xs rounded ${getStatusStyle(displayStatus)}`}>
+                {displayStatus}
+              </span>
+            </div>
+          );
+        },
+        size: 100,
+      },
+      {
+        id: "actions",
+        header: "Aksi",
+        cell: ({ row }) => {
+          const data = row.original;
+          return (
+            <div className="flex gap-2 justify-center w-[120px]">
+              <button
+                title="Detail"
+                onClick={() => router.push(`/employee/detail/${data.id}`)}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+              >
+                <FaEye />
+              </button>
+              <button
+                title="Edit"
+                onClick={() => router.push(`/employee/edit/${data.id}`)}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+              >
+                <FaEdit />
+              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    title="Hapus"
+                    className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
+                  >
+                    <FaTrash />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                   Yakin menghapus data ini?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Data yang sudah dihapus tidak dapat dikembalikan
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleSoftDelete(data.id)}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          );
+        },
+        size: 120,
       },
     ],
-    [statusData]
+    [router]
   );
+
+// Export CSV
+// const handleExportCSV = (dataToExport: Employee[]) => {
+//   const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+//   const workbook = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+//   XLSX.writeFile(workbook, "employees_data.xlsx");
+// };
+
+// Ref input file untuk reset
+const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+// const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+//   const file = event.target.files?.[0];
+//   if (!file) return;
+
+//   const reader = new FileReader();
+//   reader.onload = (e) => {
+//     try {
+//       const data = e.target?.result;
+//       if (!data) throw new Error("File kosong");
+
+//       const workbook = XLSX.read(data, { type: "array" });
+//       const sheetName = workbook.SheetNames[0];
+//       const worksheet = workbook.Sheets[sheetName];
+//       const jsonData = XLSX.utils.sheet_to_json<Employee>(worksheet);
+//       console.log("Imported data:", jsonData);
+//       alert("Import berhasil!");
+//     } catch (error) {
+//       console.error("Gagal impor:", error);
+//       alert("Terjadi kesalahan saat mengimpor file.");
+//     } finally {
+//       if (fileInputRef.current) {
+//         fileInputRef.current.value = "";
+//       }
+//     }
+//   };
+
+//   reader.readAsArrayBuffer(file);
+// };
+
+
+
+
+// Filter data sesuai filter user
+const filteredData = useMemo(() => {
+  return employees.filter((item) => {
+    const nama = item.nama ?? "";
+    const cabang = item.cabang ?? "";
+    const jabatan = item.jabatan ?? "";
+
+    const matchesSearch =
+      nama.toLowerCase().includes(filterText.toLowerCase()) ||
+      cabang.toLowerCase().includes(filterText.toLowerCase()) ||
+      jabatan.toLowerCase().includes(filterText.toLowerCase());
+
+    const matchesGender = !filterGender || item.jenisKelamin === filterGender;
+    const matchesStatus = !filterStatus || item.status === filterStatus;
+
+    return matchesSearch && matchesGender && matchesStatus;
+  });
+}, [employees, filterText, filterGender, filterStatus]);
 
   return (
-  
-    
-    <div
-      style={{ padding: 24, backgroundColor: "#f9fafb", minHeight: "100vh" }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: 24,
-          borderRadius: 12,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div
-          style={{ display: "flex", justifyContent: "space-between", gap: 16 }}
-        >
-          {[
-            { label: "Periode", value: "Aug/2025" },
-            { label: "Total Employee", value: "234 Employee" },
-            { label: "Total New Hire", value: "12 Person" },
-            { label: "Full Time Employee", value: "212 Full Time" },
-          ].map((info, idx) => (
-            <div key={idx} style={{ flex: 1, textAlign: "center" }}>
-              <strong style={{ fontSize: 18 }}>{info.value}</strong>
-              <p style={{ margin: 0, fontSize: 14, color: "#6b7280" }}>
-                {info.label}
-              </p>
-            </div>
-          ))}
+    <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
+      <EmployeeCardSum employeesCard={employees} />
+
+      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md mt-6 w-full overflow-x-auto">
+        <div className="flex flex-col gap-4 min-w-0">
+          {loading && <p>Loading data...</p>}
+          {error && <p className="text-red-600">Error: {error}</p>}
+
+          <DataTableHeader
+            title="Data Karyawan"
+            hasSearch={true}
+            hasFilter={true}
+            hasSecondFilter={true}
+            hasExport={true}
+            hasImport={true}
+            hasAdd={true}
+            searchValue={filterText}
+            onSearch={setFilterText}
+            filterValue={filterGender}
+            onFilterChange={setFilterGender}
+            secondFilterValue={filterStatus}
+            onSecondFilterChange={setFilterStatus}
+            filterOptions={employeeFilters}
+            secondFilterOptions={statusFilters}
+            onAdd={() => router.push("/employee/tambah")}
+            importInputRef={fileInputRef}
+          />
+
+          <div className="w-full overflow-x-auto">
+            <DataTable columns={employeeColumns} data={filteredData} />
+          </div>
         </div>
       </div>
-
-      <div
-  style={{
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    marginTop: 24, // Menambahkan jarak dari atas
-  }}
->
-<div
-  style={{
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.0)",
-    marginTop: 24, // Menambahkan jarak dari atas
-  }}
->
-<div
-  style={{
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.0)",
-    marginTop: 0, // Menambahkan jarak dari atas
-  }}
->
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 16,
-      gap: 16, // Memberikan jarak antar elemen
-      flexWrap: "wrap",  // Membungkus elemen jika lebar layar kecil
-    }}
-  >
-    <h3 style={{ fontSize: 18, fontWeight: "bold", color: "#1E3A5F" }}>
-      Semua Informasi Karyawan
-    </h3>
-
-    {/* Input pencarian */}
-    <div style={{ display: "flex", gap: 10 }}>
-    <div style={{ position: "relative", flex: 1, maxWidth: "240px" }}>
-      <FaSearch
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "10px",
-          transform: "translateY(-50%)",
-          color: "#6b7280",
-        }}
-      />
-    <div style={{ position: "relative", flex: "1 1 300px", maxWidth: "500px" }}>
-  
-  <input
-    type="text"
-    placeholder="search here"
-    value={filterText}
-    onChange={(e) => setFilterText(e.target.value)}
-    style={{
-      padding: "8px 10px 10px 30px",
-      border: "1px solid #1E3A5F",
-      borderRadius: 6,
-      width: "100%", // Responsif
-      height: "36px",
-      fontSize: "14px",
-    }}
-  />
-</div>
-
     </div>
-
-    {/* Tombol Filter, Export, Import, Tambah Data */}
- 
-   
-      <div
-      style={{
-        padding: "6px 12px",
-        borderRadius: 6,
-        backgroundColor: "white",
-        border: "1px solid #1E3A5F",
-        color: "#1E3A5F",
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-      }}
-    >
-      <FaFilter />
-      <select
-        value={filterGender}
-        onChange={(e) => setFilterGender(e.target.value)}
-        style={{
-          border: "none",
-          backgroundColor: "transparent",
-          color: "#1E3A5F",
-          outline: "none",
-          fontSize: "14px",
-          cursor: "pointer",
-        }}
-      >
-        <option value="">All</option>
-        <option value="Laki-laki">Laki-laki</option>
-        <option value="Perempuan">Perempuan</option>
-      </select>
-    </div>
-    
-     
-
-      <button
-        onClick={() => alert("Export clicked")}
-        style={{
-          padding: "6px 12px",
-          borderRadius: 6,
-          backgroundColor: "white",
-          border: "1px solid #1E3A5F", // Border biru
-          color: "#1E3A5F",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <FaCloudDownloadAlt /> {/* Ikon Export */}
-        Export
-      </button>
-
-      <button
-        onClick={() => alert("Import clicked")}
-        style={{
-          padding: "6px 12px",
-          borderRadius: 6,
-          backgroundColor: "white",
-          border: "1px solid #1E3A5F", // Border biru
-          color: "#1E3A5F",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <FaCloudUploadAlt /> {/* Ikon Import */}
-        Import
-      </button>
-
-      <button
-        onClick={() => alert("Tambah Data clicked")}
-        style={{
-          padding: "6px 12px",
-          borderRadius: 6,
-          backgroundColor: "#3b82f6",
-          color: "white",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <FaPlusCircle /> {/* Ikon Tambah Data */}
-        Tambah Data
-      </button>
-    </div>
-  </div>
-</div>
-
-
-
-
-        <DataTable
-          columns={columns}
-          data={filteredEmployees}
-          pagination
-          highlightOnHover
-          striped
-        />
-      </div>
-      </div>
-      </div>
-    
   );
- 
-
 }
-
-

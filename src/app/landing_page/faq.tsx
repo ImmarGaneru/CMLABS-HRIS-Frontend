@@ -1,6 +1,6 @@
 export default function FAQ() {
   return (
-    <section className="px-8 py-16 text-center">
+    <section className="px-8 py-16 bg-[#f8f8f8] text-center">
       <h2
         className="font-bold leading-tight mb-2"
         style={{
@@ -15,7 +15,7 @@ export default function FAQ() {
         Kami tahu anda punya pertanyaan, ini jawabannya:
       </p>
 
-      <div className="max-w-2xl mx-auto text-left space-y-6">
+      <div className="max-w-4xl mx-auto text-left space-y-6">
         {/* FAQ 1 */}
         <div className="pl-8">
           <hr className="border-t-[3px] border-[#1E3A5F] mb-4" />
