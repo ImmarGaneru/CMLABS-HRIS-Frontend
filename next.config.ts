@@ -1,14 +1,16 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  async rewrites() {
-      return [
-          {
-              source: "/api/:path*",
-              destination: "http://localhost:8000/api/:path*",
-          },
-      ];
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    domains: ['localhost'],
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
   },
 };
 
-module.exports = nextConfig;
+module.exports = {
+  output: 'standalone'
+}

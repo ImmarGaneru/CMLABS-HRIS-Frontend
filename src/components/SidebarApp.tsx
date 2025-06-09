@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Tutorial from "./Tutorial";
 
 const sidebarNavItems = [
     {
@@ -91,6 +92,38 @@ export function SidebarApp() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="flex flex-col gap-2">
+                <Tutorial
+                    steps={[
+                        {
+                            target: "#dashboard-tutorial",
+                            content: "Welcome to the dashboard! Here you can see an overview of your HR information.",
+                            placement: "right"
+                        },
+                        {
+                            target: "#karyawan-tutorial",
+                            content: "Manage your employee information and profiles here.",
+                            placement: "right"
+                        },
+                        {
+                            target: "#kehadiran-tutorial",
+                            content: "Track and manage employee attendance records.",
+                            placement: "right"
+                        },
+                        {
+                            target: "#jadwal-tutorial",
+                            content: "View and manage employee schedules here.",
+                            placement: "right"
+                        },
+                        {
+                            target: "#approval-tutorial",
+                            content: "Handle all approval requests in this section.",
+                            placement: "right"
+                        }
+                    ]}
+                    buttonPosition="bottom-right"
+                    buttonVariant="floating"
+                    storageKey="sidebarTutorialCompleted"
+                />
                 <Link
                     href="/settings"
                     className={cn(
