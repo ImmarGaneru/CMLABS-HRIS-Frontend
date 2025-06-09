@@ -31,6 +31,7 @@ export default function TambahKaryawan() {
     tipeKontrak: "Tetap",
     grade: "",
     jabatan: "",
+    id_position: "", // id dari posisi yang dipilih
     cabang: "",
     bank: "",
     norek: "",
@@ -42,7 +43,7 @@ export default function TambahKaryawan() {
     uangLembur: 0,
     dendaTerlambat: 0,
     TotalGaji: 0,
-    dokumen: null as File | null,
+   dokumen: [] as File[],
   });
 
   interface PositionResponse {
@@ -84,27 +85,32 @@ export default function TambahKaryawan() {
     }
   };
 
-  const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, dokumen: file }));
-    }
-  };
+  const [dokumen, setDokumen] = useState<File[]>([]);
+
+const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files) {
+    const files = Array.from(e.target.files);
+    setDokumen((prev) => [...prev, ...files]);
+    setFormData((prev) => ({
+      ...prev,
+      dokumen: [...prev.dokumen, ...files],
+    }));
+  }
+};
+
+
 
   const handleJabatanChange = (e: ChangeEvent<HTMLSelectElement>) => {
-
     const selectedId = e.target.value;
-    const selectedPosition = positions.find((pos) => pos.id === selectedId );
+    const selectedPosition = positions.find((pos) => pos.id === selectedId);
 
     setFormData((prev) => ({
       ...prev,
-     jabatan: selectedId, // Simpan id, bukan nama
-    namaJabatan: selectedPosition?.name ?? '',
+      id_position: selectedId,
+      jabatan: selectedPosition?.name ?? "",
       gaji: selectedPosition?.gaji ?? 0,
       TotalGaji:
-        (selectedPosition?.gaji ?? 0) +
-        prev.uangLembur -
-        prev.dendaTerlambat,
+        (selectedPosition?.gaji ?? 0) + prev.uangLembur - prev.dendaTerlambat,
     }));
   };
 
@@ -159,46 +165,72 @@ export default function TambahKaryawan() {
       };
 
       updated.TotalGaji =
-        (typeof updated.gaji === "number" ? updated.gaji : parseFloat(updated.gaji)) +
-        (typeof updated.uangLembur === "number" ? updated.uangLembur : parseFloat(updated.uangLembur)) -
-        (typeof updated.dendaTerlambat === "number" ? updated.dendaTerlambat : parseFloat(updated.dendaTerlambat));
+        (typeof updated.gaji === "number"
+          ? updated.gaji
+          : parseFloat(updated.gaji)) +
+        (typeof updated.uangLembur === "number"
+          ? updated.uangLembur
+          : parseFloat(updated.uangLembur)) -
+        (typeof updated.dendaTerlambat === "number"
+          ? updated.dendaTerlambat
+          : parseFloat(updated.dendaTerlambat));
 
       return updated;
     });
   };
+  function isUUID(str: string) {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  }
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+ const handleSubmit = async (event: React.FormEvent) => {
+  event.preventDefault();
 
-    try {
-      const data = new FormData();
+  if (!isUUID(formData.id_position)) {
+    alert("ID posisi harus dalam format UUID yang benar!");
+    return;
+  }
 
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value instanceof File) {
-          data.append(key, value);
-        } else if (value !== null && value !== undefined) {
-          data.append(key, value.toString());
-        }
-      });
+  try {
+    const data = new FormData();
 
-      await createEmployee(data);
+    // Tambahkan properti biasa (kecuali dokumen)
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === "dokumen") return; // abaikan dokumen di sini
 
-      alert("Data berhasil ditambahkan");
-      router.push("/employee");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      if (error.response?.data) {
-        alert(
-          "Gagal menambahkan data karyawan:\n" +
-            JSON.stringify(error.response.data, null, 2)
-        );
-        console.error("Detail error:", error.response.data);
-      } else {
-        alert("Gagal menambahkan data karyawan.");
-        console.error(error);
+      if (value instanceof File) {
+        data.append(key, value);
+      } else if (value !== null && value !== undefined) {
+        data.append(key, value.toString());
       }
+    });
+
+    // Tambahkan dokumen satu per satu
+ formData.dokumen.forEach((file) => {
+   data.append("dokumen[]", file); 
+   // ✅ kirim sebagai array of file, Laravel akan mengenali
+  });
+
+
+    await createEmployee(data);
+
+    alert("Data berhasil ditambahkan");
+    router.push("/employee");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    if (error.response?.data) {
+      alert(
+        "Gagal menambahkan data karyawan:\n" +
+          JSON.stringify(error.response.data, null, 2)
+      );
+      console.error("Detail error:", error.response.data);
+    } else {
+      alert("Gagal menambahkan data karyawan.");
+      console.error(error);
     }
-  };
+  }
+};
 
 
   return (
@@ -365,7 +397,7 @@ export default function TambahKaryawan() {
           />
         </div>
 
-        <div>
+        {/* <div>
           <label
             htmlFor="email"
             className="block text-[20px] font-bold text-[#141414]"
@@ -380,7 +412,7 @@ export default function TambahKaryawan() {
             className="input"
             value={formData.email}
           />
-        </div>
+        </div> */}
 
         <div>
           <label
@@ -511,6 +543,18 @@ export default function TambahKaryawan() {
             className="input"
           />
         </div>
+        <div>
+          <label htmlFor="tanggalEfektif"
+          className="block text-[20px] font-bold text-[#141414]">
+            Tanggal Efektif
+          </label>
+          <input type="date"
+          id="tanggalEfektif"
+          name="tanggalEfektif"
+          value={formData.tanggalEfektif}
+          onChange={handleDateChange}
+          className="input" />
+        </div>
 
         <div>
           <label
@@ -574,26 +618,28 @@ export default function TambahKaryawan() {
 
         <div>
           <label
-            htmlFor="jabatan"
+            htmlFor="id_position"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Jabatan
           </label>
           <select
-            id="jabatan"
-            name="jabatan"
+            id="id_position"
+            name="id_position"
             onChange={handleJabatanChange}
             className="input"
-            value={formData.jabatan}
+            value={formData.id_position || ""}
+            required
           >
             <option value="">- Pilih Jabatan -</option>
             {positions.map((pos) => (
-              <option key={pos.id} value={pos.name}>
+              <option key={pos.id} value={pos.id}>
                 {pos.name}
               </option>
             ))}
           </select>
         </div>
+
         <div>
           <label
             htmlFor="gaji"
@@ -720,15 +766,24 @@ export default function TambahKaryawan() {
           </label>
           <div className="relative">
             <input
-              name="dokumen[]" // pake array supaya multiple file bisa diterima backend
+              name="dokumen[]"
               type="file"
               accept=".pdf,.docx"
-              multiple // penting supaya bisa pilih banyak file sekaligus
+              multiple
               onChange={handleDokumenChange}
               className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
             />
             <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
           </div>
+
+          {/* Contoh tampil nama file yang sudah dipilih */}
+          {dokumen.length > 0 && (
+            <ul className="mt-2 list-disc list-inside">
+              {dokumen.map((file, idx) => (
+                <li key={idx}>{file.name}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="col-span-2 flex justify-end gap-4">
