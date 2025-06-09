@@ -2,8 +2,9 @@
 
 import './globals.css';
 import { ReactNode } from 'react';
+import { Inter } from 'next/font/google';
+const inter = Inter({ subsets: ['latin'] });
 import Layout2 from '@/components/Layout2';
-import { AppContextProvider } from "@/contexts/AppContextProvider";
 
 export const metadata = {
   title: 'CMLABS HRIS',
@@ -17,11 +18,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body>
-      <AppContextProvider>
-          <Layout2>
-              {children}
-          </Layout2>
-      </AppContextProvider>
+        <Layout2>
+            {children}
+        </Layout2>
       </body>
     </html>
   );

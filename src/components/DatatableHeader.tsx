@@ -194,24 +194,19 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
         )}
 
         {/* Import Button */}
-     {hasImport && onImport && (
-  <>
-    <Button
-      variant="tableFeatureButton"
-      onClick={() => importInputRef?.current?.click()} // INI YANG PENTING
-    >
-      <FaCloudDownloadAlt size={16} />
-      Import
-    </Button>
-    <input
-      type="file"
-      accept=".xlsx,.xls,.csv"
-      onChange={onImport}
-      className="hidden"
-      ref={importInputRef}
-    />
-  </>
-)}
+        {hasImport && onImport && (
+          <Button variant="tableFeatureButton">
+            <FaCloudDownloadAlt size={16} />
+            Import
+            <input
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={onImport}
+              className="hidden"
+              ref={importInputRef}
+            />
+          </Button>
+        )}
 
         {/* Add Button */}
         {hasAdd && onAdd && (
