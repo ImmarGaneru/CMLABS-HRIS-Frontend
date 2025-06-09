@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { api } from "@/lib/axios";
+import api from "@/lib/axios";
 // import { Email } from "@mui/icons-material";
 
 type Employee = {
