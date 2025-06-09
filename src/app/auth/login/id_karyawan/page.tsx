@@ -8,7 +8,7 @@ import { api } from "@/lib/axios";
 export default function LoginIdKaryawanPage() {
   const router = useRouter();
 
-  const [signInCode, setSignInCode] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,8 +28,7 @@ export default function LoginIdKaryawanPage() {
 
     try {
       const response = await api.post("/auth/signin", {
-        sign_in_code: signInCode,
-        company_name: companyName,
+        id_employee: employeeId,
         password,
       });
 
@@ -98,7 +97,7 @@ export default function LoginIdKaryawanPage() {
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="PT CMLABS"
+                placeholder="ID12345"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
                 required
               />
@@ -108,9 +107,9 @@ export default function LoginIdKaryawanPage() {
               <label className="text-sm text-gray-600">ID Karyawan</label>
               <input
                 type="text"
-                value={signInCode}
-                onChange={(e) => setSignInCode(e.target.value)}
-                placeholder="MN1234"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                placeholder="ID12345"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
                 required
               />
