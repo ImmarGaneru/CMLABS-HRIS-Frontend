@@ -1,14 +1,24 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  images: {
-    domains: ['localhost'],
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  async rewrites() {
+      return [
+          {
+              source: "/api/:path*",
+              destination: "http://localhost:8000/api/:path*",
+          },
+      ];
   },
-  eslint: {
-    ignoreDuringBuilds: true,
+  
+  experimental: {
+    // serverActions: [],
   },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
+  // serverActions: {
+  //   bodySizeLimit: '100mb', // atau sesuai kebutuhan, contoh 10mb
+  // },
 };
 
 module.exports = nextConfig;
+module.exports = {
+  output: 'standalone'
+}

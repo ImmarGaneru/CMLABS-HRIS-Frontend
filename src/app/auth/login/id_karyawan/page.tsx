@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/axios";
+import api from "@/lib/axios";
 
 export default function LoginIdKaryawanPage() {
   const router = useRouter();
 
-  const [employeeId, setEmployeeId] = useState("");
+  const [signInCode, setSignInCode] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,7 +28,8 @@ export default function LoginIdKaryawanPage() {
 
     try {
       const response = await api.post("/auth/signin", {
-        id_employee: employeeId,
+        sign_in_code: signInCode,
+        company_name: companyName,
         password,
       });
 
@@ -97,7 +98,7 @@ export default function LoginIdKaryawanPage() {
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="ID12345"
+                placeholder="PT CMLABS"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
                 required
               />
@@ -107,9 +108,9 @@ export default function LoginIdKaryawanPage() {
               <label className="text-sm text-gray-600">ID Karyawan</label>
               <input
                 type="text"
-                value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
-                placeholder="ID12345"
+                value={signInCode}
+                onChange={(e) => setSignInCode(e.target.value)}
+                placeholder="MN1234"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
                 required
               />

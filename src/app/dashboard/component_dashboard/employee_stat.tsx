@@ -4,13 +4,17 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { IoMdArrowDropdown } from "react-icons/io";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-// import apiClient from '@/lib/apiClient';
+import api from '@/lib/axios';
+
+type ChartDataItem = {
+  label: string;
+  total: number;
+};
 
 export default function EmployeeStat() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<ChartDataItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
 
   const handleMonthChange = (date: Date | null) => {
     if (date) {
@@ -34,23 +38,24 @@ export default function EmployeeStat() {
       const month = String(selectedMonth.getMonth() + 1).padStart(2, '0');
       
       try {
-        const res = await fetch(`http://localhost:8000/api/admin/employees/dashboard/status-stats?month=${month}&year=${year}`,{
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await api.get(`/admin/employees/dashboard/status-stats?month=${month}&year=${year}`);
         
-        const result = await res.json();
-        setChartData(result.data);
-        setLoading(false);
+        if (Array.isArray(res.data.data?.data)) {
+          setChartData(res.data.data.data);
+        } else {
+          setChartData([]);
+        }
+    
       } catch (error) {
         console.error('Gagal mengambil data:', error);
+        setChartData([]);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchChartData();
-  }, [selectedMonth, token]);
+  }, [selectedMonth]);
 
   if (loading) {
     return (

@@ -29,9 +29,19 @@ export const updateEmployee = (id, formData) => {
   return api.put(`/employee/${id}`, formData);
 };
 
-
+export async function importEmployee(id, payload) {
+  const { data } = await api.post(`/employee/import`, payload);
+  return data;
+}
 
 export async function deleteEmployee(id) {
   const { data } = await api.delete(`/employee/${id}`);
   return data;
 }
+export const uploadEmployeeDocument = (id, formData) => {
+  return api.post(`/employee/${id}/upload`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
