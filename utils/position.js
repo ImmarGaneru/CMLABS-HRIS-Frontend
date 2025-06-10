@@ -1,0 +1,8 @@
+// utils/position.js
+import api from './api';
+
+export async function getPositions() {
+  const { data } = await api.get('/positions');
+
+  return data;
+}

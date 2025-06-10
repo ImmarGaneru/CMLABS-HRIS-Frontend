@@ -1,7 +1,24 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+      return [
+          {
+              source: "/api/:path*",
+              destination: "http://localhost:8000/api/:path*",
+          },
+      ];
+  },
+  
+  experimental: {
+    // serverActions: [],
+  },
+  // serverActions: {
+  //   bodySizeLimit: '100mb', // atau sesuai kebutuhan, contoh 10mb
+  // },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
+module.exports = {
+  output: 'standalone'
+}

@@ -1,0 +1,20 @@
+name: hris_frontend-dev
+
+services:
+  hris_frontend-dev:
+    container_name: hris_frontend-dev
+    build:
+      context: ../../
+      dockerfile: docker/development/Dockerfile
+    image: hris_frontend-dev
+    ports:
+      - "3001:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    networks:
+      - hris_frontend-dev
+
+  networks:
+    hris_frontend-dev:

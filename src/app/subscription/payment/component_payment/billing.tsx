@@ -5,7 +5,31 @@ import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
 import { ColumnDef } from "@tanstack/react-table";
 import { FaEye } from "react-icons/fa";
-import * as XLSX from "xlsx";
+
+interface ApiSubscrpition{
+    package_type?: string;
+    seats?: number;
+    price_per_seat?: number;
+}
+
+interface ApiInvoice {
+    id: string;
+    total_amount: number;
+    due_datetime: string;
+    status: string;
+    display_status: 'unpaid'|'paid'|'failed'|'overdue';
+    xendit_invoice_id: string;
+    invoice_url: string;
+    deleted_at: string | null;
+    user?: {
+      workplace?: {
+        subscription?: ApiSubscrpition;
+      };
+    };
+    payments?: any[];
+  }
+
+
 
 export default function BillList() {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
@@ -15,7 +39,7 @@ export default function BillList() {
     const [filterStatus, setFilterStatus] = useState("");
     const [data, setData] = useState<Bill[]>([]);
     const [loading, setLoading] = useState(true);
-    const [token] = useState("33|5LDN0e8AskvPD1suamMTkidN7SYfUSp5CezqlTjp5f8d22dc");
+    const [token] = useState("8|DcN7dqelnE4js6rOn6g1VePt26YKixwa1DKrlBJJba4c3347");
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
@@ -42,16 +66,38 @@ export default function BillList() {
                 const json = await response.json();
                 console.log('Response data:', json); // Debug log
                 
-                // Check if the response is an array
-                if (Array.isArray(json)) {
-                    setData(json);
-                } else if (json.data && Array.isArray(json.data)) {
-                    // If the API returns { data: [...] }
+                if (json && Array.isArray(json.data)) {
                     setData(json.data);
+                    const mappedData = json.data.map((item:ApiInvoice) => {
+                        const isOverdue = item.status === 'unpaid' && new Date(item.due_datetime) < new Date();
+                        const subscription = item.user?.workplace?.subscription || {};
+                        const dueDate = new Date(item.due_datetime);
+                        const formattedMonth = dueDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+                        const invoiceTitle = `Tagihan Langganan ${formattedMonth}`;
+
+                        return {
+                            id: item.id,
+                            total_amount: item.total_amount,
+                            due_datetime: item.due_datetime,
+                            status: item.status,
+                            display_status: isOverdue ? 'overdue' : item.status,
+                            xendit_invoice_id: item.xendit_invoice_id,
+                            invoice_url: item.invoice_url,
+                            deleted_at: item.deleted_at,
+    
+                            invoice_title: invoiceTitle,
+                            package_type: subscription.package_type || '-',
+                            seats: subscription.seats ?? 0,
+                            price_per_seat: subscription.price_per_seat ?? 0,
+                        };
+                    });
+
+                    setData(mappedData);
                 } else {
-                    console.error('Unexpected API response format:', json);
+                    console.error('Data format tidak dikenali', json);
                     setData([]);
                 }
+                  
             } catch (error) {
                 console.error('Error fetching invoices:', error);
                 setData([]);
@@ -65,19 +111,22 @@ export default function BillList() {
 
     type Bill = {
         id: string;
-        // title: string;
         total_amount: number;
         due_datetime: string;
         status: 'unpaid' | 'paid' | 'overdue';
-        deleted_at: string | null;
+        display_status: 'unpaid' | 'paid' | 'overdue';
         xendit_invoice_id: string;
         invoice_url: string;
+        deleted_at: string | null;
+
+        invoice_title: string;
+        package_type: string;
+        seats: number;
     };
 
     const statusFilters = [
         { label: 'Unpaid', value: 'unpaid' },
         { label: 'Paid', value: 'paid' },
-        { label: 'Overdue', value: 'overdue' },
     ];
 
     const billColumns = useMemo<ColumnDef<Bill>[]>(
@@ -93,12 +142,24 @@ export default function BillList() {
                 size: 60,
             },
             {
-                accessorKey: "id",
-                header: "Invoice ID",
+                accessorKey: "invoice_title",
+                header: "Nama Tagihan",
                 cell: info => (
-                    <div className="truncate w-[200px] font-bold">
-                        {info.getValue() as string}
-                    </div>
+                    <div className='capitalize font-bold'>{info.getValue() as string}</div>
+                ),
+            },
+            {
+                accessorKey: "package_type",
+                header: "Paket",
+                cell: info => (
+                    <div className='capitalize'>{info.getValue() as string}</div>
+                ),
+            },
+            {
+                accessorKey: "seats",
+                header: "Seat",
+                cell: info => (
+                    <div className="text-center">{info.getValue() as string}</div>
                 ),
             },
             {
@@ -115,7 +176,11 @@ export default function BillList() {
                 header: "Due Date",
                 cell: info => (
                     <div className="flex justify-center">
-                        {new Date(info.getValue() as string).toLocaleDateString()}
+                        {new Date(info.getValue() as string).toLocaleDateString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                        })}
                     </div>
                 ),
             },
@@ -124,16 +189,25 @@ export default function BillList() {
                 header: "Status",
                 cell: info => {
                     const status = info.getValue() as string;
+                    const displayStatus = info.row.original.display_status;
+                
                     const statusStyle: Record<string, string> = {
                         "paid": "bg-green-100 text-green-800",
                         "overdue": "bg-red-100 text-red-800",
                         "unpaid": "bg-yellow-100 text-yellow-800",
+                        "failed": "bg-red-100 text-red-800",
                     };
+                
                     return (
-                        <div className="flex justify-center">
+                        <div className="flex justify-center gap-2">
                             <span className={`px-2 py-1 text-xs rounded ${statusStyle[status] ?? "bg-gray-100 text-gray-800"}`}>
-                                {status}
+                                {status.charAt(0).toUpperCase() + status.slice(1)}
                             </span>
+                            {displayStatus === 'overdue' && (
+                                <span className={`px-2 py-1 text-xs rounded ${statusStyle['overdue']}`}>
+                                    Overdue
+                                </span>
+                            )}
                         </div>
                     );
                 },
@@ -147,7 +221,8 @@ export default function BillList() {
                         <div className="flex gap-2 justify-center">
                             <button
                                 title="View Invoice"
-                                onClick={() => window.open(data.invoice_url, '_blank')}
+                                // onClick={() => window.open(data.invoice_url, '_blank')} 
+                                onClick={() => handleViewInvoice(data)} 
                                 className={"border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"}
                             >
                                 <FaEye />
@@ -161,66 +236,20 @@ export default function BillList() {
     );
     
     //CONTOH
-    const dummyData: Bill[] = [
-        {
-            id: "01972105-bf1d-71e4-beee-3216431860c5",
-            total_amount: 60000,
-            due_datetime: "2025-06-01T12:00:00.000000Z",
-            status: "unpaid",
-            deleted_at: null,
-            xendit_invoice_id: "68399b1100410a83e05ba067",
-            invoice_url: "https://checkout-staging.xendit.co/web/68399b1100410a83e05ba067"
-        }
-    ];
+    // const dummyData: Bill[] = [
+    //     {
+    //         id: "01972105-bf1d-71e4-beee-3216431860c5",
+    //         total_amount: 60000,
+    //         due_datetime: "2025-06-01T12:00:00.000000Z",
+    //         status: "unpaid",
+    //         deleted_at: null,
+    //         xendit_invoice_id: "68399b1100410a83e05ba067",
+    //         invoice_url: "https://checkout-staging.xendit.co/web/68399b1100410a83e05ba067"
+    //     }
+    // ];
 
     const handleViewInvoice = (data: Bill) => {
-        router.push(`/payment/invoice?data=${encodeURIComponent(JSON.stringify(data))}`);
-    };
-
-    // Export to Excel
-    const handleExport = () => {
-        const dataToExport = filteredData.map(bill => ({
-            'Invoice ID': bill.id,
-            'Total Amount': `Rp ${bill.total_amount.toLocaleString()}`,
-            'Due Date': new Date(bill.due_datetime).toLocaleDateString(),
-            'Status': bill.status,
-            'Xendit Invoice ID': bill.xendit_invoice_id
-        }));
-
-        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Billing Data");
-        XLSX.writeFile(workbook, "billing_data.xlsx");
-    };
-
-    // Import from Excel
-    const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const data = e.target?.result;
-                if (!data) throw new Error("File kosong");
-
-                const workbook = XLSX.read(data, { type: "array" });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json<Bill>(worksheet);
-                console.log("Imported data:", jsonData);
-                alert("Import berhasil. Lihat console untuk data.");
-            } catch (error) {
-                console.error("Error importing file:", error);
-                alert("Error mengimpor file. Pastikan format benar.");
-            } finally {
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
-                }
-            }
-        };
-
-        reader.readAsArrayBuffer(file);
+        router.push(`/subscription/payment/invoice?id=${data.id}`);
     };
 
     const handleHistoryToggle = () => {
@@ -235,10 +264,19 @@ export default function BillList() {
         }
         
         return data.filter((item) => {
-            const matchesSearch = item.id.toLowerCase().includes(filterText.toLowerCase());
+            const searchText = filterText.toLowerCase();
+            const matchesSearch = 
+                item.invoice_title.toLowerCase().includes(searchText) ||
+                item.package_type.toLowerCase().includes(searchText) ||
+                item.status.toLowerCase().includes(searchText) ||
+                item.display_status.toLowerCase().includes(searchText) ||
+                item.seats.toString().includes(searchText) ||
+                item.total_amount.toString().includes(searchText);
+            
             const matchesStatus = !filterStatus || item.status === filterStatus;
             // If showing history, only show paid invoices
             const matchesHistory = !showHistory || item.status === 'paid';
+            
             return matchesSearch && matchesStatus && matchesHistory;
         });
     }, [data, filterText, filterStatus, showHistory]);
@@ -251,15 +289,12 @@ export default function BillList() {
                         title={showHistory ? 'Payment History' : 'App Billing'}
                         hasSearch={true}
                         hasSecondFilter={true}
-                        hasHistoryToggle={true}
                         hasAdd={true}
                         searchValue={filterText}
                         onSearch={setFilterText}
                         secondFilterValue={filterStatus}
                         onSecondFilterChange={setFilterStatus}
                         secondFilterOptions={statusFilters}
-                        onHistoryToggle={handleHistoryToggle}
-                        showHistory={showHistory}
                         importInputRef={fileInputRef}
                     />
                     {loading ? (
