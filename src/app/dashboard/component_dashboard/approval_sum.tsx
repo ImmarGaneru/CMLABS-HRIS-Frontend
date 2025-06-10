@@ -4,8 +4,9 @@ import { MdOpenInNew } from "react-icons/md";
 import { FaEye } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { IoMdArrowDropdown } from "react-icons/io";
+import api from '@/lib/axios';
 
-interface Approval {
+type Approval = {
     id: number;
     employee_name: string;
     type: string;
@@ -17,7 +18,6 @@ export default function ApprovalSum(){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [approvals, setApprovals] = useState<Approval[]>([]);
-    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
     const [filter, setFilter] = useState('pending');
     const [showFilter, setShowFilter] = useState(false);
 
@@ -25,16 +25,18 @@ export default function ApprovalSum(){
         const fetchApprovals = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:8000/api/admin/employees/dashboard/recent-approvals', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                const result = await response.json();
-                if (filter !== 'all') {
-                    setApprovals(result.data.filter((a: Approval) => a.status.toLowerCase() === filter));
+                const res = await api.get('/admin/employees/dashboard/recent-approvals');
+                
+                if (Array.isArray(res.data.data?.data)) {
+                    setApprovals(res.data.data.data);
                 } else {
-                    setApprovals(result.data);
+                    setApprovals([]);
+                }
+
+                if (filter !== 'all') {
+                    setApprovals(res.data.data.data.filter((a: Approval) => a.status.toLowerCase() === filter));
+                } else {
+                    setApprovals(res.data.data.data);
                 }
             } catch (error) {
                 console.error('Error fetching approvals:', error);
@@ -44,7 +46,7 @@ export default function ApprovalSum(){
         };
 
         fetchApprovals();
-    }, [token, filter]);
+    }, [filter]);
 
     const handleViewAll = () => {
         router.push('/approval');

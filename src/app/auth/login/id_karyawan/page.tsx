@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/axios";
+import api from "@/lib/axios";
 
 export default function LoginIdKaryawanPage() {
   const router = useRouter();
