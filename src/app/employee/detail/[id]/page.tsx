@@ -12,6 +12,7 @@ import React from "react";
 // import DataTableHeader from "@/components/DatatableHeader";
 import api from "../../../../../utils/api"; // pastikan path sesuai
 import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; 
 type Dokumen = {
   id: number;
   name: string;
@@ -28,34 +29,34 @@ type Karyawan = {
   jabatan: string;
   nik: string;
   address: string;
-  tempatLahir: string;
-  tanggalLahir: string;
-  jenisKelamin: string;
+  tempat_lahir: string;
+  tanggal_lahir: string;
+  jenis_kelamin: string;
   pendidikan: string;
   email: string;
-  notelp: string;
+  no_telp: string;
   dokumen: Dokumen[];
-  startDate: string;
+  start_date: string;
   tenure: string;
-  endDate: string;
+  end_date: string;
   jadwal: string;
-  tipeKontrak: string;
+  tipe_kontrak: string;
   cabang: string;
   employment_status: string;
-  tanggalEfektif: string;
+  tanggal_efektif: string;
   bank: string;
   norek: string;
   gaji: string;
-  uangLembur: string;
-  dendaTerlambat: string;
-  TotalGaji: string;
+  uang_lembur: string;
+  denda_terlambat: string;
+  total_gaji: string;
 };
 
 export default function DetailKaryawan() {
   const router = useRouter();
   const params = useParams();
   const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
@@ -89,8 +90,8 @@ export default function DetailKaryawan() {
         const response = await getEmployee(id);
         const rawData = response.data;
         const gajiNum = parseRupiahToNumber(rawData.gaji);
-        const lemburNum = parseRupiahToNumber(rawData.uangLembur);
-        const dendaNum = parseRupiahToNumber(rawData.dendaTerlambat);
+        const lemburNum = parseRupiahToNumber(rawData.uang_lembur);
+        const dendaNum = parseRupiahToNumber(rawData.denda_terlambat);
         const totalNum = gajiNum + lemburNum - dendaNum;
 
         const mappedData: Karyawan = {
@@ -100,27 +101,27 @@ export default function DetailKaryawan() {
           jabatan: rawData.jabatan || "-",
           nik: rawData.nik || "-",
           address: rawData.address,
-          tempatLahir: rawData.tempatLahir,
-          tanggalLahir: rawData.tanggalLahir,
-          jenisKelamin: rawData.jenisKelamin,
+          tempat_lahir: rawData.tempat_lahir,
+          tanggal_lahir: rawData.tanggal_lahir,
+          jenis_kelamin: rawData.jenisKelamin,
           pendidikan: rawData.pendidikan,
           email: rawData.email || "-",
-          notelp: rawData.notelp,
+          no_telp: rawData.no_telp,
           dokumen: rawData.dokumen || [],
-          startDate: rawData.startDate || "-",
+          start_date: rawData.start_date || "-",
           tenure: rawData.tenure || "-",
-          endDate: rawData.endDate || "-",
+          end_date: rawData.end_date || "-",
           jadwal: rawData.jadwal,
-          tipeKontrak: rawData.tipeKontrak,
+          tipe_kontrak: rawData.tipe_kontrak,
           cabang: rawData.cabang,
           employment_status: rawData.employment_status || "-",
-          tanggalEfektif: rawData.tanggalEfektif || "-",
+          tanggal_efektif: rawData.tanggal_efektif || "-",
           bank: rawData.bank,
           norek: rawData.norek,
           gaji: gajiNum.toString(),
-          uangLembur: lemburNum.toString(),
-          dendaTerlambat: dendaNum.toString(),
-          TotalGaji: totalNum.toString(),
+          uang_lembur: lemburNum.toString(),
+          denda_terlambat: dendaNum.toString(),
+          total_gaji: totalNum.toString(),
           first_name: rawData.first_name,
           last_name: rawData.last_name,
         };
@@ -178,7 +179,7 @@ export default function DetailKaryawan() {
       );
 
       if (response.status === 200) {
-  toast.success("Berhasil Menggunggah Dokumen.");
+        toast.success("Berhasil Menggunggah Dokumen.");
         setDokumen([]);
 
         // Ambil dokumen terbaru dari response
@@ -194,38 +195,52 @@ export default function DetailKaryawan() {
             : prev
         );
       }
-   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-   } catch (err: any) {
-  if (err.response?.status === 422) {
-    const errors = err.response.data.errors;
-    const messages = Object.entries(errors)
-      .map(([key, val]) => `${key}: ${(val as string[]).join(", ")}`)
-      .join("\n");
-    toast.error(`Validasi gagal:\n${messages}`);
-  } else if (err.response) {
-    toast.error(
-      `Upload gagal: ${err.response.data.message || err.response.statusText}`
-    );
-  } else if (err.request) {
-    toast.error("Tidak ada respon dari server.");
-  } else {
-    toast.error(`Terjadi error: ${err.message}`);
-  }
-}
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errors = err.response.data.errors;
+        const messages = Object.entries(errors)
+          .map(([key, val]) => `${key}: ${(val as string[]).join(", ")}`)
+          .join("\n");
+        toast.error(`Validasi gagal:\n${messages}`);
+      } else if (err.response) {
+        toast.error(
+          `Upload gagal: ${
+            err.response.data.message || err.response.statusText
+          }`
+        );
+      } else if (err.request) {
+        toast.error("Tidak ada respon dari server.");
+      } else {
+        toast.error(`Terjadi error: ${err.message}`);
+      }
+    }
   };
 
   const handleViewDocument = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
+ if (loading) {
+  return (
+    <div className="flex justify-center items-center p-6 space-x-2">
+      <span className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce" style={{ animationDelay: '0s' }}></span>
+      <span className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+      <span className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+    </div>
+  );
+}
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
-  if (!karyawan)
-    return <div className="p-6">Data karyawan tidak ditemukan.</div>;
+if (error) {
+  return <div className="p-6 text-red-600">Error: {error}</div>;
+}
+
+if (!karyawan) {
+  return <div className="p-6">Data karyawan tidak ditemukan.</div>;
+}
 
   return (
     <div className=" px-6 py-4 bg-white rounded shadow w-full mt-2 min-h-screen font-sans">
+      <ToastContainer />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#141414]">Detail Karyawan</h1>
         <button
@@ -273,21 +288,21 @@ export default function DetailKaryawan() {
             <FieldRow label="Alamat" value={karyawan.address} />
             <FieldRow
               label="Tempat, Tgl Lahir"
-              value={`${karyawan.tempatLahir}, ${karyawan.tanggalLahir}`}
+              value={`${karyawan.tempat_lahir}, ${karyawan.tanggal_lahir}`}
             />
-            <FieldRow label="Jenis Kelamin" value={karyawan.jenisKelamin} />
+            <FieldRow label="Jenis Kelamin" value={karyawan.jenis_kelamin} />
             <FieldRow label="Pendidikan Terakhir" value={karyawan.pendidikan} />
             <FieldRow label="Email" value={karyawan.email} />
-            <FieldRow label="No Telp" value={karyawan.notelp} />
+            <FieldRow label="No Telp" value={karyawan.no_telp} />
           </Section>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Section title="Informasi Kepegawaian">
-              <FieldRow label="Mulai Kerja" value={karyawan.startDate} />
+              <FieldRow label="Mulai Kerja" value={karyawan.start_date} />
               <FieldRow label="Masa Kerja" value={karyawan.tenure} />
-              <FieldRow label="Akhir Kerja" value={karyawan.endDate} />
+              <FieldRow label="Akhir Kerja" value={karyawan.end_date} />
               <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} />
-              <FieldRow label="Tipe Kontrak" value={karyawan.tipeKontrak} />
+              <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
               <FieldRow label="Jabatan" value={karyawan.jabatan} />
               <FieldRow label="Cabang" value={karyawan.cabang} />
               <FieldRow
@@ -299,7 +314,7 @@ export default function DetailKaryawan() {
             <Section title="Payroll">
               <FieldRow
                 label="Tanggal Efektif"
-                value={karyawan.tanggalEfektif}
+                value={karyawan.tanggal_efektif}
               />
               <FieldRow label="Bank" value={karyawan.bank} />
               <FieldRow label="Nomer Rekening" value={karyawan.norek} />
@@ -309,15 +324,15 @@ export default function DetailKaryawan() {
               />
               <FieldRow
                 label="Uang Lembur"
-                value={formatRupiah(karyawan.uangLembur)}
+                value={formatRupiah(karyawan.uang_lembur)}
               />
               <FieldRow
                 label="Denda Terlambat"
-                value={formatRupiah(karyawan.dendaTerlambat)}
+                value={formatRupiah(karyawan.denda_terlambat)}
               />
               <FieldRow
                 label="Total Gaji"
-                value={formatRupiah(karyawan.TotalGaji)}
+                value={formatRupiah(karyawan.total_gaji)}
               />
             </Section>
           </div>
@@ -376,10 +391,8 @@ export default function DetailKaryawan() {
                   }
                 }}
               />
-           
-              
             </div>
- {dokumen.length > 0 && (
+            {dokumen.length > 0 && (
               <div className="mt-10">
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
                   📎 Dokumen yang dipilih:
@@ -397,7 +410,8 @@ export default function DetailKaryawan() {
                 >
                   Upload Dokumen
                 </button>
-                   <ToastContainer />
+                
+              
               </div>
             )}
             {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
@@ -441,6 +455,7 @@ export default function DetailKaryawan() {
                           colSpan={2}
                           className="px-6 py-4 text-center text-gray-500 italic"
                         >
+
                           Belum ada dokumen yang diupload.
                         </td>
                       </tr>
@@ -451,8 +466,6 @@ export default function DetailKaryawan() {
             ) : (
               <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
             )}
-
-           
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import React, { useState, ChangeEvent, useRef, useEffect } from "react";
 import { FaCamera, FaFileUpload } from "react-icons/fa";
 import { createEmployee } from "../../../../utils/employee";
 import { getPositions } from "../../../../utils/position";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function TambahKaryawan() {
   const router = useRouter();
@@ -21,29 +22,29 @@ export default function TambahKaryawan() {
     last_name: "",
     nik: "",
     address: "",
-    notelp: "",
+    no_telp: "",
     email: "",
-    tempatLahir: "",
-    tanggalLahir: "",
-    jenisKelamin: "",
+    tempat_lahir: "",
+    tanggal_lahir: "",
+    jenis_kelamin: "",
     pendidikan: "",
     jadwal: "",
-    tipeKontrak: "Tetap",
+    tipe_kontrak: "Tetap",
     grade: "",
     jabatan: "",
     id_position: "", // id dari posisi yang dipilih
     cabang: "",
     bank: "",
     norek: "",
-    startDate: "",
-    endDate: "",
+    start_date: "",
+    end_date: "",
     tenure: "",
-    tanggalEfektif: "",
+    tanggal_efektif: "",
     gaji: 0,
-    uangLembur: 0,
-    dendaTerlambat: 0,
-    TotalGaji: 0,
-   dokumen: [] as File[],
+    uang_lembur: 0,
+    denda_terlambat: 0,
+    total_gaji: 0,
+    dokumen: [] as File[],
   });
 
   interface PositionResponse {
@@ -87,18 +88,16 @@ export default function TambahKaryawan() {
 
   const [dokumen, setDokumen] = useState<File[]>([]);
 
-const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files) {
-    const files = Array.from(e.target.files);
-    setDokumen((prev) => [...prev, ...files]);
-    setFormData((prev) => ({
-      ...prev,
-      dokumen: [...prev.dokumen, ...files],
-    }));
-  }
-};
-
-
+  const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setDokumen((prev) => [...prev, ...files]);
+      setFormData((prev) => ({
+        ...prev,
+        dokumen: [...prev.dokumen, ...files],
+      }));
+    }
+  };
 
   const handleJabatanChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
@@ -109,8 +108,8 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
       id_position: selectedId,
       jabatan: selectedPosition?.name ?? "",
       gaji: selectedPosition?.gaji ?? 0,
-      TotalGaji:
-        (selectedPosition?.gaji ?? 0) + prev.uangLembur - prev.dendaTerlambat,
+      total_gaji:
+        (selectedPosition?.gaji ?? 0) + prev.uang_lembur - prev.denda_terlambat,
     }));
   };
 
@@ -120,9 +119,9 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => {
       const updated = { ...prev, [name]: value };
 
-      if (updated.startDate) {
-        const start = new Date(updated.startDate);
-        const end = updated.endDate ? new Date(updated.endDate) : new Date();
+      if (updated.start_date) {
+        const start = new Date(updated.start_date);
+        const end = updated.end_date ? new Date(updated.end_date) : new Date();
 
         let years = end.getFullYear() - start.getFullYear();
         let months = end.getMonth() - start.getMonth();
@@ -147,48 +146,49 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
     });
   };
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
+ const handleChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const { name, value } = e.target;
 
-    setFormData((prev) => {
-      let updatedValue: string | number = value;
+  setFormData((prev) => {
+    let updatedValue: string | number = value;
 
-      if (["gaji", "uangLembur", "dendaTerlambat"].includes(name)) {
-        updatedValue = parseFloat(value) || 0;
-      }
+    if (["gaji", "uang_lembur", "denda_terlambat"].includes(name)) {
+      updatedValue = parseFloat(value) || 0;
+    }
 
-      const updated = {
-        ...prev,
-        [name]: updatedValue,
-      };
+    const updated = {
+      ...prev,
+      [name]: updatedValue,
+    };
 
-      updated.TotalGaji =
-        (typeof updated.gaji === "number"
-          ? updated.gaji
-          : parseFloat(updated.gaji)) +
-        (typeof updated.uangLembur === "number"
-          ? updated.uangLembur
-          : parseFloat(updated.uangLembur)) -
-        (typeof updated.dendaTerlambat === "number"
-          ? updated.dendaTerlambat
-          : parseFloat(updated.dendaTerlambat));
+    updated.total_gaji =
+      (typeof updated.gaji === "number"
+        ? updated.gaji
+        : parseFloat(updated.gaji as string)) +
+      (typeof updated.uang_lembur === "number"
+        ? updated.uang_lembur
+        : parseFloat(updated.uang_lembur as string)) -
+      (typeof updated.denda_terlambat === "number"
+        ? updated.denda_terlambat
+        : parseFloat(updated.denda_terlambat as string));
 
-      return updated;
-    });
-  };
-  function isUUID(str: string) {
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(str);
-  }
+    return updated;
+  });
+};
 
- const handleSubmit = async (event: React.FormEvent) => {
+function isUUID(str: string) {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+const handleSubmit = async (event: React.FormEvent) => {
   event.preventDefault();
 
   if (!isUUID(formData.id_position)) {
-    alert("ID posisi harus dalam format UUID yang benar!");
+    toast.error("ID posisi harus dalam format UUID yang benar!");
     return;
   }
 
@@ -207,34 +207,48 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
     });
 
     // Tambahkan dokumen satu per satu
- formData.dokumen.forEach((file) => {
-   data.append("dokumen[]", file); 
-   // ✅ kirim sebagai array of file, Laravel akan mengenali
-  });
-
+    formData.dokumen.forEach((file: File) => {
+      data.append("dokumen[]", file);
+    });
 
     await createEmployee(data);
 
-    alert("Data berhasil ditambahkan");
+    toast.success("Data berhasil ditambahkan!");
     router.push("/employee");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.response?.data) {
-      alert(
-        "Gagal menambahkan data karyawan:\n" +
-          JSON.stringify(error.response.data, null, 2)
-      );
-      console.error("Detail error:", error.response.data);
+      const data = error.response.data;
+
+      if (data.errors) {
+        const messages = Object.entries(data.errors)
+          .map(([field, msgs]) => {
+            const text = Array.isArray(msgs) ? msgs.join(", ") : msgs;
+            return `${field}: ${text}`;
+          })
+          .join("\n");
+
+        toast.error(`Gagal menambahkan data:\n${messages}`);
+      } else if (typeof data.message === "string") {
+        toast.error(`Gagal menambahkan data: ${data.message}`);
+      } else {
+        toast.error(`Gagal menambahkan data: ${JSON.stringify(data)}`);
+      }
+
+      console.error("Detail error:", data);
     } else {
-      alert("Gagal menambahkan data karyawan.");
+      toast.error("Gagal menambahkan data karyawan. Silakan coba lagi.");
       console.error(error);
     }
   }
 };
 
 
+  
+
   return (
     <div className="mt-3 p-6 bg-white rounded shadow w-full ml-0 mr-auto">
+      <ToastContainer />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-[#1E3A5F]">
           Tambah Karyawan Baru
@@ -381,19 +395,19 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
 
         <div>
           <label
-            htmlFor="notelp"
+            htmlFor="no_telp"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Nomor Telepon
           </label>
           <input
-            id="notelp"
-            name="notelp"
+            id="no_telp"
+            name="no_telp"
             type="number"
             placeholder="Enter phone number"
             onChange={handleChange}
             className="input"
-            value={formData.notelp}
+            value={formData.no_telp}
           />
         </div>
 
@@ -416,51 +430,51 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
 
         <div>
           <label
-            htmlFor="tempatLahir"
+            htmlFor="tempat_lahir"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Tempat Lahir
           </label>
           <input
-            id="tempatLahir"
-            name="tempatLahir"
+            id="tempat_lahir"
+            name="tempat_lahir"
             placeholder="Enter birthplace"
             onChange={handleChange}
             className="input"
-            value={formData.tempatLahir}
+            value={formData.tempat_lahir}
           />
         </div>
 
         <div>
           <label
-            htmlFor="tanggalLahir"
+            htmlFor="tanggal_lahir"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Tanggal Lahir
           </label>
           <input
-            id="tanggalLahir"
-            name="tanggalLahir"
+            id="tanggal_lahir"
+            name="tanggal_lahir"
             type="date"
             onChange={handleChange}
             className="input"
-            value={formData.tanggalLahir}
+            value={formData.tanggal_lahir}
           />
         </div>
 
         <div>
           <label
-            htmlFor="jenisKelamin"
+            htmlFor="jenis_kelamin"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Jenis Kelamin
           </label>
           <select
-            id="jenisKelamin"
-            name="jenisKelamin"
+            id="jenis_kelamin"
+            name="jenis_kelamin"
             onChange={handleChange}
             className="input"
-            value={formData.jenisKelamin}
+            value={formData.jenis_kelamin}
           >
             <option value="">-Select Gender-</option>
             <option value="Laki-laki">Laki-laki</option>
@@ -512,16 +526,16 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
         </div>
         <div>
           <label
-            htmlFor="startDate"
+            htmlFor="start_date"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Mulai Kerja
           </label>
           <input
             type="date"
-            id="startDate"
-            name="startDate"
-            value={formData.startDate}
+            id="start_date"
+            name="start_date"
+            value={formData.start_date}
             onChange={handleDateChange}
             className="input"
           />
@@ -529,31 +543,35 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
 
         <div>
           <label
-            htmlFor="endDate"
+            htmlFor="end_date"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Akhir Kerja
           </label>
           <input
             type="date"
-            id="endDate"
-            name="endDate"
-            value={formData.endDate}
+            id="end_date"
+            name="end_date"
+            value={formData.end_date}
             onChange={handleDateChange}
             className="input"
           />
         </div>
         <div>
-          <label htmlFor="tanggalEfektif"
-          className="block text-[20px] font-bold text-[#141414]">
+          <label
+            htmlFor="tanggal_efektif"
+            className="block text-[20px] font-bold text-[#141414]"
+          >
             Tanggal Efektif
           </label>
-          <input type="date"
-          id="tanggalEfektif"
-          name="tanggalEfektif"
-          value={formData.tanggalEfektif}
-          onChange={handleDateChange}
-          className="input" />
+          <input
+            type="date"
+            id="tanggal_efektif"
+            name="tanggal_efektif"
+            value={formData.tanggal_efektif}
+            onChange={handleDateChange}
+            className="input"
+          />
         </div>
 
         <div>
@@ -575,7 +593,7 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
 
         <div>
           <label
-            htmlFor="tipeKontrak"
+            htmlFor="tipe_kontrak"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Tipe Kontrak
@@ -588,9 +606,9 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
               >
                 <input
                   type="radio"
-                  name="tipeKontrak"
+                  name="tipe_kontrak"
                   value={val}
-                  checked={formData.tipeKontrak === val}
+                  checked={formData.tipe_kontrak === val}
                   onChange={handleChange}
                 />
                 {" " + val}
@@ -710,53 +728,53 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
 
         <div>
           <label
-            htmlFor="uangLembur"
+            htmlFor="uang_lembur"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Uang Lembur
           </label>
           <input
-            id="uangLembur"
-            name="uangLembur"
+            id="uang_lembur"
+            name="uang_lembur"
             type="number"
             placeholder="Enter overtime pay"
             onChange={handleChange}
             className="input"
-            value={formData.uangLembur}
+            value={formData.uang_lembur}
           />
         </div>
         <div>
           <label
-            htmlFor="dendaTerlambat"
+            htmlFor="denda_terlambat"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Denda Terlambat
           </label>
           <input
-            id="dendaTerlambat"
-            name="dendaTerlambat"
+            id="denda_terlambat"
+            name="denda_terlambat"
             type="number"
             placeholder="Enter late fine"
             onChange={handleChange}
             className="input"
-            value={formData.dendaTerlambat}
+            value={formData.denda_terlambat}
           />
         </div>
         <div>
           <label
-            htmlFor="TotalGaji"
+            htmlFor="total_gaji"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Total Gaji
           </label>
           <input
-            id="TotalGaji"
-            name="TotalGaji"
+            id="total_gaji"
+            name="total_gaji"
             type="number"
             placeholder="Enter total salary"
             onChange={handleChange}
             className="input"
-            value={formData.TotalGaji}
+            value={formData.total_gaji}
           />
         </div>
 

@@ -10,6 +10,18 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getPositions } from "../../../../../utils/position";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 type Dokumen = {
   file: string | URL | undefined;
@@ -37,27 +49,27 @@ type Karyawan = {
   jabatan: string;
   nik: string;
   address: string;
-  tempatLahir: string;
-  tanggalLahir: string;
-  jenisKelamin: string;
+  tempat_lahir: string;
+  tanggal_lahir: string;
+  jenis_kelamin: string;
   pendidikan: string;
   email: string;
-  notelp: string;
+  no_telp: string;
   dokumen: Dokumen[];
-  startDate: string;
+  start_date: string;
   tenure: string;
-  endDate: string;
+  end_date: string;
   jadwal: string;
-  tipeKontrak: string;
+  tipe_kontrak: string;
   cabang: string;
   employment_status: string;
-  tanggalEfektif: string;
+  tanggal_efektif: string;
   bank: string;
   norek: string;
   gaji: string;
-  uangLembur: string;
-  dendaTerlambat: string;
-  TotalGaji: string;
+  uang_lembur: string;
+  denda_terlambat: string;
+  total_gaji: string;
 };
 
 type EditableFieldProps = {
@@ -115,7 +127,7 @@ export default function EditKaryawan() {
   const params = useParams() as { id?: string }; // id optional, safer
 
   const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [positions, setPositions] = useState<
@@ -123,7 +135,8 @@ export default function EditKaryawan() {
   >([]);
 
   const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
-
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [docToDelete, setDocToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     id: "",
     id_user: "",
@@ -132,14 +145,14 @@ export default function EditKaryawan() {
     last_name: "",
     nik: "",
     address: "",
-    notelp: "",
+    no_telp: "",
     email: "",
-    tempatLahir: "",
-    tanggalLahir: "",
-    jenisKelamin: "",
+    tempat_lahir: "",
+    tanggal_lahir: "",
+    jenis_kelamin: "",
     pendidikan: "",
     jadwal: "",
-    tipeKontrak: "Tetap",
+    tipe_kontrak: "Tetap",
     grade: "",
     jabatan: "",
     id_position: "", // id dari posisi yang dipilih
@@ -147,14 +160,14 @@ export default function EditKaryawan() {
     cabang: "",
     bank: "",
     norek: "",
-    startDate: "",
-    endDate: "",
+    start_date: "",
+    end_date: "",
     tenure: "",
-    tanggalEfektif: "",
+    tanggal_efektif: "",
     gaji: 0,
-    uangLembur: 0,
-    dendaTerlambat: 0,
-    TotalGaji: 0,
+    uang_lembur: 0,
+    denda_terlambat: 0,
+    total_gaji: 0,
     dokumen: null as File | null,
     employment_status: "",
   });
@@ -163,9 +176,9 @@ export default function EditKaryawan() {
     id: string | number;
     name: string;
     gaji?: number | null;
-    uangLembur?: number | null;
-    dendaTerlambat?: number | null;
-    TotalGaji?: number | null;
+    uang_lembur?: number | null;
+    denda_terlambat?: number | null;
+    total_gaji?: number | null;
   }
 
   // Fetch positions once on mount
@@ -177,9 +190,9 @@ export default function EditKaryawan() {
           id: pos.id.toString(),
           name: pos.name,
           gaji: pos.gaji ?? 0,
-          uangLembur: pos.uangLembur ?? 0,
-          dendaTerlambat: pos.dendaTerlambat ?? 0,
-          TotalGaji: pos.TotalGaji ?? 0,
+          uang_lembur: pos.uang_lembur ?? 0,
+          denda_terlambat: pos.denda_terlambat ?? 0,
+          total_gaji: pos.total_gaji ?? 0,
         }));
         setPositions(mapped);
       } catch (error) {
@@ -189,22 +202,19 @@ export default function EditKaryawan() {
     fetchPositions();
   }, []);
 
-  const handleDeleteDocument = async (docId: string) => {
-    if (!karyawan?.id_user) {
-      alert("ID user tidak ditemukan.");
+
+
+  const handleDeleteConfirm = async (docId: string) => {
+    if (!karyawan?.id_user || !docId) {
+      toast.error("Data tidak lengkap.");
+      setIsDialogOpen(false);
       return;
     }
 
-    const confirmDelete = confirm("Yakin ingin menghapus dokumen ini?");
-    if (!confirmDelete) return;
-
     try {
-      console.log(
-        `Menghapus dokumen di URL: /user/${karyawan.id_user}/document/${docId}`
-      );
-
       await api.delete(`/user/${karyawan.id_user}/document/${docId}`);
 
+      // Update state dokumen
       const updatedDokumen = karyawan.dokumen?.filter(
         (doc) => doc.id !== docId
       );
@@ -216,6 +226,9 @@ export default function EditKaryawan() {
     } catch (error) {
       toast.error("Gagal menghapus dokumen.");
       console.error("Delete document error:", error);
+    } finally {
+      setIsDialogOpen(false);
+      setDocToDelete(null);
     }
   };
 
@@ -223,8 +236,8 @@ export default function EditKaryawan() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function mapRawToKaryawan(rawData: any): Karyawan {
     const gajiNum = parseRupiahToNumber(rawData.gaji);
-    const lemburNum = parseRupiahToNumber(rawData.uangLembur);
-    const dendaNum = parseRupiahToNumber(rawData.dendaTerlambat);
+    const lemburNum = parseRupiahToNumber(rawData.uang_lembur);
+    const dendaNum = parseRupiahToNumber(rawData.denda_terlambat);
     const totalNum = gajiNum + lemburNum - dendaNum;
 
     return {
@@ -238,27 +251,27 @@ export default function EditKaryawan() {
       jabatan: rawData.jabatan ?? "",
       nik: rawData.nik ?? "",
       address: rawData.address ?? "",
-      tempatLahir: rawData.tempatLahir ?? "",
-      tanggalLahir: rawData.tanggalLahir ?? "",
-      jenisKelamin: rawData.jenisKelamin ?? "",
+      tempat_lahir: rawData.tempat_lahir ?? "",
+      tanggal_lahir: rawData.tanggal_lahir ?? "",
+      jenis_kelamin: rawData.jenis_kelamin ?? "",
       pendidikan: rawData.pendidikan ?? "",
       email: rawData.email ?? "-",
-      notelp: rawData.notelp ?? "",
+      no_telp: rawData.no_telp ?? "",
       dokumen: rawData.dokumen ?? [],
-      startDate: rawData.startDate ?? "-",
+      start_date: rawData.start_date ?? "-",
       tenure: rawData.tenure ?? "-",
-      endDate: rawData.endDate ?? "-",
+      end_date: rawData.end_date ?? "-",
       jadwal: rawData.jadwal ?? "",
-      tipeKontrak: rawData.tipeKontrak ?? "",
+      tipe_kontrak: rawData.tipe_kontrak ?? "",
       cabang: rawData.cabang ?? "",
       employment_status: rawData.employment_status ?? "-",
-      tanggalEfektif: rawData.tanggalEfektif ?? "-",
+      tanggal_efektif: rawData.tanggal_efektif ?? "-",
       bank: rawData.bank ?? "",
       norek: rawData.norek ?? "",
       gaji: gajiNum.toString(),
-      uangLembur: lemburNum.toString(),
-      dendaTerlambat: dendaNum.toString(),
-      TotalGaji: totalNum.toString(),
+      uang_lembur: lemburNum.toString(),
+      denda_terlambat: dendaNum.toString(),
+      total_gaji: totalNum.toString(),
     };
   }
   useEffect(() => {
@@ -281,14 +294,14 @@ export default function EditKaryawan() {
           last_name: mappedData.last_name,
           nik: mappedData.nik,
           address: mappedData.address,
-          notelp: mappedData.notelp,
+          no_telp: mappedData.no_telp,
           email: mappedData.email,
-          tempatLahir: mappedData.tempatLahir,
-          tanggalLahir: mappedData.tanggalLahir,
-          jenisKelamin: mappedData.jenisKelamin,
+          tempat_lahir: mappedData.tempat_lahir,
+          tanggal_lahir: mappedData.tanggal_lahir,
+          jenis_kelamin: mappedData.jenis_kelamin,
           pendidikan: mappedData.pendidikan,
           jadwal: mappedData.jadwal,
-          tipeKontrak: mappedData.tipeKontrak,
+          tipe_kontrak: mappedData.tipe_kontrak,
           grade: "", // jika tidak ada di mappedData, bisa kosong
           jabatan: mappedData.jabatan,
           id_position: mappedData.id_position,
@@ -296,14 +309,14 @@ export default function EditKaryawan() {
           cabang: mappedData.cabang,
           bank: mappedData.bank,
           norek: mappedData.norek,
-          startDate: mappedData.startDate,
-          endDate: mappedData.endDate,
+          start_date: mappedData.start_date,
+          end_date: mappedData.end_date,
           tenure: mappedData.tenure,
-          tanggalEfektif: mappedData.tanggalEfektif,
+          tanggal_efektif: mappedData.tanggal_efektif,
           gaji: Number(mappedData.gaji),
-          uangLembur: Number(mappedData.uangLembur),
-          dendaTerlambat: Number(mappedData.dendaTerlambat),
-          TotalGaji: Number(mappedData.TotalGaji),
+          uang_lembur: Number(mappedData.uang_lembur),
+          denda_terlambat: Number(mappedData.denda_terlambat),
+          total_gaji: Number(mappedData.total_gaji),
           dokumen: null,
           employment_status: mappedData.employment_status,
         });
@@ -338,20 +351,20 @@ export default function EditKaryawan() {
       id_position: selectedId,
       jabatan: selectedPosition.name,
       gaji: selectedPosition.gaji,
-      TotalGaji: selectedPosition.gaji + prev.uangLembur - prev.dendaTerlambat,
+      total_gaji: selectedPosition.gaji + prev.uang_lembur - prev.denda_terlambat,
     }));
   };
   useEffect(() => {
     const total =
       (Number(formData.gaji) || 0) +
-      (Number(formData.uangLembur) || 0) -
-      (Number(formData.dendaTerlambat) || 0);
+      (Number(formData.uang_lembur) || 0) -
+      (Number(formData.denda_terlambat) || 0);
 
     setFormData((prev) => ({
       ...prev,
-      TotalGaji: total,
+      total_gaji: total,
     }));
-  }, [formData.gaji, formData.uangLembur, formData.dendaTerlambat]);
+  }, [formData.gaji, formData.uang_lembur, formData.denda_terlambat]);
 
   // Handle avatar upload preview
   // const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -367,107 +380,132 @@ export default function EditKaryawan() {
 
   const [dokumenFiles] = React.useState<File[]>([]);
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const id = params?.id;
-  if (!id) {
-    toast.error("ID karyawan tidak ditemukan.");
-    return;
-  }
-
-  const tanggalEfektifForApi = formData.tanggalEfektif;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(tanggalEfektifForApi)) {
-    alert("Format tanggalEfektif salah!");
-    return;
-  }
-
-  const validStatuses = ["active", "inactive", "resign"];
-  if (!validStatuses.includes(formData.employment_status)) {
-    toast.error(
-      `Status kerja tidak valid. Harus salah satu dari: ${validStatuses.join(", ")}`
-    );
-    return;
-  }
-
-  try {
-    const dataToSend = new FormData();
-
-    // Append data biasa
-    dataToSend.append("first_name", formData.first_name);
-    dataToSend.append("last_name", formData.last_name);
-    dataToSend.append("jabatan", formData.jabatan || "");
-    dataToSend.append("id_position", formData.id_position || "");
-    dataToSend.append("nik", formData.nik);
-    dataToSend.append("address", formData.address || "");
-    dataToSend.append("tempatLahir", formData.tempatLahir || "");
-    dataToSend.append("tanggalLahir", formData.tanggalLahir || "");
-    dataToSend.append("jenisKelamin", formData.jenisKelamin || "");
-    dataToSend.append("pendidikan", formData.pendidikan || "");
-    dataToSend.append("email", formData.email);
-    dataToSend.append("notelp", formData.notelp || "");
-    dataToSend.append("startDate", formData.startDate || "");
-    dataToSend.append("tenure", formData.tenure || "");
-    dataToSend.append("endDate", formData.endDate || "");
-    dataToSend.append("jadwal", formData.jadwal || "");
-    dataToSend.append("tipeKontrak", formData.tipeKontrak || "");
-    dataToSend.append("cabang", formData.cabang || "");
-    dataToSend.append("employment_status", formData.employment_status || "");
-    dataToSend.append("tanggalEfektif", tanggalEfektifForApi);
-    dataToSend.append("bank", formData.bank || "");
-    dataToSend.append("norek", formData.norek || "");
-    dataToSend.append("gaji", formData.gaji?.toString() || "0");
-    dataToSend.append("uangLembur", formData.uangLembur?.toString() || "0");
-    dataToSend.append("dendaTerlambat", formData.dendaTerlambat?.toString() || "0");
-    dataToSend.append("TotalGaji", formData.TotalGaji?.toString() || "0");
-
-    // Avatar tunggal
-    if (selectedAvatar) {
-      dataToSend.append("avatar", selectedAvatar);
+    const id = params?.id;
+    if (!id) {
+      toast.error("ID karyawan tidak ditemukan.");
+      return;
     }
 
-    // Dokumen array
-    if (dokumenFiles && dokumenFiles.length > 0) {
-      dokumenFiles.forEach((file) => {
-        dataToSend.append("dokumen[]", file);
-      });
+    const tanggal_efektifForApi = formData.tanggal_efektif;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(tanggal_efektifForApi)) {
+      alert("Format tanggal_efektif salah!");
+      return;
     }
 
-    // Debug log
-    console.log("Mengirim ke:", `/employee/${id}`);
-    for (const pair of dataToSend.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
-    // Kirim data
-    const response = await api.put(`/employee/${id}`, dataToSend);
-    console.log("Response dari server:", response.data);
-
-    toast.success("Data berhasil diperbarui!");
-    setTimeout(() => {
-      router.push("/employee");
-    }, 1500);
-
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error("Response error data:", error.response?.data);
+    const validStatuses = ["active", "inactive", "resign"];
+    if (!validStatuses.includes(formData.employment_status)) {
       toast.error(
-        `Gagal memperbarui data: ${
-          error.response?.data?.message || "Terjadi kesalahan."
-        }`
+        `Status kerja tidak valid. Harus salah satu dari: ${validStatuses.join(
+          ", "
+        )}`
       );
-    } else {
-      console.error(error);
-      toast.error("Gagal memperbarui data.");
+      return;
     }
+
+    try {
+      const dataToSend = new FormData();
+
+      // Append data biasa
+      dataToSend.append("first_name", formData.first_name);
+      dataToSend.append("last_name", formData.last_name);
+      dataToSend.append("jabatan", formData.jabatan || "");
+      dataToSend.append("id_position", formData.id_position || "");
+      dataToSend.append("nik", formData.nik);
+      dataToSend.append("address", formData.address || "");
+      dataToSend.append("tempat_lahir", formData.tempat_lahir || "");
+      dataToSend.append("tanggal_lahir", formData.tanggal_lahir || "");
+      dataToSend.append("jenis_kelamin", formData.jenis_kelamin || "");
+      dataToSend.append("pendidikan", formData.pendidikan || "");
+      dataToSend.append("email", formData.email);
+      dataToSend.append("no_telp", formData.no_telp || "");
+      dataToSend.append("start_date", formData.start_date || "");
+      dataToSend.append("tenure", formData.tenure || "");
+      dataToSend.append("end_date", formData.end_date || "");
+      dataToSend.append("jadwal", formData.jadwal || "");
+      dataToSend.append("tipe_kontrak", formData.tipe_kontrak || "");
+      dataToSend.append("cabang", formData.cabang || "");
+      dataToSend.append("employment_status", formData.employment_status || "");
+      dataToSend.append("tanggal_efektif", tanggal_efektifForApi);
+      dataToSend.append("bank", formData.bank || "");
+      dataToSend.append("norek", formData.norek || "");
+      dataToSend.append("gaji", formData.gaji?.toString() || "0");
+      dataToSend.append("uang_lembur", formData.uang_lembur?.toString() || "0");
+      dataToSend.append(
+        "denda_terlambat",
+        formData.denda_terlambat?.toString() || "0"
+      );
+      dataToSend.append("total_gaji", formData.total_gaji?.toString() || "0");
+
+      // Avatar tunggal
+      if (selectedAvatar) {
+        dataToSend.append("avatar", selectedAvatar);
+      }
+
+      // Dokumen array
+      if (dokumenFiles && dokumenFiles.length > 0) {
+        dokumenFiles.forEach((file) => {
+          dataToSend.append("dokumen[]", file);
+        });
+      }
+
+      // Debug log
+      console.log("Mengirim ke:", `/employee/${id}`);
+      for (const pair of dataToSend.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      // Kirim data
+      const response = await api.put(`/employee/${id}`, dataToSend);
+      console.log("Response dari server:", response.data);
+
+      toast.success("Data berhasil diperbarui!");
+      setTimeout(() => {
+        router.push("/employee");
+      }, 1500);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Response error data:", error.response?.data);
+        toast.error(
+          `Gagal memperbarui data: ${
+            error.response?.data?.message || "Terjadi kesalahan."
+          }`
+        );
+      } else {
+        console.error(error);
+        toast.error("Gagal memperbarui data.");
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-6 space-x-2">
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0s" }}
+        ></span>
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0.2s" }}
+        ></span>
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0.4s" }}
+        ></span>
+      </div>
+    );
   }
-};
 
+  if (error) {
+    return <div className="p-6 text-red-600">Error: {error}</div>;
+  }
 
-  if (loading) return <div className="p-4">Loading...</div>;
-  if (error) return <div className="p-4 text-red-600">Error: {error}</div>;
-  if (!karyawan)
-    return <div className="p-4">Data karyawan tidak ditemukan.</div>;
+  if (!karyawan) {
+    return <div className="p-6">Data karyawan tidak ditemukan.</div>;
+  }
 
   return (
     <div className="p-6 bg-white rounded shadow w-full mt-2 font-sans">
@@ -585,25 +623,25 @@ export default function EditKaryawan() {
             />
             <EditableField
               label="Tempat Lahir"
-              value={formData.tempatLahir}
+              value={formData.tempat_lahir}
               onChange={(v) =>
-                setFormData((prev) => ({ ...prev, tempatLahir: v }))
+                setFormData((prev) => ({ ...prev, tempat_lahir: v }))
               }
             />
             <EditableField
               label="Tanggal Lahir"
               type="date"
-              value={formData.tanggalLahir}
+              value={formData.tanggal_lahir}
               onChange={(v) =>
-                setFormData((prev) => ({ ...prev, tanggalLahir: v }))
+                setFormData((prev) => ({ ...prev, tanggal_lahir: v }))
               }
             />
             <EditableField
               label="Jenis Kelamin"
               type="select"
-              value={formData.jenisKelamin || ""}
+              value={formData.jenis_kelamin || ""}
               onChange={(v) =>
-                setFormData((prev) => ({ ...prev, jenisKelamin: v }))
+                setFormData((prev) => ({ ...prev, jenis_kelamin: v }))
               }
               options={[
                 { value: "Laki-laki", label: "Laki-laki" },
@@ -633,8 +671,8 @@ export default function EditKaryawan() {
             />
             <EditableField
               label="No Telp"
-              value={formData.notelp}
-              onChange={(v) => setFormData((prev) => ({ ...prev, notelp: v }))}
+              value={formData.no_telp}
+              onChange={(v) => setFormData((prev) => ({ ...prev, no_telp: v }))}
             />
           </div>
         </div>
@@ -649,17 +687,17 @@ export default function EditKaryawan() {
               <EditableField
                 label="Mulai Kerja"
                 type="date"
-                value={formData.startDate}
+                value={formData.start_date}
                 onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, startDate: v }))
+                  setFormData((prev) => ({ ...prev, start_date: v }))
                 }
               />
               <EditableField
                 label="Akhir Kerja"
                 type="date"
-                value={formData.endDate}
+                value={formData.end_date}
                 onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, endDate: v }))
+                  setFormData((prev) => ({ ...prev, end_date: v }))
                 }
               />
               <EditableField
@@ -678,9 +716,9 @@ export default function EditKaryawan() {
               <EditableField
                 label="Tipe Kontrak"
                 type="select"
-                value={formData.tipeKontrak}
+                value={formData.tipe_kontrak}
                 onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, tipeKontrak: v }))
+                  setFormData((prev) => ({ ...prev, tipe_kontrak: v }))
                 }
                 options={[
                   { value: "Tetap", label: "Tetap" },
@@ -729,9 +767,9 @@ export default function EditKaryawan() {
               <EditableField
                 label="Tanggal Efektif"
                 type="date"
-                value={formData.tanggalEfektif}
+                value={formData.tanggal_efektif}
                 onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, tanggalEfektif: v }))
+                  setFormData((prev) => ({ ...prev, tanggal_efektif: v }))
                 }
               />
               <EditableField
@@ -756,28 +794,28 @@ export default function EditKaryawan() {
               <EditableField
                 label="Uang Lembur"
                 type="number"
-                value={formData.uangLembur.toString()}
+                value={formData.uang_lembur.toString()}
                 onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, uangLembur: Number(v) }))
+                  setFormData((prev) => ({ ...prev, uang_lembur: Number(v) }))
                 }
               />
               <EditableField
                 label="Denda Terlambat"
                 type="number"
-                value={formData.dendaTerlambat.toString()}
+                value={formData.denda_terlambat.toString()}
                 onChange={(v) =>
                   setFormData((prev) => ({
                     ...prev,
-                    dendaTerlambat: Number(v),
+                    denda_terlambat: Number(v),
                   }))
                 }
               />
               <EditableField
                 label="Total Gaji"
                 type="number"
-                value={formData.TotalGaji.toString()}
+                value={formData.total_gaji.toString()}
                 onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, TotalGaji: Number(v) }))
+                  setFormData((prev) => ({ ...prev, total_gaji: Number(v) }))
                 }
                 readOnly
               />
@@ -785,86 +823,130 @@ export default function EditKaryawan() {
           </div>
         </div>
 
-<div className="relative mb-24">
-  <div className="w-full mt-10">
-    <h2 className="text-2xl font-semibold text-[#1e293b] mb-4 border-b pb-2">
-      📂 Dokumen Karyawan
-    </h2>
+        <div className="relative mb-24">
+          <div className="w-full mt-10">
+            <h2 className="text-2xl font-semibold text-[#1e293b] mb-4 border-b pb-2">
+              📂 Dokumen Karyawan
+            </h2>
 
-    {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
-      <div className="w-full overflow-x-auto rounded-lg shadow-md mb-6">
-        <table className="min-w-[640px] w-full text-left text-sm text-gray-700 border border-gray-300">
-          <thead className="bg-gray-100 text-gray-700 uppercase tracking-wide border-b border-gray-300">
-            <tr>
-              <th className="px-6 py-3 border-r border-gray-300">Nama Dokumen</th>
-              {/* <th className="px-6 py-3 border-r border-gray-300">Tanggal Upload</th> */}
-              <th className="px-6 py-3 text-center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {karyawan.dokumen.map((doc, index) => (
-              <tr
-                key={index}
-                className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                }`}
-              >
-                <td className="px-6 py-4 border-r border-gray-200 font-medium">
-                  {doc.name}
-                </td>
-                {/* <td className="px-6 py-4 border-r border-gray-200">
+            {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
+              <div className="w-full overflow-x-auto rounded-lg shadow-md mb-6">
+                <table className="min-w-[640px] w-full text-left text-sm text-gray-700 border border-gray-300">
+                  <thead className="bg-gray-100 text-gray-700 uppercase tracking-wide border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3 border-r border-gray-300">
+                        Nama Dokumen
+                      </th>
+                      {/* <th className="px-6 py-3 border-r border-gray-300">Tanggal Upload</th> */}
+                      <th className="px-6 py-3 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {karyawan.dokumen.map((doc, index) => (
+                      <tr
+                        key={index}
+                        className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        }`}
+                      >
+                        <td className="px-6 py-4 border-r border-gray-200 font-medium">
+                          {doc.name}
+                        </td>
+                        {/* <td className="px-6 py-4 border-r border-gray-200">
                   <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 text-xs rounded-full">
                     {doc.uploaded_at
                       ? new Date(doc.uploaded_at).toLocaleDateString("id-ID")
                       : "-"}
                   </span>
                 </td> */}
-                <td className="px-6 py-4 text-center space-x-3">
-                  <div className="inline-flex space-x-2 items-center">
-                    <button
-                      title="Detail"
-                      onClick={() => window.open(doc.file, "_blank", "noopener,noreferrer")}
-                      className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8] cursor-pointer"
-                    >
-                      <FaEye />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteDocument(doc.id)}
-                      title="Hapus"
-                      className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    ) : (
-      <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
-    )}
-  </div>
+                        <td className="px-6 py-4 text-center space-x-3">
+                          <div className="inline-flex space-x-2 items-center">
+                            <button
+                              title="Detail"
+                              onClick={() =>
+                                window.open(
+                                  doc.file,
+                                  "_blank",
+                                  "noopener,noreferrer"
+                                )
+                              }
+                              className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8] cursor-pointer"
+                            >
+                              <FaEye />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDocToDelete(doc.id);
+                                setIsDialogOpen(true);
+                              }}
+                              className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
+                            >
+                              <FaTrash />
+                            </button>
 
-  <div className="flex justify-end gap-4 mt-6">
-    <button
-      type="button"
-      className="text-blue-500 cursor-pointer hover:text-blue-700"
-      onClick={() => (window.location.href = "/employee")}
-    >
-      Batal
-    </button>
-    <button
-      type="submit"
-      className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
-    >
-      Simpan
-    </button>
-  </div>
-</div>
+                            <AlertDialog
+                              open={isDialogOpen}
+                              onOpenChange={setIsDialogOpen}
+                            >
+                              <AlertDialogTrigger asChild></AlertDialogTrigger>
 
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Yakin ingin menghapus dokumen ini?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Dokumen yang dihapus tidak bisa
+                                    dikembalikan.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel
+                                    onClick={() => setIsDialogOpen(false)}
+                                  >
+                                    Batal
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => {
+                                      if (docToDelete) {
+                                        handleDeleteConfirm(docToDelete);
+                                      }
+                                    }}
+                                  >
+                                    Hapus
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-4 mt-6">
+            <button
+              type="button"
+              className="text-blue-500 cursor-pointer hover:text-blue-700"
+              onClick={() => (window.location.href = "/employee")}
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
+            >
+              Simpan
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   );

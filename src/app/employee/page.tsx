@@ -26,7 +26,7 @@ import { api } from "@/lib/axios";
 
 type Employee = {
   id_user: string;
-  jenisKelamin: string;
+  jenis_kel: string;
   id: string;
   first_name: string;
   last_name: string;
@@ -39,7 +39,7 @@ type Employee = {
   // tambahan
   user?: { email: string };
   position?: { name: string };
-  notelp: string;
+  no_telp: string;
   cabang: string;
   jabatan: string;
 };
@@ -48,7 +48,7 @@ export default function EmployeeTablePage() {
   const router = useRouter();
 
   const [employees, setEmployees] = useState<FEEmployee[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [filterText, setFilterText] = useState("");
@@ -112,8 +112,8 @@ export default function EmployeeTablePage() {
           id: emp.id,
           id_user: emp.id_user,
           nama: `${emp.first_name} ${emp.last_name}`,
-          jenisKelamin: emp.jenisKelamin,
-          notelp: emp.notelp || "-",
+          jenis_kel: emp.jenis_kel,
+          no_telp: emp.no_telp || "-",
           cabang: emp.cabang || "-",
           jabatan: emp.jabatan || "-",
           status: emp.employment_status,
@@ -179,7 +179,7 @@ export default function EmployeeTablePage() {
         size: 120,
       },
       {
-        accessorKey: "jenisKelamin",
+        accessorKey: "jenis_kel",
         header: "Jenis Kelamin",
         cell: (info) => (
           <div className="truncate max-w-[100px]">
@@ -189,7 +189,7 @@ export default function EmployeeTablePage() {
         size: 100,
       },
       {
-        accessorKey: "notelp",
+        accessorKey: "no_telp",
         header: "Nomor Telepon",
         cell: (info) => (
           <div className="truncate max-w-[120px]">
@@ -375,7 +375,7 @@ export default function EmployeeTablePage() {
         }
 
         alert("Import dan simpan berhasil!");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error("Gagal impor:", error);
 
@@ -410,7 +410,7 @@ export default function EmployeeTablePage() {
         cabang.toLowerCase().includes(filterText.toLowerCase()) ||
         jabatan.toLowerCase().includes(filterText.toLowerCase());
 
-      const matchesGender = !filterGender || item.jenisKelamin === filterGender;
+      const matchesGender = !filterGender || item.jenis_kelamin === filterGender;
       const matchesStatus = !filterStatus || item.status === filterStatus;
 
       return matchesSearch && matchesGender && matchesStatus;
@@ -423,7 +423,7 @@ export default function EmployeeTablePage() {
 
       <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md mt-6 w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">
-          {loading && <p>Loading data...</p>}
+       
           {error && <p className="text-red-600">Error: {error}</p>}
 
           <DataTableHeader
@@ -446,10 +446,18 @@ export default function EmployeeTablePage() {
             importInputRef={fileInputRef}
             onExport={() => handleExportCSV(employees)}
             onImport={handleImportCSV}
+            emptyContent={
+              loading ? (
+                <div className="text-center py-4">Loading...</div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  Employee not found
+                </div>
+              )
+            }
           />
-
           <div className="w-full overflow-x-auto">
-            <DataTable columns={employeeColumns} data={filteredData} />
+             <DataTable columns={employeeColumns} data={filteredData} loading={loading} />
           </div>
         </div>
       </div>
