@@ -1,11 +1,42 @@
-import axios from 'axios';
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig} from 'axios';
 
-const token = "25|6khdGzDHUFUxe32MUsp3nZDpO1nIg5GFZ86PcPu70353be70";
-const api = axios.create({
+const api: AxiosInstance = axios.create({
     baseURL: 'http://localhost:8000/api',
     headers: {
-        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
     },
     withCredentials: true,
 });
+
+api.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem("token") || "26|R3zuayoHEogbjjUx8bFaTuAe8ilaxYULUDU7vi3f8ac3170e";
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        }
+        console.log("Request sent:", config);
+        return config;
+    },
+    (error: AxiosError) => {
+        console.error("Request error:", error);
+        return Promise.reject(error);
+    }
+);
+
+api.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error: AxiosError) => {
+        if (error.response) {
+            console.error("API Error:", error.response.data);
+        } else {
+            console.error("Network error:", error.message);
+        }
+        return Promise.reject(error);
+    }
+)
 export default api;

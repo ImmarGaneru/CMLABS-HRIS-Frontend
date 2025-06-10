@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { api } from "@/lib/axios";
+import api from "@/lib/axios";
 // import { Email } from "@mui/icons-material";
 
 type Employee = {
@@ -101,14 +101,9 @@ export default function EmployeeTablePage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/employee", {
-          next: { revalidate: 0 },
-        });
-        if (!res.ok) throw new Error(`Error: ${res.status}`);
-
-        const apiData = await res.json();
-
-        const feData = apiData.data.map((emp: Employee) => ({
+        const res = await api.get("/admin/employees/comp-employees");
+        
+        const feData = res.data.data.map((emp: Employee) => ({
           id: emp.id,
           id_user: emp.id_user,
           nama: `${emp.first_name} ${emp.last_name}`,
@@ -418,10 +413,10 @@ export default function EmployeeTablePage() {
   }, [employees, filterText, filterGender, filterStatus]);
 
   return (
-    <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
+    <div className="px-4 py-6 min-h-screen flex flex-col gap-4">
       <EmployeeCardSum employeesCard={employees} />
 
-      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md mt-6 w-full overflow-x-auto">
+      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">
        
           {error && <p className="text-red-600">Error: {error}</p>}
