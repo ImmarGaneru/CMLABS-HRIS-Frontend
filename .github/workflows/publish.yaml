@@ -25,7 +25,7 @@ jobs:
         id: build-push-web
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./app
           file: ./docker/production/Dockerfile
           push: true
           tags: hoshigakikisame/hris_frontend-prod:latest
