@@ -18,7 +18,7 @@ export default function EmployeeCardSum({ employeesCard }: Props) {
 
   // Hitung karyawan baru (misal dalam 30 hari terakhir)
   const newHires = employeesCard.filter((emp) => {
-    const hireDate = new Date(emp.hireDate);
+    const hireDate = new Date(emp.hire_date);
     const today = new Date();
     const diffDays = Math.floor(
       (today.getTime() - hireDate.getTime()) / (1000 * 60 * 60 * 24)
