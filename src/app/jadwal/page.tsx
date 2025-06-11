@@ -6,36 +6,27 @@ import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
 import { FaEdit, FaEye } from "react-icons/fa";
 import * as XLSX from "xlsx";
-
+import { useAttendance, CheckClockSetting } from "@/contexts/AttendanceContext";
 
 export default function JadwalTablePage() {
+  const { checkClockSettings } = useAttendance();
   const router = useRouter();
   const [filterText, setFilterText] = useState("");
-  const [filterTipeJadwal, setFilterTipeJadwal] = useState("");
+  const [filterType, setFilterTipeJadwal] = useState("");
   const [filterTanggal] = useState("");
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
-  
+  const [selectedSetting, setSelectedSchedule] = useState<CheckClockSetting | null>(null);
+
   const jadwalFilters = [
     { label: 'WFO', value: 'WFO' },
     { label: 'WFH', value: 'WFH' }
   ];
 
-  // objek schedule
-  type Schedule = {
-    id: number;
-    namaJadwal: string;
-    hariKerja: string;
-    jamKerja: string;
-    tanggalEfektif: string;
-    tipeJadwal: string;
-  };
-
   //Kolom untuk Tabel jadwal
-  const jadwalColumns = useMemo<ColumnDef<Schedule>[]>(
+  const jadwalColumns = useMemo<ColumnDef<CheckClockSetting>[]>(
     () => [
       {
-        id: "No",
+        id: "settingNo",
         header: "No",
         cell: ({ row }) => (
           <div className="flex justify-center">
@@ -45,17 +36,8 @@ export default function JadwalTablePage() {
         size: 60,
       },
       {
-        accessorKey: "namaJadwal",
-        header: "Nama Jadwal",
-        cell: info => (
-          <div>
-            {info.getValue() as string}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "hariKerja",
-        header: "Hari Kerja",
+        accessorKey: "name",
+        header: "Setting Name",
         cell: info => (
           <div className="flex justify-center">
             {info.getValue() as string}
@@ -63,40 +45,13 @@ export default function JadwalTablePage() {
         ),
       },
       {
-        accessorKey: "jamKerja",
-        header: "Work Hours (month)",
+        accessorKey: "type",
+        header: "Setting Type",
         cell: info => (
           <div className="flex justify-center">
             {info.getValue() as string}
           </div>
         ),
-      },
-      {
-        accessorKey: "tanggalEfektif",
-        header: "Tanggal Efektif",
-        cell: info => (
-          <div className="flex justify-center">
-            {info.getValue() as string}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "tipeJadwal",
-        header: "Tipe Jadwal",
-        cell: info => {
-          const tipeJadwal = info.getValue() as string;
-          const style = tipeJadwal === "WFO" 
-            ? "bg-blue-100 text-blue-800" 
-            : "bg-green-100 text-green-800";
-          
-          return (
-            <div className="flex justify-center">
-              <span className={`px-2 py-1 text-xs rounded ${style}`}>
-                {tipeJadwal}
-              </span>
-            </div>
-          );
-        },
       },
       {
         id: "actions",
@@ -104,7 +59,7 @@ export default function JadwalTablePage() {
         cell: ({ row }) => {
           const data = row.original;
           return (
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-center">
               <button
                 title="Detail"
                 onClick={() => {
@@ -131,90 +86,92 @@ export default function JadwalTablePage() {
   );
 
   // Dummy data schedule berdasarkan type Schedule
-  const schedulesData: Schedule[] = [
-    {
-      id: 1,
-      namaJadwal: "Jadwal Kantor",
-      hariKerja: "5 Hari",
-      jamKerja: "180 h",
-      tanggalEfektif: "01/01/2025",
-      tipeJadwal: "WFO",
-    },
-    {
-      id: 2,
-      namaJadwal: "Shift Pagi",
-      hariKerja: "6 Hari",
-      jamKerja: "200 h",
-      tanggalEfektif: "01/01/2025",
-      tipeJadwal: "WFO",
-    },
-    {
-      id: 3,
-      namaJadwal: "Shift Malam",
-      hariKerja: "5 Hari",
-      jamKerja: "180 h",
-      tanggalEfektif: "01/01/2025",
-      tipeJadwal: "WFO",
-    },
-    {
-      id: 4,
-      namaJadwal: "Kontrak 6 bulan",
-      hariKerja: "4 Hari",
-      jamKerja: "160 h",
-      tanggalEfektif: "01/01/2025",
-      tipeJadwal: "WFH",
-    },
-  ];
+  // const schedulesData: Schedule[] = [
+  //   {
+  //     id: 1,
+  //     namaJadwal: "Jadwal Kantor",
+  //     hariKerja: "5 Hari",
+  //     jamKerja: "180 h",
+  //     tanggalEfektif: "01/01/2025",
+  //     tipeJadwal: "WFO",
+  //   },
+  //   {
+  //     id: 2,
+  //     namaJadwal: "Shift Pagi",
+  //     hariKerja: "6 Hari",
+  //     jamKerja: "200 h",
+  //     tanggalEfektif: "01/01/2025",
+  //     tipeJadwal: "WFO",
+  //   },
+  //   {
+  //     id: 3,
+  //     namaJadwal: "Shift Malam",
+  //     hariKerja: "5 Hari",
+  //     jamKerja: "180 h",
+  //     tanggalEfektif: "01/01/2025",
+  //     tipeJadwal: "WFO",
+  //   },
+  //   {
+  //     id: 4,
+  //     namaJadwal: "Kontrak 6 bulan",
+  //     hariKerja: "4 Hari",
+  //     jamKerja: "160 h",
+  //     tanggalEfektif: "01/01/2025",
+  //     tipeJadwal: "WFH",
+  //   },
+  // ];
 
-//FUNGSI-FUNGSI FILTER==
+  //FUNGSI-FUNGSI FILTER==
 
   // Function to handle CSV export
-  const handleExportCSV = () => {
-    const worksheet = XLSX.utils.json_to_sheet(schedulesData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Schedules");
-    XLSX.writeFile(workbook, "schedules_data.xlsx");
-  };
+  // const handleExportCSV = () => {
+  //   const worksheet = XLSX.utils.json_to_sheet(schedulesData);
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Schedules");
+  //   XLSX.writeFile(workbook, "schedules_data.xlsx");
+  // };
 
   // Function to handle CSV import
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          console.log('Imported data:', jsonData);
-        } catch (error) {
-          console.error('Error importing file:', error);
-          alert('Error importing file. Please check the file format.');
-        }
-      };
-      reader.readAsBinaryString(file);
-    }
-  };
+  // const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       try {
+  //         const data = e.target?.result;
+  //         const workbook = XLSX.read(data, { type: 'binary' });
+  //         const sheetName = workbook.SheetNames[0];
+  //         const worksheet = workbook.Sheets[sheetName];
+  //         const jsonData = XLSX.utils.sheet_to_json(worksheet);
+  //         console.log('Imported data:', jsonData);
+  //       } catch (error) {
+  //         console.error('Error importing file:', error);
+  //         alert('Error importing file. Please check the file format.');
+  //       }
+  //     };
+  //     reader.readAsBinaryString(file);
+  //   }
+  // };
 
   // Filter data based on search text, tipe jadwal, and tanggal
   const filteredData = useMemo(() => {
-    return schedulesData.filter((item) => {
-      const matchesSearch = item.namaJadwal.toLowerCase().includes(filterText.toLowerCase());
-      const matchesTipeJadwal = !filterTipeJadwal || item.tipeJadwal === filterTipeJadwal;
-      const matchesTanggal = !filterTanggal || item.tanggalEfektif === filterTanggal;
-      return matchesSearch && matchesTipeJadwal && matchesTanggal;
+    if (!filterText && !filterType) {
+      return checkClockSettings;
+    }
+    return checkClockSettings.filter((item) => {
+      const matchesText = item.name.toLowerCase().includes(filterText.toLowerCase());
+      const matchesType = filterType ? item.type === filterType : true;
+      // const matchesDate = filterTanggal ? item.tanggalEfektif === filterTanggal : true; // Uncomment if date filtering is implemented
+      return matchesText && matchesType; // && matchesDate; // Uncomment if date filtering is implemented
     });
-  }, [filterText, filterTipeJadwal, filterTanggal]);
-
-//RETURN CLASS MAIN FUNCTION== 
+  }, [checkClockSettings, filterText, filterType]);
+  //RETURN CLASS MAIN FUNCTION== 
   return (
     <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
       {/* Second Section: Schedule Information */}
       <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
         <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
-          
+
           {/* Data Tabel Header */}
           <DataTableHeader
             title="Informasi Jadwal"
@@ -226,24 +183,24 @@ export default function JadwalTablePage() {
             hasAdd={true}
             searchValue={filterText}
             onSearch={setFilterText}
-            filterValue={filterTipeJadwal}
+            filterValue={filterType}
             onFilterChange={setFilterTipeJadwal}
             // dateFilterValue={filterTanggal}
             // onDateFilterChange={setFilterTanggal}
             filterOptions={jadwalFilters}
-            onExport={handleExportCSV}
-            onImport={handleImportCSV}
+            // onExport={handleExportCSV}
+            // onImport={handleImportCSV}
             onAdd={() => router.push("/jadwal/tambah")}
           />
 
           {/* Data Tabel Isi Jadwal */}
-          <DataTable columns={jadwalColumns} data={filteredData}/>
+          <DataTable columns={jadwalColumns} data={filteredData} />
 
         </div>
       </div>
 
       {/* Detail Modal */}
-      {isDetailOpen && selectedSchedule && (
+      {isDetailOpen && selectedSetting && (
         <>
           <div
             onClick={() => setIsDetailOpen(false)}
@@ -265,39 +222,35 @@ export default function JadwalTablePage() {
             <label className="text-sm text-[#374151] mb-2 block">
               Berlaku efektif mulai tanggal
             </label>
-            <div className="border border-gray-300 rounded-lg p-2 flex items-center mb-4">
+            {/* <div className="border border-gray-300 rounded-lg p-2 flex items-center mb-4">
               <span role="img" aria-label="calendar" className="mr-2">
                 📅
               </span>
-              {selectedSchedule.tanggalEfektif}
-            </div>
+              {selectedSetting.tanggalEfektif}
+            </div> */}
 
             <table className="w-full border-collapse text-sm text-[#1E3A5F] border border-gray-200">
               <thead>
                 <tr className="border-b border-gray-200 text-left">
                   <th className="p-2 border border-gray-200">Hari</th>
-                  <th className="p-2 border border-gray-200">Jenis</th>
                   <th className="p-2 border border-gray-200">Clock In</th>
+                  <th className="p-2 border border-gray-200">Break Start</th>
+                  <th className="p-2 border border-gray-200">Break End</th>
                   <th className="p-2 border border-gray-200">Clock Out</th>
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ["Senin", "Hari Kerja", "08:00", "17:00"],
-                  ["Selasa", "Hari Kerja", "08:00", "17:00"],
-                  ["Rabu", "Hari Kerja", "08:00", "17:00"],
-                  ["Kamis", "Hari Kerja", "08:00", "17:00"],
-                  ["Jumat", "Hari Kerja", "08:00", "17:00"],
-                  ["Sabtu", "Day Off", "00:00", "00:00"],
-                  ["Minggu", "Day Off", "00:00", "00:00"],
-                ].map(([hari, jenis, inTime, outTime], index) => (
-                  <tr key={index} className="border-b border-gray-200">
-                    <td className="p-2 border border-gray-200">{hari}</td>
-                    <td className="p-2 border border-gray-200">{jenis}</td>
-                    <td className="p-2 border border-gray-200">{inTime}</td>
-                    <td className="p-2 border border-gray-200">{outTime}</td>
-                  </tr>
-                ))}
+                {
+                  selectedSetting.check_clock_setting_time.map((item, index) => (
+                    <tr key={index} className="border-b border-gray-200">
+                      <td className="p-2 border border-gray-200">{item.day}</td>
+                      <td className="p-2 border border-gray-200">{item.clock_in}</td>
+                      <td className="p-2 border border-gray-200">{item.break_start}</td>
+                      <td className="p-2 border border-gray-200">{item.break_end}</td>
+                      <td className="p-2 border border-gray-200">{item.clock_out}</td>
+                    </tr>
+                  ))
+                }
               </tbody>
             </table>
 

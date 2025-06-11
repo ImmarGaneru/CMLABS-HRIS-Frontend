@@ -46,7 +46,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     const fetchCheckClockSettings = async () => {
         try {
-            const data = await request<CheckClockSetting[]>(api.get("/admin/attendance/check-clock-settings"));
+            const data = await request<CheckClockSetting[]>(api.get("/admin/attendance/check-clock-setting"));
             setApprovals(data);
         } catch (error) {
             toast.error("Failed to fetch attendance data.");

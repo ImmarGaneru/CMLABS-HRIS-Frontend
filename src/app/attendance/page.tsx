@@ -11,22 +11,7 @@ import { DataTable } from "@/components/Datatable"
 import { useMemo, useState } from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { FaEdit, FaEye } from "react-icons/fa";
-import { useApproval, Approval } from "@/contexts/ApprovalContext";
 
-
-import api from "@/lib/axios";
-
-async function getCheckClockSettings() {
-    const response = await api.get("/attendance/check-clock-settings");
-
-    if (response.status === 200) {
-        console.log("Check Clock Settings:", response.data);
-        return response.data;
-    } else {
-        throw new Error("Failed to fetch check clock settings");
-    }
-
-}
 
 export default function AttendacePage() {
     const router = useRouter();
