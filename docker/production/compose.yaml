@@ -6,15 +6,28 @@ services:
     build:
       context: ../../
       dockerfile: docker/production/Dockerfile
-    image: hris_frontend-prod
+    image: hoshigakikisame/hris_frontend-prod:latest
     ports:
-      - "3002:3000"
+      - "80:3000"
     deploy:
       resources:
         limits:
           memory: 512m
     networks:
       - hris_frontend-prod
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    command: --cleanup --interval 30 --include-stopped
+    environment:
+      - WATCHTOWER_CLEANUP=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - hris_frontend-prod
+
     
 networks:
   hris_frontend-prod:
