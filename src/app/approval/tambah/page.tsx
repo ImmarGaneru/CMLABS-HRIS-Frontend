@@ -3,9 +3,9 @@
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
-import {z} from "zod";
-import {useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Form,
     FormControl,
@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import ClientOnlySelect, { OptionType } from "@/components/ClientOnlySelect";
 import { debounce } from "lodash";
 import { useApproval } from "@/contexts/ApprovalContext";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 
 const FormSchema = z.object({
     id_user: z
@@ -45,7 +45,7 @@ const FormSchema = z.object({
 
 })
 
-export default function TambahApproval(){
+export default function TambahApproval() {
     const { fetchUsers, submitApproval, options, isLoading } = useApproval();
     const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
@@ -93,7 +93,7 @@ export default function TambahApproval(){
                 <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
                     {/* Tambahkan komponen header atau tombol di sini jika diperlukan */}
                     <h3 className="text-xl font-bold text-[#1E3A5F]">Tambah Approval</h3>
-                    <Button onClick={() => {router.back(); }} variant="redirectButton" className="flex items-center">
+                    <Button onClick={() => { router.back(); }} variant="redirectButton" className="flex items-center">
                         <FaArrowLeft size={16} />
                         <span className="font-medium">Kembali</span>
                     </Button>
@@ -105,35 +105,35 @@ export default function TambahApproval(){
                                 control={form.control}
                                 name="id_user"
                                 render={() => (
-                                        <FormItem>
-                                            <FormLabel>Karyawan</FormLabel>
-                                            <ClientOnlySelect
-                                                isClearable
-                                                isMulti={false}
-                                                isLoading={isLoading}
-                                                onInputChange={(inputValue, actionMeta) => {
-                                                    if (actionMeta.action === "input-change") {
-                                                        debouncedFetchUsers(inputValue || "");
-                                                    }
-                                                }}
-                                                options={options}
-                                                onFocus={() => {
-                                                    if (options.length === 0) {
-                                                        fetchUsers("");
-                                                    }
-                                                }}
-                                                onChange={(selectedOption) => {
-                                                    if (!Array.isArray(selectedOption)) {
-                                                        form.setValue("id_user", (selectedOption as OptionType)?.value);
-                                                    }
-                                                }}
-                                                placeholder="Pilih karyawan"
-                                            />
-                                            <FormDescription>
-                                                Pilih karyawan yang mengajukan permohonan.
-                                            </FormDescription>
-                                            <FormMessage/>
-                                        </FormItem>
+                                    <FormItem>
+                                        <FormLabel>Karyawan</FormLabel>
+                                        <ClientOnlySelect
+                                            isClearable
+                                            isMulti={false}
+                                            isLoading={isLoading}
+                                            onInputChange={(inputValue, actionMeta) => {
+                                                if (actionMeta.action === "input-change") {
+                                                    debouncedFetchUsers(inputValue || "");
+                                                }
+                                            }}
+                                            options={options}
+                                            onFocus={() => {
+                                                if (options.length === 0) {
+                                                    fetchUsers("");
+                                                }
+                                            }}
+                                            onChange={(selectedOption) => {
+                                                if (!Array.isArray(selectedOption)) {
+                                                    form.setValue("id_user", (selectedOption as OptionType)?.value);
+                                                }
+                                            }}
+                                            placeholder="Pilih karyawan"
+                                        />
+                                        <FormDescription>
+                                            Pilih karyawan yang mengajukan permohonan.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
                                 )}
                             />
                             <FormField
@@ -157,7 +157,7 @@ export default function TambahApproval(){
                                         <FormDescription>
                                             Pilih tipe pengajuan yang sesuai.
                                         </FormDescription>
-                                        <FormMessage/>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
@@ -181,7 +181,7 @@ export default function TambahApproval(){
                                                 <FormDescription>
                                                     Pilih tanggal mulai pengajuan.
                                                 </FormDescription>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -193,14 +193,14 @@ export default function TambahApproval(){
                                                 <FormLabel>End Date</FormLabel>
                                                 <FormControl>
                                                     <Input type="date"
-                                                           value={field.value || ""}
-                                                           onChange={(e) => field.onChange(e.target.value)}
+                                                        value={field.value || ""}
+                                                        onChange={(e) => field.onChange(e.target.value)}
                                                     />
                                                 </FormControl>
                                                 <FormDescription>
                                                     Pilih tanggal akhir pengajuan.
                                                 </FormDescription>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -223,7 +223,7 @@ export default function TambahApproval(){
                                                 <FormDescription>
                                                     Masukkan jam mulai lembur.
                                                 </FormDescription>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -242,7 +242,7 @@ export default function TambahApproval(){
                                                 <FormDescription>
                                                     Masukkan jam berakhir lembur.
                                                 </FormDescription>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -262,7 +262,7 @@ export default function TambahApproval(){
                                                 <FormDescription>
                                                     Pilih hari lembur.
                                                 </FormDescription>
-                                                <FormMessage/>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />
@@ -284,7 +284,7 @@ export default function TambahApproval(){
                                         <FormDescription>
                                             Masukkan alasan pengajuan.
                                         </FormDescription>
-                                        <FormMessage/>
+                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />

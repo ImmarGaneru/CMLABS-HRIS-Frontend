@@ -26,15 +26,9 @@ export const dashboardTutorialSteps: TutorialStep[] = [
     centered: false,
   },
   {
-    target: '.employee-type',
-    content: 'Check the distribution of employee types across the organization.',
-    // placement: 'bottom',
-    centered: true,
-  },
-  {
-    target: '.clock-status',
-    content: 'Monitor real-time clock-in/clock-out status of employees.',
-    // placement: 'bottom',
-    centered: true,
+    target: '.employee-attendance',
+    content: 'Anda bisa menekan tutorial kembali pada ikon "?" di kanan bawah',
+    placement: 'right',
+    centered: false,
   },
 ]; 

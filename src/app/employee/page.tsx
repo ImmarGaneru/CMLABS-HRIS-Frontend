@@ -26,7 +26,7 @@ import api from "@/lib/axios";
 
 type Employee = {
   id_user: string;
-  jenisKelamin: string;
+  jenis_kelamin: string;
   id: string;
   first_name: string;
   last_name: string;
@@ -39,7 +39,7 @@ type Employee = {
   // tambahan
   user?: { email: string };
   position?: { name: string };
-  notelp: string;
+  no_telp: string;
   cabang: string;
   jabatan: string;
 };
@@ -101,26 +101,33 @@ export default function EmployeeTablePage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/employee", {
-          next: { revalidate: 0 },
-        });
-        if (!res.ok) throw new Error(`Error: ${res.status}`);
+        const res = await api.get("/admin/employees/comp-employees");
+        
+        // Fetch position details for each employee
+        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
+          let positionName = "-";
+          if (emp.id_position) {
+            try {
+              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
+              if (positionRes.data.meta.success) {
+                positionName = positionRes.data.data.name;
+              }
+            } catch (err) {
+              console.error(`Error fetching position for employee ${emp.id}:`, err);
+            }
+          }
 
-        const apiData = await res.json();
-
-        const feData = apiData.data.map((emp: Employee) => ({
-          id: emp.id,
-          id_user: emp.id_user,
-          nama: `${emp.first_name} ${emp.last_name}`,
-          jenisKelamin: emp.jenisKelamin,
-          notelp: emp.notelp || "-",
-          cabang: emp.cabang || "-",
-          jabatan: emp.jabatan || "-",
-          status: emp.employment_status,
-          Email: emp.user?.email || "-",
-
-          // hireDate: emp.created_at,
-          // employmentType: emp.tipe_kontrak || "-",
+          return {
+            id: emp.id,
+            id_user: emp.id_user,
+            nama: `${emp.first_name} ${emp.last_name}`,
+            jenis_kelamin: emp.jenis_kelamin,
+            no_telp: emp.no_telp || "-",
+            cabang: emp.cabang || "-",
+            jabatan: positionName,
+            status: emp.employment_status,
+            Email: emp.user?.email || "-",
+          };
         }));
 
         setEmployees(feData);
@@ -179,7 +186,7 @@ export default function EmployeeTablePage() {
         size: 120,
       },
       {
-        accessorKey: "jenisKelamin",
+        accessorKey: "jenis_kelamin",
         header: "Jenis Kelamin",
         cell: (info) => (
           <div className="truncate max-w-[100px]">
@@ -189,7 +196,7 @@ export default function EmployeeTablePage() {
         size: 100,
       },
       {
-        accessorKey: "notelp",
+        accessorKey: "no_telp",
         header: "Nomor Telepon",
         cell: (info) => (
           <div className="truncate max-w-[120px]">
@@ -410,7 +417,7 @@ export default function EmployeeTablePage() {
         cabang.toLowerCase().includes(filterText.toLowerCase()) ||
         jabatan.toLowerCase().includes(filterText.toLowerCase());
 
-      const matchesGender = !filterGender || item.jenisKelamin === filterGender;
+      const matchesGender = !filterGender || item.jenis_kelamin === filterGender;
       const matchesStatus = !filterStatus || item.status === filterStatus;
 
       return matchesSearch && matchesGender && matchesStatus;
@@ -418,10 +425,10 @@ export default function EmployeeTablePage() {
   }, [employees, filterText, filterGender, filterStatus]);
 
   return (
-    <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
+    <div className="px-4 py-6 min-h-screen flex flex-col gap-4">
       <EmployeeCardSum employeesCard={employees} />
 
-      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md mt-6 w-full overflow-x-auto">
+      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">
           {loading && <p>Loading data...</p>}
           {error && <p className="text-red-600">Error: {error}</p>}

@@ -127,12 +127,12 @@ export default function Jadwal() {
               const newCKSetting: CheckClockSetting = {
                 id: "",
                 id_company: "",
-                name: document.querySelector(
+                name: (document.querySelector(
                   'input[name="ck_setting_name"]'
-                )?.value || "New Schedule",
-                type: document.querySelector(
+                ) as HTMLInputElement).value || "New Schedule",
+                type: (document.querySelector(
                   'select[name="ck_setting_type"]'
-                )?.value || "WFO",
+                ) as HTMLInputElement).value || "WFO",
                 created_at: new Date(),
                 updated_at: new Date(),
                 deleted_at: null,
@@ -142,21 +142,21 @@ export default function Jadwal() {
               const check_clock_setting_time: CheckClockSettingTime[] = jadwal.map((row, idx) => ({
                 id: "",
                 id_ck_setting: "",
-                day: document.querySelector(
+                day: (document.querySelector(
                   `input[name="ck_setting_day_${idx}"]`
-                )?.value || row.hari,
-                clock_in: document.querySelector(
+                ) as HTMLInputElement).value || row.hari,
+                clock_in: (document.querySelector(
                   `input[name="ck_setting_clock_in_${idx}"]`
-                )?.value || row.clockIn,
-                break_start: document.querySelector(
+                ) as HTMLInputElement).value || row.clockIn,
+                break_start: (document.querySelector(
                   `input[name="ck_setting_break_start_${idx}"]`
-                )?.value || row.breakStart,
-                break_end: document.querySelector(
+                ) as HTMLInputElement).value || row.breakStart,
+                break_end: (document.querySelector(
                   `input[name="ck_setting_break_end_${idx}"]`
-                )?.value || row.breakEnd,
-                clock_out: document.querySelector(
+                ) as HTMLInputElement).value || row.breakEnd,
+                clock_out: (document.querySelector(
                   `input[name="ck_setting_clock_out_${idx}"]`
-                )?.value || row.clockOut,
+                ) as HTMLInputElement).value || row.clockOut,
                 created_at: new Date(),
                 updated_at: new Date(),
               }));
