@@ -130,6 +130,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
             }
         });
 
+
         if (data.document) {
             formData.append("document", data.document);
         }
@@ -137,7 +138,8 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         try {
             await api.post("approvals", formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
+                    "Content-Type": "multipart/form-data",
+
                 },
             });
             toast.success("Data berhasil disimpan!");

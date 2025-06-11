@@ -78,10 +78,10 @@ export default function TambahApproval(){
         resolver: zodResolver(FormSchema),
     })
 
-    const startDateField = form.control.register("start_date");
-    const endDateField = form.control.register("end_date");
-    const startTimeField = form.control.register("start_time");
-    const endTimeField = form.control.register("end_time");
+    form.control.register("start_date");
+    form.control.register("end_date");
+    form.control.register("start_time");
+    form.control.register("end_time");
     form.control.register("overtime_dates");
 
     const selectedType = form.watch("request_type");

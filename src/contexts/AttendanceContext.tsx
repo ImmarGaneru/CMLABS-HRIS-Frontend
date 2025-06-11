@@ -31,8 +31,81 @@ export interface CheckClockSettingTime {
     deleted_at?: Date;
 }
 
+export interface CheckClock {
+    id: string;
+    id_user: string;
+    id_ck_setting: string;
+    id_ck_setting_time: string;
+    clock_in: string;
+    break_start: string;
+    break_end: string;
+    clock_out: string;
+    status: string;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: null;
+    user: User;
+    check_clock_setting_time: CheckClockSettingTime;
+    check_clock_setting: CheckClockSetting;
+}
+
+export interface User {
+    id: string;
+    email: string;
+    phone_number: string;
+    id_workplace: string;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: null;
+    employee: Employee;
+    workplace: Workplace;
+}
+
+export interface Employee {
+    id: string;
+    sign_in_code: string;
+    id_user: string;
+    first_name: string;
+    last_name: string;
+    nik: null;
+    employment_status: string;
+    address: string;
+    id_position: null;
+    jenis_kelamin: string;
+    no_telp: string;
+    cabang: string;
+    grade: null;
+    bank: null;
+    no_rek: null;
+    pendidikan: null;
+    tipe_kontrak: null;
+    tempat_lahir: null;
+    tanggal_lahir: null;
+    dokumen: null;
+    avatar: null;
+    start_date: null;
+    end_date: null;
+    tanggal_efektif: null;
+    deleted_at: null;
+}
+
+export interface Workplace {
+    id: string;
+    name: string;
+    id_manager: string;
+    id_subscription: null;
+    address: null;
+    has_used_trial: boolean;
+    deleted_at: null;
+}
+
+
 interface AttendanceContext {
+    employeeCheckClocks: CheckClock[];
+    selfCheckClocks: CheckClock[];
     checkClockSettings: CheckClockSetting[];
+    fetchEmployeeCheckClocks: () => Promise<void>;
+    fetchSelfCheckClocks: () => Promise<void>;
     fetchCheckClockSettings: () => Promise<void>;
     completeNewCheckClockSetting: (checkClockSetting: CheckClockSetting) => Promise<void>;
     fetchSingleCheckClockSetting: (id: string) => Promise<CheckClockSetting>;
@@ -45,18 +118,38 @@ interface AttendanceContext {
 const AttendanceContext = createContext<AttendanceContext | undefined>(undefined);
 
 export function AttendanceProvider({ children }: { children: React.ReactNode }) {
-    const [checkClockSettings, setApprovals] = useState<CheckClockSetting[]>([]);
+    const [employeeCheckClocks, setEmployeeCheckClocks] = useState<CheckClock[]>([]);
+    const [selfCheckClocks, setSelfCheckClocks] = useState<CheckClock[]>([]);
+    const [checkClockSettings, setAttendance] = useState<CheckClockSetting[]>([]);
     const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
     const fetchCheckClockSettings = async () => {
         try {
             const data = await request<CheckClockSetting[]>(api.get("/admin/attendance/check-clock-setting"));
-            setApprovals(data);
+            setAttendance(data);
         } catch (error) {
             toast.error("Failed to fetch attendance data.");
         }
     };
+
+    const fetchEmployeeCheckClocks = async () => {
+        try {
+            const data = await request<CheckClock[]>(api.get("/admin/attendance/check-clock/employee-check-clocks"));
+            setEmployeeCheckClocks(data);
+        } catch (error) {
+            toast.error("Failed to fetch employee check clocks.");
+        }
+    }
+
+    const fetchSelfCheckClocks = async () => {
+        try {
+            const data = await request<CheckClock[]>(api.get("/attendance/check-clock/self"));
+            setSelfCheckClocks(data);
+        } catch (error) {
+            toast.error("Failed to fetch self check clocks.");
+        }
+    }
 
     const completeNewCheckClockSetting = async (checkClockSetting: CheckClockSetting) => {
         try {
@@ -101,12 +194,18 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     useEffect(() => {
         fetchCheckClockSettings();
+        fetchEmployeeCheckClocks();
+        fetchSelfCheckClocks();
     }, []);
 
     return (
         <AttendanceContext.Provider
             value={{
                 checkClockSettings,
+                employeeCheckClocks,
+                selfCheckClocks,
+                fetchEmployeeCheckClocks,
+                fetchSelfCheckClocks,
                 fetchCheckClockSettings,
                 fetchSingleCheckClockSetting,
                 completeNewCheckClockSetting,
