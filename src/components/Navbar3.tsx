@@ -81,7 +81,17 @@ export function Navbar3() {
             try {
                 const userResponse = await api.get('/auth/me');
 
-                const userData = userResponse.data.data as UserData;
+                if (!userResponse.status) throw new Error('Failed to fetch user');
+
+                // const responseJson = await userResponse.data
+                // console.log('Full API Response:', responseJson); // Debug log
+
+                const userData: UserData = userResponse.data.data;
+
+                // Debug logs
+                console.log('User Data:', userData);
+                console.log('Employee Data:', userData.employee);
+                console.log('Workplace Data:', userData.workplace);
 
                 // Ambil nama dari employee
                 let nameToShow = 'User';
