@@ -5,13 +5,28 @@
 // import { Input } from "@/components/ui/input"
 // import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 // import {ChevronLeft, ChevronRight, Eye, SlidersHorizontal} from "lucide-react"
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import DataTableHeader from "@/components/DatatableHeader"
 import { DataTable } from "@/components/Datatable"
 import { useMemo, useState } from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { FaEdit, FaEye } from "react-icons/fa";
+import { useApproval, Approval } from "@/contexts/ApprovalContext";
 
+
+import api from "@/lib/axios";
+
+async function getCheckClockSettings() {
+    const response = await api.get("/attendance/check-clock-settings");
+
+    if (response.status === 200) {
+        console.log("Check Clock Settings:", response.data);
+        return response.data;
+    } else {
+        throw new Error("Failed to fetch check clock settings");
+    }
+
+}
 
 export default function AttendacePage() {
     const router = useRouter();
@@ -19,13 +34,13 @@ export default function AttendacePage() {
     const [filterTipeKehadiran, setFilterTipeKehadiran] = useState("");
     const [filterTanggal, setFilterTanggal] = useState("");
     const [isDetailOpen, setIsDetailOpen] = useState(false);
-    
+
     const kehadiranFilters = [
-        {label: 'On Time', value: 'On Time'},
-        {label: 'Late', value: 'Late'},
-        {label: 'Waiting', value: 'Waiting'},
-        {label: 'Sick', value: 'Sick'},
-        {label: 'Cuti', value: 'Cuti'},
+        { label: 'On Time', value: 'On Time' },
+        { label: 'Late', value: 'Late' },
+        { label: 'Waiting', value: 'Waiting' },
+        { label: 'Sick', value: 'Sick' },
+        { label: 'Cuti', value: 'Cuti' },
     ];
     // type AttendanceStatus = "Waiting Approval" | "Sick Leave" | "On Time" | "Late"
     // const statuses: Record<AttendanceStatus, string> = {
@@ -52,9 +67,9 @@ export default function AttendacePage() {
             {
                 id: "No",
                 header: "No",
-                cell: ({row}) => (
+                cell: ({ row }) => (
                     <div className="flex justify-center">
-                        {row.index +1}
+                        {row.index + 1}
                     </div>
                 ),
                 size: 60,
@@ -62,7 +77,7 @@ export default function AttendacePage() {
             {
                 accessorKey: "name",
                 header: "Nama",
-                cell:  info => (
+                cell: info => (
                     <div className="truncate w-[120px]">
                         {info.getValue() as string}
                     </div>
@@ -127,12 +142,12 @@ export default function AttendacePage() {
                         "Sick": "bg-teal-100 text-teal-800",
                         "Cuti": "bg-teal-100 text-teal-800",
                     };
-                    return(
-                    <div className="flex justify-center w-[80px]">
-                        <span className={`px-2 py-1 text-xs rounded ${statusStyle[status] ?? "bg-gray-100 text-gray-800"}`}>
-                            {info.getValue() as String}
-                        </span>
-                    </div>
+                    return (
+                        <div className="flex justify-center w-[80px]">
+                            <span className={`px-2 py-1 text-xs rounded ${statusStyle[status] ?? "bg-gray-100 text-gray-800"}`}>
+                                {info.getValue() as String}
+                            </span>
+                        </div>
                     );
                 },
             },
@@ -140,28 +155,28 @@ export default function AttendacePage() {
                 id: "actions",
                 header: "Aksi",
                 cell: ({ row }) => {
-                  const data = row.original
-                  return (
-                    <div className="flex gap-2 justify-center">
-                      <button
-                        title="Detail"
-                        onClick={() => router.push(`/attendance`)}
-                        className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
-                      >
-                        <FaEye />
-                      </button>
-                      <button
-                        title="Edit"
-                        onClick={() => router.push(`/attendance`)}
-                        className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
-                      >
-                        <FaEdit />
-                      </button>
-                    </div>
-                  )
+                    const data = row.original
+                    return (
+                        <div className="flex gap-2 justify-center">
+                            <button
+                                title="Detail"
+                                onClick={() => router.push(`/attendance`)}
+                                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+                            >
+                                <FaEye />
+                            </button>
+                            <button
+                                title="Edit"
+                                onClick={() => router.push(`/attendance`)}
+                                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+                            >
+                                <FaEdit />
+                            </button>
+                        </div>
+                    )
                 },
-              },
-        ],[]
+            },
+        ], []
     )
 
     //Dummy data untuk attendance berdasarkan type Attendance
@@ -205,10 +220,10 @@ export default function AttendacePage() {
             clockOut: "17:00",
             hours: "9 h 0 m",
             status: "Sick"
-        },        
+        },
     ];
 
-//FUNGSI-FUNGSI FILTER==
+    //FUNGSI-FUNGSI FILTER==
 
     //Filtered data agar bisa diimplementasikan fitur search & filter
     const filteredData = useMemo(() => {
@@ -220,9 +235,9 @@ export default function AttendacePage() {
         });
     }, [filterText, filterTipeKehadiran, filterTanggal]);
 
-//END FUNGSI-FUNGSI FILTER==
+    //END FUNGSI-FUNGSI FILTER==
 
-//RETURN CLASS MAIN FUNCTION==
+    //RETURN CLASS MAIN FUNCTION==
     return (
         <main className="px-2 py-4 min-h-screen flex flex-col gap-4">
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
@@ -244,9 +259,9 @@ export default function AttendacePage() {
                         onFilterChange={setFilterTipeKehadiran}
                         filterOptions={kehadiranFilters}
                         onAdd={() => router.push("/#")}
-                        />
+                    />
                     {/* Data Tabel Isi attendance */}
-                    <DataTable columns={attendanceColumns} data={filteredData}/>
+                    <DataTable columns={attendanceColumns} data={filteredData} />
                 </div>
 
 
