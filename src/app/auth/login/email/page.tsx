@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 // import { LuEyeOff } from "react-icons/lu";
 // import { LuEye } from "react-icons/lu";
-import { api } from "@/lib/axios";
+import api from "@/lib/axios";
 
 export default function LoginEmailPage() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function LoginEmailPage() {
           }
 
           alert("Login berhasil!");
-          router.push("/dashboard");
+          router.push("/manager");
         } else {
           throw new Error("Token tidak ditemukan dalam response.");
         }

@@ -2,14 +2,14 @@ import axios from 'axios';
 
 // Buat instance axios
 const api = axios.create({
- baseURL: "http://localhost:8000/api",
-   headers: {
-Authorization: `Bearer 1|gRTmH7CvpDe3ZMaFcEvMIsvFzCssocpbQJv2yusT70f25fbf `,
-  'Content-Type': 'application/json',
-  withCredentials: true,
-},
-  
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://hriscmlabs.my.id/api',
+  headers: {
+    Authorization: `Bearer 1|gRTmH7CvpDe3ZMaFcEvMIsvFzCssocpbQJv2yusT70f25fbf`,
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true, // ✅ dipindah ke sini
 });
+
 
 // // Tambahkan interceptor untuk menempelkan token ke setiap request
 // api.interceptors.request.use((config) => {

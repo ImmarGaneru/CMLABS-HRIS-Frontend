@@ -1,14 +1,26 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  images: {
-    domains: ['localhost'],
+import type { NextConfig } from "next";
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://hriscmlabs.my.id/api";
+
+const nextConfig: NextConfig = {
+  // async rewrites() {
+  //     return [
+  //         {
+  //             source: "/api/:path*",
+  //             destination: `${apiBaseUrl}/:path*`, 
+  //         },
+  //     ];
+  // },
+  
+  experimental: {
+    // serverActions: [],
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
+  // serverActions: {
+  //   bodySizeLimit: '100mb', // atau sesuai kebutuhan, contoh 10mb
+  // },
 };
 
 module.exports = nextConfig;
+module.exports = {
+  output: 'standalone'
+}

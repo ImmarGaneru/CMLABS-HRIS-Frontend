@@ -11,6 +11,7 @@ import {
     Clock,
     CalendarDays,
     ClipboardCheck,
+    AlarmClock
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -24,34 +25,38 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Tutorial from "./Tutorial";
 
 const sidebarNavItems = [
     {
         title: "Dashboard",
-        url: "/dashboard",
+        url: "/manager/dashboard",
         icon: LayoutDashboard,
     },
     {
         title: "Karyawan",
-        url: "/employee",
+        url: "/manager/employee",
         icon: UserCircle,
     },
     {
         title: "Kehadiran",
-        url: "/attendance",
+        url: "/manager/attendance",
         icon: Clock,
     },
     {
         title: "Jadwal",
-        url: "/jadwal",
+        url: "/manager/jadwal",
         icon: CalendarDays,
     },
     {
         title: "Approval",
-        url: "/approval",
+        url: "/manager/approval",
         icon: ClipboardCheck,
     },
+    {
+        title: "Overtime",
+        url: "/manager/overtime",
+        icon: AlarmClock,
+    }
 ];
 
 export function SidebarApp() {
@@ -92,38 +97,6 @@ export function SidebarApp() {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="flex flex-col gap-2">
-                <Tutorial
-                    steps={[
-                        {
-                            target: "#dashboard-tutorial",
-                            content: "Welcome to the dashboard! Here you can see an overview of your HR information.",
-                            placement: "right"
-                        },
-                        {
-                            target: "#karyawan-tutorial",
-                            content: "Manage your employee information and profiles here.",
-                            placement: "right"
-                        },
-                        {
-                            target: "#kehadiran-tutorial",
-                            content: "Track and manage employee attendance records.",
-                            placement: "right"
-                        },
-                        {
-                            target: "#jadwal-tutorial",
-                            content: "View and manage employee schedules here.",
-                            placement: "right"
-                        },
-                        {
-                            target: "#approval-tutorial",
-                            content: "Handle all approval requests in this section.",
-                            placement: "right"
-                        }
-                    ]}
-                    buttonPosition="bottom-right"
-                    buttonVariant="floating"
-                    storageKey="sidebarTutorialCompleted"
-                />
                 <Link
                     href="/settings"
                     className={cn(

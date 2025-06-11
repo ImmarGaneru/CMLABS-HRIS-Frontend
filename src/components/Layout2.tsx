@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { SidebarApp } from "./SidebarApp";
+import { SidebarEmployee } from "./SidebarEmployee";
 import { SidebarProvider } from "./ui/sidebar";
 import Head from "next/head";
 import React from "react";
@@ -15,13 +16,15 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
 
     const usesSidebar = () => {
         // Define all routes that should use the sidebar
-        return pathname.startsWith("/attendance") ||
-            pathname.startsWith("/dashboard")||
-            pathname.startsWith("/employee") ||
-            pathname.startsWith("/jadwal") ||
-            pathname.startsWith("/approval") ||
+        return pathname.startsWith("/manager") ||
             pathname.startsWith("/payment") ||
-            pathname.startsWith("/subscription")
+            pathname.startsWith("/subscription") ||
+            pathname.startsWith("/profile")
+    }
+
+    const usesEmployeeSidebar = () => {
+        // Define all routes that should use the sidebar
+        return pathname.startsWith("/employee")
     }
 
     // Handle special layout for lupa_password and link_expired
@@ -59,7 +62,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         <Head>
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <SidebarApp />
+        <SidebarEmployee />
         <div className="flex-1 flex flex-col bg-gray-300">
           <Navbar3 />
           <div className="flex-1">
@@ -69,6 +72,24 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
       </SidebarProvider>
     );
   }
+
+    // Layout dengan Sidebar untuk bagian dalam aplikasi
+    if (usesEmployeeSidebar()) {
+        return (
+            <SidebarProvider>
+                <Head>
+                    <link rel="icon" href="/favicon.ico" />
+                </Head>
+                <SidebarApp />
+                <div className="flex-1 flex flex-col bg-gray-300">
+                    <Navbar3 />
+                    <div className="flex-1">
+                        <main>{children}</main>
+                    </div>
+                </div>
+            </SidebarProvider>
+        );
+    }
 
   // Default layout with Navbar and Footer
   return (

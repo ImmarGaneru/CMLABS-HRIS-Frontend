@@ -1,8 +1,8 @@
 // utils/position.js
-import api from './api';
+import api from "@/lib/axios";
 
 export async function getPositions() {
-  const { data } = await api.get('/position');
+  const { data } = await api.get('/admin/positions');
 
   return data;
 }
