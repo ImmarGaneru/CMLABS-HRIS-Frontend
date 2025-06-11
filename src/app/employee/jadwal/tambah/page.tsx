@@ -1,298 +1,179 @@
 "use client";
 
-import Button from "@/components/Button";
+import { useState } from "react";
+import { Switch } from "@headlessui/react";
 import { useRouter } from "next/navigation";
-import { FaArrowLeft } from "react-icons/fa";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import ClientOnlySelect, { OptionType } from "@/components/ClientOnlySelect";
-import { debounce } from "lodash";
-import { useApproval } from "@/contexts/ApprovalContext";
-import { useEffect, useState } from "react";
+import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
 
-const FormSchema = z.object({
-  id_user: z
-    .string({
-      required_error: "User harus dipilih",
-    })
-    .min(1, "User harus dipilih"),
-  request_type: z
-    .string({
-      required_error: "Tipe pengajuan harus dipilih",
-    })
-    .min(1, "Tipe pengajuan harus dipilih"),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-  start_time: z.string().optional(),
-  end_time: z.string().optional(),
-  overtime_dates: z.string().optional(),
-  reason: z
-    .string({
-      required_error: "Alasan harus diisi",
-    })
-    .min(1, "Alasan harus diisi"),
-
-})
-
-export default function TambahApproval() {
-  const { fetchUsers, submitApproval, options, isLoading } = useApproval();
+export default function Jadwal() {
+  const { completeNewCheckClockSetting } = useAttendance();
+  const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
+  const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
   const router = useRouter();
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
-
-
-
-  const debouncedFetchUsers = debounce(fetchUsers, 300);
-
-  const typeOptions: OptionType[] = [
-    { value: "permit", label: "Izin" },
-    { value: "sick", label: "Sakit" },
-    { value: "leave", label: "Cuti" },
-    { value: "overtime", label: "Lembur" },
+  const hariList = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
   ];
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-  })
-
-  const startDateField = form.control.register("start_date");
-  const endDateField = form.control.register("end_date");
-  const startTimeField = form.control.register("start_time");
-  const endTimeField = form.control.register("end_time");
-  const overtimeDatesField = form.control.register("overtime_dates");
-
-  const selectedType = form.watch("request_type");
-
-  if (!hydrated) {
-    return null; // Render nothing until the component is hydrated
-  }
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    submitApproval(data).then(() => {
-      router.back();
-    });
-  }
+  const [jadwal] = useState(
+    hariList.map((hari) => ({
+      hari: hari,
+      clockIn: "08:00",
+      breakStart: "11:00",
+      breakEnd: "12:00",
+      clockOut: "17:00",
+    }))
+  );
 
   return (
-
-    <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
-      <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
-        <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
-          {/* Tambahkan komponen header atau tombol di sini jika diperlukan */}
-          <h3 className="text-xl font-bold text-[#1E3A5F]">Tambah Approval</h3>
-          <Button onClick={() => { router.back(); }} variant="redirectButton" className="flex items-center">
-            <FaArrowLeft size={16} />
-            <span className="font-medium">Kembali</span>
-          </Button>
-        </div>
-        <div className="space-y-4 w-full mt-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-              <FormField
-                control={form.control}
-                name="id_user"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Karyawan</FormLabel>
-                    <ClientOnlySelect
-                      isClearable
-                      isMulti={false}
-                      isLoading={isLoading}
-                      onInputChange={(inputValue, actionMeta) => {
-                        if (actionMeta.action === "input-change") {
-                          debouncedFetchUsers(inputValue || "");
-                        }
-                      }}
-                      options={options}
-                      onFocus={() => {
-                        if (options.length === 0) {
-                          fetchUsers("");
-                        }
-                      }}
-                      onChange={(selectedOption) => {
-                        if (!Array.isArray(selectedOption)) {
-                          form.setValue("id_user", (selectedOption as OptionType)?.value);
-                        }
-                      }}
-                      placeholder="Pilih karyawan"
-                    />
-                    <FormDescription>
-                      Pilih karyawan yang mengajukan permohonan.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="request_type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipe Pengajuan</FormLabel>
-                    <ClientOnlySelect
-                      isClearable
-                      isMulti={false}
-                      options={typeOptions}
-                      placeholder="Pilih tipe pengajuan"
-                      onChange={(selectedOption) => {
-                        if (!Array.isArray(selectedOption)) {
-                          field.onChange((selectedOption as OptionType)?.value)
-                        }
-                      }}
-                      value={typeOptions.find(option => option.value === field.value)}
-                    />
-                    <FormDescription>
-                      Pilih tipe pengajuan yang sesuai.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/*Date fields*/}
-              {["permit", "sick", "leave"].includes(selectedType) && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="start_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Start Date</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={field.value || ""}
-                            onChange={(e) => field.onChange(e.target.value)}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Pilih tanggal mulai pengajuan.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="end_date"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Date</FormLabel>
-                        <FormControl>
-                          <Input type="date"
-                            value={field.value || ""}
-                            onChange={(e) => field.onChange(e.target.value)}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Pilih tanggal akhir pengajuan.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-              {selectedType === "overtime" && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="start_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Start Time</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="time"
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Masukkan jam mulai lembur.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="end_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Time</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="time"
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Masukkan jam berakhir lembur.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="overtime_dates"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Overtime Dates</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={field.value || ""}
-                            onChange={(e) => field.onChange(e.target.value)}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Pilih hari lembur.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-              <FormField
-                control={form.control}
-                name="reason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Alasan</FormLabel>
-                    <FormControl>
-                      <textarea
-                        {...field}
-                        rows={3}
-                        className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Masukkan alasan pengajuan.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" variant="redirectButton">Submit</Button>
-            </form>
-          </Form>
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Form Tambah Jadwal */}
+      <div className="bg-white p-6 rounded-xl shadow">
+        <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+          <h1 className="text-xl font-bold text-[#1E3A5F]">Tambah Jadwal</h1>
+          <button
+            onClick={() => router.push("/jadwal")}
+            className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
+          >
+            Kembali
+          </button>
         </div>
 
+        {/* Input Nama Jadwal dan Tanggal */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="block font-medium mb-1">Nama Jadwal</label>
+            <input
+              type="text"
+              name="ck_setting_name"
+              placeholder="Masukkan nama jadwal"
+              className="w-full border rounded px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Type</label>
+            <select className="w-full border rounded px-3 py-2" name="ck_setting_type">
+              <option value="WFO">WFO</option>
+              <option value="WFH">WFH</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Tabel Jadwal */}
+        <div className="overflow-x-auto border rounded mb-6">
+          <table className="min-w-full text-sm text-left">
+            <thead className="bg-gray-100 text-gray-700 font-semibold">
+              <tr>
+                <th className="px-4 py-2">Hari</th>
+                <th className="px-4 py-2">Clock In</th>
+                <th className="px-4 py-2">Break Start</th>
+                <th className="px-4 py-2">Break End</th>
+                <th className="px-4 py-2">Clock Out</th>
+              </tr>
+            </thead>
+            <tbody>
+              {jadwal.map((row, idx) => (
+                <tr key={idx} className="border-t">
+                  <td className="px-4 py-2">{row.hari}</td>
+                  <td className="px-4 py-2">
+                    <input
+                      type="time "
+                      name={`ck_setting_clock_in_${idx}`}
+                      defaultValue={row.clockIn}
+                      className="border rounded px-2 py-1 w-full  "
+                    />
+                  </td>
+                  <td className="px-4 py-2">
+                    <input
+                      type="time "
+                      name={`ck_setting_break_start_${idx}`}
+                      defaultValue={row.breakStart}
+                      className="border rounded px-2 py-1 w-full  "
+                    />
+                  </td>
+                  <td className="px-4 py-2">
+                    <input
+                      type="time "
+                      name={`ck_setting_break_end_${idx}`}
+                      defaultValue={row.breakEnd}
+                      className="border rounded px-2 py-1 w-full  "
+                    />
+                  </td>
+                  <td className="px-4 py-2 ">
+                    <input
+                      type="time"
+                      name={`ck_setting_clock_out_${idx}`}
+                      defaultValue={row.clockOut}
+                      className="border rounded px-2 py-1 w-full"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Tombol Aksi */}
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => router.push("/jadwal")}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200 ease-in-out shadow-md cursor-pointer">
+            Batal
+          </button>
+          <button
+            onClick={() => {
+              const newCKSetting: CheckClockSetting = {
+                id: "",
+                id_company: "",
+                name: (document.querySelector(
+                  'input[name="ck_setting_name"]'
+                ) as HTMLInputElement).value || "New Schedule",
+                type: (document.querySelector(
+                  'select[name="ck_setting_type"]'
+                ) as HTMLInputElement).value || "WFO",
+                created_at: new Date(),
+                updated_at: new Date(),
+                deleted_at: null,
+                check_clock_setting_time: [],
+              }
+
+              const check_clock_setting_time: CheckClockSettingTime[] = jadwal.map((row, idx) => ({
+                id: "",
+                id_ck_setting: "",
+                day: (document.querySelector(
+                  `input[name="ck_setting_day_${idx}"]`
+                ) as HTMLInputElement).value || row.hari,
+                clock_in: (document.querySelector(
+                  `input[name="ck_setting_clock_in_${idx}"]`
+                ) as HTMLInputElement).value || row.clockIn,
+                break_start: (document.querySelector(
+                  `input[name="ck_setting_break_start_${idx}"]`
+                ) as HTMLInputElement).value || row.breakStart,
+                break_end: (document.querySelector(
+                  `input[name="ck_setting_break_end_${idx}"]`
+                ) as HTMLInputElement).value || row.breakEnd,
+                clock_out: (document.querySelector(
+                  `input[name="ck_setting_clock_out_${idx}"]`
+                ) as HTMLInputElement).value || row.clockOut,
+                created_at: new Date(),
+                updated_at: new Date(),
+              }));
+
+              newCKSetting.check_clock_setting_time = check_clock_setting_time;
+
+              completeNewCheckClockSetting(newCKSetting)
+                .then(() => router.push("/jadwal"))
+                .catch((error) => {
+                  console.error("Error saving schedule:", error);
+                });
+            }
+            }
+            className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer">
+            Simpan
+          </button>
+        </div>
       </div>
     </div>
   );
