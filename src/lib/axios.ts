@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig} from 'axios';
 
 const api: AxiosInstance = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: process.env.API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -12,7 +12,7 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         if (typeof window !== 'undefined') {
-            const token = localStorage.getItem("token") || "26|R3zuayoHEogbjjUx8bFaTuAe8ilaxYULUDU7vi3f8ac3170e";
+            const token = localStorage.getItem("token") || "1|FJlRIAfv5w9cYpcDfRJlSSju1eCwjiqZJQkoa7Ipb6d623f3";
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }

@@ -23,6 +23,7 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command";
+import api from "@/lib/axios";
 
 // Interfaces
 interface SubscriptionData {
@@ -78,20 +79,14 @@ export function Navbar3() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const userResponse = await fetch('http://localhost:8000/api/auth/me', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
+                const userResponse = await api.get('http://api.hriscmlabs.my.id/api/auth/me');
 
-                if (!userResponse.ok) throw new Error('Failed to fetch user');
+                if (!userResponse.status) throw new Error('Failed to fetch user');
 
-                const responseJson = await userResponse.json();
-                console.log('Full API Response:', responseJson); // Debug log
-                
-                const userData: UserData = responseJson.data;
+                // const responseJson = await userResponse.data
+                // console.log('Full API Response:', responseJson); // Debug log
+
+                const userData: UserData = userResponse.data;
 
                 // Debug logs
                 console.log('User Data:', userData);
@@ -111,14 +106,14 @@ export function Navbar3() {
 
                 if (userData.employee?.avatar) {
                     setProfileImage(userData.employee?.avatar);
-                  } else {
+                } else {
                     setProfileImage('/avatar.png');
-                  }
-                  
+                }
+
 
                 // Cek subscription jika punya company
                 if (userData.workplace?.id) {
-                    if(userData.workplace.subscription?.package_type){
+                    if (userData.workplace.subscription?.package_type) {
                         setPackageType(userData.workplace.subscription.package_type);
                     } else {
                         console.log('No subscription data found in workplace');
@@ -181,8 +176,8 @@ export function Navbar3() {
             <div className="flex w-120 min-w-3xs sm:flex-row items-center sm:items-center justify-center">
                 <div className="relative w-full max-w-lg min-w-3xs">
                     <Command className="rounded-lg border shadow-xs">
-                        <CommandInput 
-                            placeholder="Search anything..." 
+                        <CommandInput
+                            placeholder="Search anything..."
                             value={searchQuery}
                             onValueChange={handleSearch}
                             className="py-2 px-4 "
