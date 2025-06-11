@@ -32,14 +32,14 @@ export default function EmployeeStat() {
     const fetchChartData = async () => {
       const year = selectedMonth.getFullYear();
       const month = String(selectedMonth.getMonth() + 1).padStart(2, '0');
-      
+
       try {
-        const res = await fetch(`http://localhost:8000/api/admin/employees/dashboard/status-stats?month=${month}&year=${year}`,{
+        const res = await fetch(`http://hriscmlabs.my.id/api/admin/employees/dashboard/status-stats?month=${month}&year=${year}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        
+
         const result = await res.json();
         setChartData(result.data);
         setLoading(false);
@@ -106,7 +106,7 @@ export default function EmployeeStat() {
             customInput={
               <div className="flex items-center justify-between w-full">
                 <span className='text-gray-700 text-[16px]'>
-                  {selectedMonth.toLocaleDateString('id-ID', { 
+                  {selectedMonth.toLocaleDateString('id-ID', {
                     month: 'long',
                     year: 'numeric'
                   })}
@@ -126,9 +126,9 @@ export default function EmployeeStat() {
           <Tooltip />
           <Bar dataKey="total">
             {chartData.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={getColor(entry.label)} 
+              <Cell
+                key={`cell-${index}`}
+                fill={getColor(entry.label)}
               />
             ))}
           </Bar>

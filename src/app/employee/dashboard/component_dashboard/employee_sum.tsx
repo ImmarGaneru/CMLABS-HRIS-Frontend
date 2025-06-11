@@ -1,12 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { MdOutlineGroup } from 'react-icons/md';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 
 export default function EmployeeSumCard() {
     const router = useRouter();
-    const [data,setData] = useState({
+    const [data, setData] = useState({
         total: 0,
         active: 0,
         new_employees: 0,
@@ -20,13 +20,13 @@ export default function EmployeeSumCard() {
         const fetchEmployeeData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:8000/api/admin/employees/dashboard/getEmployee', {
+                const response = await fetch('http://hriscmlabs.my.id/api/admin/employees/dashboard/getEmployee', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
-                if(response.status === 403){
+                if (response.status === 403) {
                     router.push('/unauthorized');
                 }
                 const result = await response.json();
@@ -38,7 +38,7 @@ export default function EmployeeSumCard() {
             }
         }
         fetchEmployeeData();
-    },[token, router]);
+    }, [token, router]);
 
     if (loading) {
         return (
@@ -74,7 +74,7 @@ export default function EmployeeSumCard() {
         );
     }
 
-    return(
+    return (
         <div className='flex flex-row gap-6 w-full h-fit'>
             {/* Card Total Karyawan */}
             <div className='bg-gray-50 text-[#1E3A5F] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
@@ -96,7 +96,7 @@ export default function EmployeeSumCard() {
                 <p className='text-[24px] font-bold'>{data.active ?? 0}</p>
                 <p className='text-[14px]'>Update: {data.last_updated ? dayjs(data.last_updated).format('DD MM YYYY') : '-'}</p>
             </div>
-            
+
             {/* Card Karyawan Baru */}
             <div className='bg-gray-50 text-[#257047] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
                 {/* Tittle */}

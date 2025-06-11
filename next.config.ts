@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://hriscmlabs.my.id/api";
 
 const nextConfig: NextConfig = {
   // async rewrites() {

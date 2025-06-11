@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig} from 'axios';
 
 const api: AxiosInstance = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: 'http://hriscmlabs.my.id/api',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

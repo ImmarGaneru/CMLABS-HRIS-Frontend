@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { MdOutlineGroup } from 'react-icons/md';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import api from '@/lib/axios';
 
@@ -14,7 +14,7 @@ type ChartDataItem = {
 }
 
 export default function EmployeeSumCard() {
-    const [chartData,setChartData] = useState<ChartDataItem | null>(null);
+    const [chartData, setChartData] = useState<ChartDataItem | null>(null);
     const [loading, setLoading] = useState(true);
     // const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
 
@@ -22,7 +22,7 @@ export default function EmployeeSumCard() {
         const fetchEmployeeData = async () => {
             // try {
             //     setLoading(true);
-            //     const response = await fetch('http://localhost:8000/api/admin/employees/dashboard/getEmployee', {
+            //     const response = await fetch('http://hriscmlabs.my.id/api/admin/employees/dashboard/getEmployee', {
             //         headers: {
             //             'Authorization': `Bearer ${token}`
             //         }
@@ -40,7 +40,7 @@ export default function EmployeeSumCard() {
             // }
             try {
                 const res = await api.get('/admin/employees/dashboard/getEmployee');
-                
+
                 if (res.data?.data) {
                     setChartData(res.data.data);
                 } else {
@@ -55,7 +55,7 @@ export default function EmployeeSumCard() {
             }
         };
         fetchEmployeeData();
-    },[]);
+    }, []);
 
     if (loading) {
         return (
@@ -91,7 +91,7 @@ export default function EmployeeSumCard() {
         );
     }
 
-    return(
+    return (
         <div className='flex flex-row gap-6 w-full h-fit'>
             {/* Card Total Karyawan */}
             <div className='bg-gray-50 text-[#1E3A5F] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
@@ -113,7 +113,7 @@ export default function EmployeeSumCard() {
                 <p className='text-[24px] font-bold'>{chartData.active ?? 0}</p>
                 <p className='text-[14px]'>Update: {chartData.last_updated ? dayjs(chartData.last_updated).format('DD MM YYYY') : '-'}</p>
             </div>
-            
+
             {/* Card Karyawan Baru */}
             <div className='bg-gray-50 text-[#257047] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
                 {/* Tittle */}
