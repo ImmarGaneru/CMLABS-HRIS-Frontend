@@ -26,7 +26,7 @@ import api from "@/lib/axios";
 
 type Employee = {
   id_user: string;
-  jenisKelamin: string;
+  jenis_kelamin: string;
   id: string;
   first_name: string;
   last_name: string;
@@ -39,7 +39,7 @@ type Employee = {
   // tambahan
   user?: { email: string };
   position?: { name: string };
-  notelp: string;
+  no_telp: string;
   cabang: string;
   jabatan: string;
 };
@@ -107,8 +107,8 @@ export default function EmployeeTablePage() {
           id: emp.id,
           id_user: emp.id_user,
           nama: `${emp.first_name} ${emp.last_name}`,
-          jenisKelamin: emp.jenisKelamin,
-          notelp: emp.notelp || "-",
+          jenis_kelamin: emp.jenis_kelamin,
+          no_telp: emp.no_telp || "-",
           cabang: emp.cabang || "-",
           jabatan: emp.jabatan || "-",
           status: emp.employment_status,
@@ -174,7 +174,7 @@ export default function EmployeeTablePage() {
         size: 120,
       },
       {
-        accessorKey: "jenisKelamin",
+        accessorKey: "jenis_kelamin",
         header: "Jenis Kelamin",
         cell: (info) => (
           <div className="truncate max-w-[100px]">
@@ -184,7 +184,7 @@ export default function EmployeeTablePage() {
         size: 100,
       },
       {
-        accessorKey: "notelp",
+        accessorKey: "no_telp",
         header: "Nomor Telepon",
         cell: (info) => (
           <div className="truncate max-w-[120px]">
@@ -405,7 +405,7 @@ export default function EmployeeTablePage() {
         cabang.toLowerCase().includes(filterText.toLowerCase()) ||
         jabatan.toLowerCase().includes(filterText.toLowerCase());
 
-      const matchesGender = !filterGender || item.jenisKelamin === filterGender;
+      const matchesGender = !filterGender || item.jenis_kelamin === filterGender;
       const matchesStatus = !filterStatus || item.status === filterStatus;
 
       return matchesSearch && matchesGender && matchesStatus;

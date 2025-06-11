@@ -4,6 +4,7 @@ import React, { useState, ChangeEvent, useRef, useEffect } from "react";
 import { FaCamera, FaFileUpload } from "react-icons/fa";
 import { createEmployee } from "../../../../utils/employee";
 import { getPositions } from "../../../../utils/position";
+import { toast } from "react-hot-toast";
 
 export default function TambahKaryawan() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function TambahKaryawan() {
     tipeKontrak: "Tetap",
     grade: "",
     jabatan: "",
-    id_position: "", // id dari posisi yang dipilih
+    id_position: "",
     cabang: "",
     bank: "",
     norek: "",
@@ -43,7 +44,8 @@ export default function TambahKaryawan() {
     uangLembur: 0,
     dendaTerlambat: 0,
     TotalGaji: 0,
-   dokumen: [] as File[],
+    dokumen: [] as File[],
+    employment_status: "active",
   });
 
   interface PositionResponse {
@@ -195,38 +197,40 @@ const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
   try {
     const data = new FormData();
 
-    // Tambahkan properti biasa (kecuali dokumen)
+    // Map form fields to API field names
     Object.entries(formData).forEach(([key, value]) => {
-      if (key === "dokumen") return; // abaikan dokumen di sini
-
-      if (value instanceof File) {
+      if (key === "dokumen") return; // Handle dokumen separately
+      if (key === "avatar" && value instanceof File) {
         data.append(key, value);
-      } else if (value !== null && value !== undefined) {
-        data.append(key, value.toString());
+        return;
+      }
+      if (value !== null && value !== undefined) {
+        // Convert field names to match API expectations
+        const apiKey = key
+          .replace(/([A-Z])/g, '_$1')
+          .toLowerCase()
+          .replace(/^_/, '');
+        data.append(apiKey, value.toString());
       }
     });
 
-    // Tambahkan dokumen satu per satu
- formData.dokumen.forEach((file) => {
-   data.append("dokumen[]", file); 
-   // ✅ kirim sebagai array of file, Laravel akan mengenali
-  });
-
+    // Handle document uploads
+    formData.dokumen.forEach((file) => {
+      data.append("dokumen[]", file);
+    });
 
     await createEmployee(data);
-
-    alert("Data berhasil ditambahkan");
+    toast.success("Data berhasil ditambahkan");
     router.push("/employee");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.response?.data) {
-      alert(
+      toast.error(
         "Gagal menambahkan data karyawan:\n" +
           JSON.stringify(error.response.data, null, 2)
       );
       console.error("Detail error:", error.response.data);
     } else {
-      alert("Gagal menambahkan data karyawan.");
+      toast.error("Gagal menambahkan data karyawan.");
       console.error(error);
     }
   }
