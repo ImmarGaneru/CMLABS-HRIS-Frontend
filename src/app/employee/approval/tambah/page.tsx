@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import ClientOnlySelect, { OptionType } from "@/components/ClientOnlySelect";
-import { debounce } from "lodash";
 import { useApproval } from "@/contexts/ApprovalContext";
 import {useEffect, useState} from "react";
 
@@ -46,10 +45,9 @@ const FormSchema = z.object({
 })
 
 export default function TambahApproval(){
-    const { fetchUsers, submitApproval, options, isLoading, isAdmin, getCurrentUser } = useApproval();
+    const { submitApproval, isAdmin, getCurrentUser } = useApproval();
     const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
-    const [adminStatus, setAdminStatus] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     useEffect(() => {
@@ -59,24 +57,15 @@ export default function TambahApproval(){
     useEffect(() => {
         if (!hydrated) return;
         const fetchInitialData = async () => {
-            const status = await isAdmin();
-            console.log("Admin status:", status);
-            setAdminStatus(status);
-
-            if (!status) {
-                const currentUser = await getCurrentUser();
-                console.log("Current user:", currentUser);
-                setCurrentUserId(currentUser?.id);
-                form.setValue("id_user", currentUser?.id);
-            }
+            const currentUser = await getCurrentUser();
+            console.log("Current user:", currentUser);
+            setCurrentUserId(currentUser?.id);
+            form.setValue("id_user", currentUserId || "");
         };
 
         fetchInitialData();
     }, [hydrated, isAdmin, getCurrentUser]);
 
-
-
-    const debouncedFetchUsers = debounce(fetchUsers, 300);
 
     const typeOptions: OptionType[] = [
         { value: "permit", label: "Izin" },
@@ -93,7 +82,7 @@ export default function TambahApproval(){
     const endDateField = form.control.register("end_date");
     const startTimeField = form.control.register("start_time");
     const endTimeField = form.control.register("end_time");
-    const overtimeDatesField = form.control.register("overtime_dates");
+    form.control.register("overtime_dates");
 
     const selectedType = form.watch("request_type");
 
@@ -108,7 +97,6 @@ export default function TambahApproval(){
     }
 
     return (
-
         <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
                 <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
@@ -122,44 +110,6 @@ export default function TambahApproval(){
                 <div className="space-y-4 w-full mt-8">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-                            {adminStatus && (
-                                <FormField
-                                    control={form.control}
-                                    name="id_user"
-                                    render={() => (
-                                        <FormItem>
-                                            <FormLabel>Karyawan</FormLabel>
-                                            <ClientOnlySelect
-                                                isClearable
-                                                isMulti={false}
-                                                isLoading={isLoading}
-                                                onInputChange={(inputValue, actionMeta) => {
-                                                    if (actionMeta.action === "input-change") {
-                                                        debouncedFetchUsers(inputValue || "");
-                                                    }
-                                                }}
-                                                options={options}
-                                                onFocus={() => {
-                                                    if (options.length === 0) {
-                                                        fetchUsers("");
-                                                    }
-                                                }}
-                                                onChange={(selectedOption) => {
-                                                    if (!Array.isArray(selectedOption)) {
-                                                        form.setValue("id_user", (selectedOption as OptionType)?.value);
-                                                    }
-                                                }}
-                                                placeholder="Pilih karyawan"
-                                            />
-                                            <FormDescription>
-                                                Pilih karyawan yang mengajukan permohonan.
-                                            </FormDescription>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
-
                             <FormField
                                 control={form.control}
                                 name="request_type"

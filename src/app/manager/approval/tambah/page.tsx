@@ -42,7 +42,7 @@ const FormSchema = z.object({
             required_error: "Alasan harus diisi",
         })
         .min(1, "Alasan harus diisi"),
-
+    document: z
 })
 
 export default function TambahApproval(){
@@ -307,6 +307,26 @@ export default function TambahApproval(){
                                         </FormControl>
                                         <FormDescription>
                                             Masukkan alasan pengajuan.
+                                        </FormDescription>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="document"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Dokumen Pendukung</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="file"
+                                                accept=".pdf,.doc,.docx,.png,.jpg"
+                                                onChange={(e) => field.onChange(e.target.files?.[0])}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Unggah dokumen pendukung jika ada (format: .pdf, .doc, .docx, .png, .jpg).
                                         </FormDescription>
                                         <FormMessage/>
                                     </FormItem>
