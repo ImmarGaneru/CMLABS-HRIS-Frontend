@@ -3,13 +3,13 @@
 
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import api from "../../../../../utils/api";
+import api from "../../../../../../utils/api";
 import { FaCamera, FaEye, FaTrash } from "react-icons/fa";
 import axios from "axios";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getPositions } from "../../../../../utils/position";
+import { getPositions } from "../../../../../../utils/position";
 
 type Dokumen = {
   file: string | URL | undefined;

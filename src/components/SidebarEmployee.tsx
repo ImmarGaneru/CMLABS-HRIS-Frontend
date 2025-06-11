@@ -33,11 +33,6 @@ const sidebarNavItems = [
         icon: LayoutDashboard,
     },
     {
-        title: "Karyawan",
-        url: "/manager/employee",
-        icon: UserCircle,
-    },
-    {
         title: "Kehadiran",
         url: "/manager/attendance",
         icon: Clock,
@@ -59,7 +54,7 @@ const sidebarNavItems = [
     }
 ];
 
-export function SidebarApp() {
+export function SidebarEmployee() {
     const pathname = usePathname();
     const router = useRouter();
 

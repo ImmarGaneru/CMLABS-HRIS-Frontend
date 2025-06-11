@@ -9,7 +9,7 @@ import Tutorial from '@/components/Tutorial';
 import { useEffect, useState } from 'react';
 import ClockStatus from './component_dashboard/clock_status';
 import DepartmentDistribution from './component_dashboard/department_distribution';
-import { dashboardTutorialSteps } from '../tutorial/dashboard_tutorial';
+import { dashboardTutorialSteps } from '../../tutorial/dashboard_tutorial';
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);

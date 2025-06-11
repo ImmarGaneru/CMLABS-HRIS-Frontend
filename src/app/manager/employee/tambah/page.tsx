@@ -2,8 +2,8 @@
 import { useRouter } from "next/navigation";
 import React, { useState, ChangeEvent, useRef, useEffect } from "react";
 import { FaCamera, FaFileUpload } from "react-icons/fa";
-import { createEmployee } from "../../../../utils/employee";
-import { getPositions } from "../../../../utils/position";
+import { createEmployee } from "../../../../../utils/employee";
+import { getPositions } from "../../../../../utils/position";
 
 export default function TambahKaryawan() {
   const router = useRouter();

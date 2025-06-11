@@ -3,14 +3,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getEmployee } from "../../../../../utils/employee";
+import { getEmployee } from "../../../../../../utils/employee";
 import { FaEye } from "react-icons/fa";
 import React from "react";
 // import { api } from "@/lib/axios";
 // import axios from "axios";
 // import { DataTable } from "@/components/Datatable";
 // import DataTableHeader from "@/components/DatatableHeader";
-import api from "../../../../../utils/api"; // pastikan path sesuai
+import api from "../../../../../../utils/api"; // pastikan path sesuai
 import { toast, ToastContainer } from "react-toastify";
 type Dokumen = {
   id: number;
