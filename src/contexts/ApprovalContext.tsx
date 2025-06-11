@@ -2,8 +2,8 @@
 
 import api from '@/lib/axios';
 import { format } from 'date-fns';
-import React, {createContext, useEffect, useState} from "react";
-import {toast} from "sonner";
+import React, { createContext, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { request } from "@/lib/request";
 
 export interface Approval {
@@ -93,7 +93,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         try {
             const res = await request<PaginatedResponse<ApprovalUser>>(
                 api.get("/approvals/create", {
-                    params: { search: inputValue.toLowerCase() || ""},
+                    params: { search: inputValue.toLowerCase() || "" },
                 })
 
             );
@@ -110,7 +110,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
     }
 
     const submitApproval = async (data: any) => {
-        let transformedData = { ...data };
+        const transformedData = { ...data };
 
         if (data.request_type === "overtime") {
             transformedData.start_date = format(new Date(`${data.overtime_dates} ${data.start_time}`), "yyyy-MM-dd HH:mm");
