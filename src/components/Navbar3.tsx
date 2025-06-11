@@ -22,7 +22,8 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command";
-import api from '@/lib/axios';
+
+import api from "@/lib/axios";
 
 // Interfaces
 interface SubscriptionData {
@@ -93,12 +94,12 @@ export function Navbar3() {
                     setProfileImage(userData.employee.avatar);
                   } else {
                     setProfileImage('/avatar.png');
-                  }
-                  
+                }
+
 
                 // Cek subscription jika punya company
                 if (userData.workplace?.id) {
-                    if(userData.workplace.subscription?.package_type){
+                    if (userData.workplace.subscription?.package_type) {
                         setPackageType(userData.workplace.subscription.package_type);
                     } else {
                         console.log('No subscription data found in workplace');
@@ -170,8 +171,8 @@ export function Navbar3() {
             <div className="flex w-120 min-w-3xs sm:flex-row items-center sm:items-center justify-center">
                 <div className="relative w-full max-w-lg min-w-3xs">
                     <Command className="rounded-lg border shadow-xs">
-                        <CommandInput 
-                            placeholder="Search anything..." 
+                        <CommandInput
+                            placeholder="Search anything..."
                             value={searchQuery}
                             onValueChange={handleSearch}
                             className="py-2 px-4 "

@@ -45,7 +45,7 @@ export default function ProfilePage() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/auth/me', {
+                const response = await fetch('http://api.hriscmlabs.my.id/api/auth/me', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
@@ -58,12 +58,12 @@ export default function ProfilePage() {
                 setUserData(data.data);
 
                 const userData: UserData = data.data;
-                
+
                 if (userData.employee?.avatar) {
                     setProfileImage(userData.employee?.avatar);
-                  } else {
+                } else {
                     setProfileImage('/avatar.png');
-                  }
+                }
 
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -107,8 +107,8 @@ export default function ProfilePage() {
                             />
                         </div>
                         <CardTitle className="text-xl">
-                            {userData.employee 
-                                ? `${userData.employee.first_name} ${userData.employee.last_name}` 
+                            {userData.employee
+                                ? `${userData.employee.first_name} ${userData.employee.last_name}`
                                 : 'No employee data'}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground">
@@ -133,7 +133,7 @@ export default function ProfilePage() {
                                     <span className="text-sm">{userData.employee.address}</span>
                                 </div>
                             )}
-                            
+
                         </div>
                     </CardContent>
                 </Card>
