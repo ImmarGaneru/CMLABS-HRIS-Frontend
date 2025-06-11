@@ -20,7 +20,7 @@ export default function EmployeeSumCard() {
         const fetchEmployeeData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://hriscmlabs.my.id/api/admin/employees/dashboard/getEmployee', {
+                const response = await fetch('http://api.hriscmlabs.my.id/api/admin/employees/dashboard/getEmployee', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

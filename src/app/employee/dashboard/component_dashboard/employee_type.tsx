@@ -34,7 +34,7 @@ export default function EmployeeType() {
       const month = String(selectedMonth.getMonth() + 1).padStart(2, '0');
 
       try {
-        const res = await fetch(`http://hriscmlabs.my.id/api/admin/employees/dashboard/contract-stats?month=${month}&year=${year}`, {
+        const res = await fetch(`http://api.hriscmlabs.my.id/api/admin/employees/dashboard/contract-stats?month=${month}&year=${year}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
