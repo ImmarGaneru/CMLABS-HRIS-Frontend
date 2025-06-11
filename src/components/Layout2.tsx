@@ -22,7 +22,9 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
             pathname.startsWith("/approval") ||
             pathname.startsWith("/payment") ||
             pathname.startsWith("/subscription") ||
-            pathname.startsWith("/profile")
+            pathname.startsWith("/profile")||
+            pathname.startsWith("/lettering") 
+
     }
 
     // Handle special layout for lupa_password and link_expired

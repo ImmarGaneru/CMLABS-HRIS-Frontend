@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Card } from "./ui/card";
 
 const sidebarNavItems = [
     {
@@ -49,6 +50,11 @@ const sidebarNavItems = [
     {
         title: "Approval",
         url: "/approval",
+        icon: ClipboardCheck,
+    },
+    {
+        title: "Lettering",
+        url: "/lettering",
         icon: ClipboardCheck,
     },
 ];
