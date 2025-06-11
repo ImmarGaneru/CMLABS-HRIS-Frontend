@@ -4,12 +4,12 @@ import React, { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
-import { FaEdit, FaEye } from "react-icons/fa";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import { useAttendance, CheckClockSetting } from "@/contexts/AttendanceContext";
 
 export default function JadwalTablePage() {
-  const { checkClockSettings } = useAttendance();
+  const { checkClockSettings, deleteCheckClockSetting } = useAttendance();
   const router = useRouter();
   const [filterText, setFilterText] = useState("");
   const [filterType, setFilterTipeJadwal] = useState("");
@@ -76,6 +76,15 @@ export default function JadwalTablePage() {
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEdit />
+              </button>
+              <button
+                title="Delete"
+                onClick={() => {
+                  deleteCheckClockSetting(data.id);
+                }}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+              >
+                <FaTrash />
               </button>
             </div>
           );

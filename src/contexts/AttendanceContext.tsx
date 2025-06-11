@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import React, { createContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { request } from "@/lib/request";
+import { Check } from 'lucide-react';
 
 export interface CheckClockSetting {
     id: string;
@@ -33,6 +34,10 @@ export interface CheckClockSettingTime {
 interface AttendanceContext {
     checkClockSettings: CheckClockSetting[];
     fetchCheckClockSettings: () => Promise<void>;
+    completeNewCheckClockSetting: (checkClockSetting: CheckClockSetting) => Promise<void>;
+    fetchSingleCheckClockSetting: (id: string) => Promise<CheckClockSetting>;
+    completeUpdateCheckClockSetting: (checkClockSettingId: string, checkClockSetting: CheckClockSetting) => Promise<void>;
+    deleteCheckClockSetting: (checkClockSettingId: string) => Promise<void>;
     options: { value: string; label: string }[];
     isLoading: boolean;
 }
@@ -53,6 +58,47 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     };
 
+    const completeNewCheckClockSetting = async (checkClockSetting: CheckClockSetting) => {
+        try {
+            await request(api.post(`/admin/attendance/check-clock-setting/complete-new`, checkClockSetting));
+            toast.success("New check clock setting created successfully.");
+            fetchCheckClockSettings();
+        } catch (error) {
+            toast.error("Failed to create new check clock setting.");
+        }
+    };
+
+    const completeUpdateCheckClockSetting = async (checkClockSettingId: string, checkClockSetting: CheckClockSetting) => {
+        try {
+            await request(api.put(`/admin/attendance/check-clock-setting/complete-update/${checkClockSettingId}`, checkClockSetting));
+            toast.success("Check clock setting updated successfully.");
+            fetchCheckClockSettings();
+        }
+        catch (error) {
+            toast.error("Failed to update check clock setting.");
+        }
+    }
+
+    const deleteCheckClockSetting = async (checkClockSettingId: string) => {
+        try {
+            await request(api.delete(`/admin/attendance/check-clock-setting/delete/${checkClockSettingId}`));
+            toast.success("Check clock setting deleted successfully.");
+            fetchCheckClockSettings();
+        } catch (error) {
+            toast.error("Failed to delete check clock setting.");
+        }
+    }
+
+    const fetchSingleCheckClockSetting = async (id: string) => {
+        try {
+            const data = await request<CheckClockSetting>(api.get(`/admin/attendance/check-clock-setting/${id}`));
+            return data;
+        } catch (error) {
+            toast.error("Failed to fetch check clock setting.");
+            throw error;
+        }
+    }
+
     useEffect(() => {
         fetchCheckClockSettings();
     }, []);
@@ -62,6 +108,10 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
             value={{
                 checkClockSettings,
                 fetchCheckClockSettings,
+                fetchSingleCheckClockSetting,
+                completeNewCheckClockSetting,
+                completeUpdateCheckClockSetting,
+                deleteCheckClockSetting,
                 options,
                 isLoading
             }}
