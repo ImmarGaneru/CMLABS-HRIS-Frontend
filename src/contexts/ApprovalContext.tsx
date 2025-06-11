@@ -47,6 +47,8 @@ interface ApprovalContext {
     submitApproval: (data: any) => Promise<void>;
     options: { value: string; label: string }[];
     isLoading: boolean;
+    isAdmin: () => Promise<boolean>;
+    getCurrentUser: () => Promise<ApprovalUser>;
 }
 
 const ApprovalContext = createContext<ApprovalContext | undefined>(undefined);
@@ -128,10 +130,31 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         try {
             await (api.post("approvals", transformedData));
             toast.success("Data berhasil disimpan!");
+            await fetchApprovals();
         } catch (error) {
             toast.error("Gagal menyimpan data!");
         }
     };
+
+    const isAdmin = async (): Promise<boolean> => {
+        try {
+            const response = await api.get('/approvals/isAdmin');
+            return response.data.data.isAdmin;
+        } catch (error) {
+            console.error('Error checking admin status:', error);
+            return false;
+        }
+    };
+
+    const getCurrentUser = async (): Promise<ApprovalUser> => {
+        try {
+            const response = await api.get('/auth/me');
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching current user:', error);
+            throw error;
+        }
+    }
 
     useEffect(() => {
         fetchApprovals();
@@ -147,7 +170,9 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
                 fetchUsers,
                 submitApproval,
                 options,
-                isLoading
+                isLoading,
+                isAdmin,
+                getCurrentUser
             }}
         >
             {children}
