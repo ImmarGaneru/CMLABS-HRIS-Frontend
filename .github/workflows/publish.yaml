@@ -6,7 +6,7 @@ on:
 jobs:
   deploy:
     name: build && push image to docker hub
-    runs-on: ubuntu-latest
+    runs-on: debian-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -25,7 +25,7 @@ jobs:
         id: build-push-web
         uses: docker/build-push-action@v6
         with:
-          context: ./app
+          context: .
           file: ./docker/production/Dockerfile
           push: true
           tags: hoshigakikisame/hris_frontend-prod:latest
