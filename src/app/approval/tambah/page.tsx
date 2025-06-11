@@ -46,13 +46,33 @@ const FormSchema = z.object({
 })
 
 export default function TambahApproval(){
-    const { fetchUsers, submitApproval, options, isLoading } = useApproval();
+    const { fetchUsers, submitApproval, options, isLoading, isAdmin, getCurrentUser } = useApproval();
     const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
+    const [adminStatus, setAdminStatus] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     useEffect(() => {
         setHydrated(true);
     }, []);
+
+    useEffect(() => {
+        if (!hydrated) return;
+        const fetchInitialData = async () => {
+            const status = await isAdmin();
+            console.log("Admin status:", status);
+            setAdminStatus(status);
+
+            if (!status) {
+                const currentUser = await getCurrentUser();
+                console.log("Current user:", currentUser);
+                setCurrentUserId(currentUser?.id);
+                form.setValue("id_user", currentUser?.id);
+            }
+        };
+
+        fetchInitialData();
+    }, [hydrated, isAdmin, getCurrentUser]);
 
 
 
@@ -84,6 +104,7 @@ export default function TambahApproval(){
         submitApproval(data).then(() => {
             router.back();
         });
+
     }
 
     return (
@@ -101,10 +122,11 @@ export default function TambahApproval(){
                 <div className="space-y-4 w-full mt-8">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-                            <FormField
-                                control={form.control}
-                                name="id_user"
-                                render={() => (
+                            {adminStatus && (
+                                <FormField
+                                    control={form.control}
+                                    name="id_user"
+                                    render={() => (
                                         <FormItem>
                                             <FormLabel>Karyawan</FormLabel>
                                             <ClientOnlySelect
@@ -134,8 +156,10 @@ export default function TambahApproval(){
                                             </FormDescription>
                                             <FormMessage/>
                                         </FormItem>
-                                )}
-                            />
+                                    )}
+                                />
+                            )}
+
                             <FormField
                                 control={form.control}
                                 name="request_type"
