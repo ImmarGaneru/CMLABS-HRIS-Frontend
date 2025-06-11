@@ -72,7 +72,9 @@ export default function EmployeeTablePage() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Gagal menghapus data");
+        console.error(`Gagal menghapus data: ${errorData.message}`);
+        alert(errorData.message || "Gagal menghapus data");
+        return;
       }
 
       // Update state untuk menghapus employee yang sudah dihapus
@@ -104,7 +106,11 @@ export default function EmployeeTablePage() {
         const res = await fetch("http://127.0.0.1:8000/api/employee", {
           next: { revalidate: 0 },
         });
-        if (!res.ok) throw new Error(`Error: ${res.status}`);
+        if (!res.ok) {
+          console.error(`Fetch failed with status: ${res.status}`);
+          alert(`Gagal mengambil data: ${res.statusText}`);
+            return;
+        }
 
         const apiData = await res.json();
 
@@ -125,11 +131,12 @@ export default function EmployeeTablePage() {
 
         setEmployees(feData);
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Unknown error occurred");
-        }
+        const errorMessage =
+            err instanceof Error
+                ? err.message
+                : "Gagal mengambil data dari server";
+        setError(errorMessage);
+        console.error("Error fetching employees:", errorMessage);
       } finally {
         setLoading(false);
       }
@@ -323,7 +330,10 @@ export default function EmployeeTablePage() {
     reader.onload = async (e) => {
       try {
         const data = e.target?.result;
-        if (!data) throw new Error("File kosong atau tidak terbaca");
+        if (!data) {
+          alert("File kosong atau tidak terbaca");
+            return;
+        }
 
         const fileName = file.name.toLowerCase();
 
@@ -353,8 +363,10 @@ export default function EmployeeTablePage() {
           return newRow as FEEmployee;
         });
 
-        if (jsonData.length === 0)
-          throw new Error("Tidak ada data yang terbaca");
+        if (jsonData.length === 0) {
+            alert("File kosong atau tidak ada data yang valid");
+            return;
+        }
 
         // Kirim data ke backend dengan axios instance api
         const response = await api.post("/employee/import", {
@@ -362,7 +374,8 @@ export default function EmployeeTablePage() {
         });
 
         if (response.status !== 200 && response.status !== 201) {
-          throw new Error("Gagal menyimpan data ke server");
+          alert("Gagal menyimpan data ke server");
+          return;
         }
 
         // const savedEmployees = response.data;
@@ -410,7 +423,7 @@ export default function EmployeeTablePage() {
         cabang.toLowerCase().includes(filterText.toLowerCase()) ||
         jabatan.toLowerCase().includes(filterText.toLowerCase());
 
-      const matchesGender = !filterGender || item.jenisKelamin === filterGender;
+      const matchesGender = !filterGender || item.jenis_kelamin === filterGender;
       const matchesStatus = !filterStatus || item.status === filterStatus;
 
       return matchesSearch && matchesGender && matchesStatus;
