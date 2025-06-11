@@ -1,10 +1,13 @@
 import React from "react";
 import { ApprovalProvider } from "@/contexts/ApprovalContext";
+import { AttendanceProvider } from "./AttendanceContext";
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
     return (
-        <ApprovalProvider>
-                    {children}
-        </ApprovalProvider>
+        <AttendanceProvider>
+            <ApprovalProvider>
+                {children}
+            </ApprovalProvider>
+        </AttendanceProvider>
     );
 }

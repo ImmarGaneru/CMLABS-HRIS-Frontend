@@ -3,26 +3,27 @@
 import { useState } from "react";
 import { Switch } from "@headlessui/react";
 import { useRouter } from "next/navigation";
+import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
 
 export default function Jadwal() {
+  const { completeNewCheckClockSetting } = useAttendance();
   const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
   const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
   const router = useRouter();
   const hariList = [
-    "Senin",
-    "Selasa",
-    "Rabu",
-    "Kamis",
-    "Jumat",
-    "Sabtu",
-    "Minggu",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
   ];
   const [jadwal] = useState(
     hariList.map((hari) => ({
-      hari,
-      jenis: hari === "Sabtu" || hari === "Minggu" ? "Day Off" : "Hari Kerja",
-      clockIn: hari === "Sabtu" || hari === "Minggu" ? "00:00" : "08:00",
-      clockOut: hari === "Sabtu" || hari === "Minggu" ? "00:00" : "17:00",
+      hari: hari,
+      clockIn: "08:00",
+      breakStart: "11:00",
+      breakEnd: "12:00",
+      clockOut: "17:00",
     }))
   );
 
@@ -46,16 +47,17 @@ export default function Jadwal() {
             <label className="block font-medium mb-1">Nama Jadwal</label>
             <input
               type="text"
+              name="ck_setting_name"
               placeholder="Masukkan nama jadwal"
               className="w-full border rounded px-3 py-2"
             />
           </div>
           <div>
-            <label className="block font-medium mb-1"> Tanggal Efektif</label>
-            <input
-              className="w-full border rounded px-3 py-2 cursor-pointer"
-              type="date"
-            />
+            <label className="block font-medium mb-1">Type</label>
+            <select className="w-full border rounded px-3 py-2" name="ck_setting_type">
+              <option value="WFO">WFO</option>
+              <option value="WFH">WFH</option>
+            </select>
           </div>
         </div>
 
@@ -65,8 +67,9 @@ export default function Jadwal() {
             <thead className="bg-gray-100 text-gray-700 font-semibold">
               <tr>
                 <th className="px-4 py-2">Hari</th>
-                <th className="px-4 py-2">Jenis</th>
                 <th className="px-4 py-2">Clock In</th>
+                <th className="px-4 py-2">Break Start</th>
+                <th className="px-4 py-2">Break End</th>
                 <th className="px-4 py-2">Clock Out</th>
               </tr>
             </thead>
@@ -75,24 +78,33 @@ export default function Jadwal() {
                 <tr key={idx} className="border-t">
                   <td className="px-4 py-2">{row.hari}</td>
                   <td className="px-4 py-2">
-                    <select
-                      defaultValue={row.jenis}
-                      className="border rounded px-2 py-1 w-full cursor-pointer"
-                    >
-                      <option value="Hari Kerja">Hari Kerja</option>
-                      <option value="Day Off">Day Off</option>
-                    </select>
+                    <input
+                      type="time "
+                      name={`ck_setting_clock_in_${idx}`}
+                      defaultValue={row.clockIn}
+                      className="border rounded px-2 py-1 w-full  "
+                    />
                   </td>
                   <td className="px-4 py-2">
                     <input
                       type="time "
-                      defaultValue={row.clockIn}
+                      name={`ck_setting_break_start_${idx}`}
+                      defaultValue={row.breakStart}
+                      className="border rounded px-2 py-1 w-full  "
+                    />
+                  </td>
+                  <td className="px-4 py-2">
+                    <input
+                      type="time "
+                      name={`ck_setting_break_end_${idx}`}
+                      defaultValue={row.breakEnd}
                       className="border rounded px-2 py-1 w-full  "
                     />
                   </td>
                   <td className="px-4 py-2 ">
                     <input
                       type="time"
+                      name={`ck_setting_clock_out_${idx}`}
                       defaultValue={row.clockOut}
                       className="border rounded px-2 py-1 w-full"
                     />
@@ -103,86 +115,62 @@ export default function Jadwal() {
           </table>
         </div>
 
-        {/* Opsi Tambahan */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 items-center">
-          <div>
-            <label className="block font-medium mb-1">
-              Toleransi Keterlambatan
-            </label>
-            <div className="flex items-center">
-              <input
-                type="number"
-                placeholder="00"
-                className="w-20 border rounded px-2 py-1 mr-2"
-              />
-              <span>Menit</span>
-            </div>
-          </div>
-          <div className="flex flex-row gap-10">
-            {/* Toggle Hari Libur Nasional */}
-            <div className="flex items-center gap-2 overflow-x-auto">
-              <span>Hari Libur Nasional Tetap Masuk</span>
-              <label
-                style={{
-                  display: "inline-block",
-                  width: 60,
-                  height: 20,
-                  position: "relative",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={liburNasionalMasuk}
-                  onChange={() => setLiburNasionalMasuk(!liburNasionalMasuk)}
-                  style={{ opacity: 0, width: 0, height: 0 }}
-                />
-                <Switch
-                  checked={liburNasionalMasuk}
-                  onChange={setLiburNasionalMasuk}
-                  className="group inline-flex h-6 w-11 items-center rounded-full bg-red-600 data-checked:bg-green-600 data-disabled:cursor-not-allowed data-disabled:opacity-50"
-                >
-                  <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-6" />
-                </Switch>
-              </label>
-            </div>
-
-            {/* Toggle Cuti Bersama */}
-            <div className="flex items-center gap-2 ">
-              <span>Cuti Bersama Tetap Masuk</span>
-              <label
-                style={{
-                  display: "inline-block",
-                  width: 60,
-                  height: 20,
-                  position: "relative",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={cutiBersamaMasuk}
-                  onChange={() => setCutiBersamaMasuk(!cutiBersamaMasuk)}
-                  style={{ opacity: 0, width: 0, height: 0 }}
-                />
-                <Switch
-                  checked={cutiBersamaMasuk}
-                  onChange={setCutiBersamaMasuk}
-                  className="group inline-flex h-6 w-11 items-center rounded-full bg-red-600 data-checked:bg-green-600 data-disabled:cursor-not-allowed data-disabled:opacity-50"
-                >
-                  <span className="size-4 translate-x-1 rounded-full bg-white transition group-data-checked:translate-x-6" />
-                </Switch>
-              </label>
-            </div>
-          </div>
-        </div>
-
         {/* Tombol Aksi */}
         <div className="flex justify-end gap-2">
           <button
-          onClick={() => router.push("/jadwal")} 
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200 ease-in-out shadow-md cursor-pointer">
+            onClick={() => router.push("/jadwal")}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200 ease-in-out shadow-md cursor-pointer">
             Batal
           </button>
-          <button className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer">
+          <button
+            onClick={() => {
+              const newCKSetting: CheckClockSetting = {
+                id: "",
+                id_company: "",
+                name: document.querySelector(
+                  'input[name="ck_setting_name"]'
+                )?.value || "New Schedule",
+                type: document.querySelector(
+                  'select[name="ck_setting_type"]'
+                )?.value || "WFO",
+                created_at: new Date(),
+                updated_at: new Date(),
+                deleted_at: null,
+                check_clock_setting_time: [],
+              }
+
+              const check_clock_setting_time: CheckClockSettingTime[] = jadwal.map((row, idx) => ({
+                id: "",
+                id_ck_setting: "",
+                day: document.querySelector(
+                  `input[name="ck_setting_day_${idx}"]`
+                )?.value || row.hari,
+                clock_in: document.querySelector(
+                  `input[name="ck_setting_clock_in_${idx}"]`
+                )?.value || row.clockIn,
+                break_start: document.querySelector(
+                  `input[name="ck_setting_break_start_${idx}"]`
+                )?.value || row.breakStart,
+                break_end: document.querySelector(
+                  `input[name="ck_setting_break_end_${idx}"]`
+                )?.value || row.breakEnd,
+                clock_out: document.querySelector(
+                  `input[name="ck_setting_clock_out_${idx}"]`
+                )?.value || row.clockOut,
+                created_at: new Date(),
+                updated_at: new Date(),
+              }));
+
+              newCKSetting.check_clock_setting_time = check_clock_setting_time;
+
+              completeNewCheckClockSetting(newCKSetting)
+                .then(() => router.push("/jadwal"))
+                .catch((error) => {
+                  console.error("Error saving schedule:", error);
+                });
+            }
+            }
+            className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer">
             Simpan
           </button>
         </div>
