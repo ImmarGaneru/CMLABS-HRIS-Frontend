@@ -42,7 +42,7 @@ const FormSchema = z.object({
             required_error: "Alasan harus diisi",
         })
         .min(1, "Alasan harus diisi"),
-    document: z.instanceof(File).optional(),
+    document: typeof window !== "undefined" ? z.instanceof(File).optional() : z.any().optional(),
 })
 
 export default function TambahApproval(){
