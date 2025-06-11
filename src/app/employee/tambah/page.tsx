@@ -99,12 +99,12 @@ export default function TambahKaryawan() {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const data = new FormData();
+  try {
+    const data = new FormData();
 
       // Append all form fields
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
           data.append(key, value.toString());
         }
       });
@@ -124,9 +124,9 @@ export default function TambahKaryawan() {
       if (response.data.meta?.success) {
         toast.success(response.data.meta.message || "Data berhasil ditambahkan!");
         setTimeout(() => {
-          router.push("/employee");
+    router.push("/employee");
         }, 1500);
-      } else {
+    } else {
         throw new Error(response.data.meta?.message || "Gagal menambahkan data");
       }
     } catch (err: any) {
@@ -176,17 +176,17 @@ export default function TambahKaryawan() {
                 height={200}
                 className="w-full h-full object-cover"
               />
-            </div>
-            <label
-              htmlFor="avatarUpload"
+          </div>
+          <label
+            htmlFor="avatarUpload"
               className="cursor-pointer flex flex-col items-center justify-center px-4 py-3 bg-[#1E3A5F] text-white rounded-md shadow-md hover:bg-[#155A8A] transition-colors duration-300"
             >
               <FaCamera className="mb-2" />
               <span className="text-sm font-semibold">Ubah Foto</span>
-              <input
+          <input
                 id="avatarUpload"
-                type="file"
-                accept="image/*"
+            type="file"
+            accept="image/*"
                 className="hidden"
                 onChange={(e) => {
                   if (e.target.files && e.target.files[0]) {
@@ -211,116 +211,116 @@ export default function TambahKaryawan() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block mb-1 font-semibold">Nama Depan</label>
-              <input
+          <input
                 type="text"
                 className="border border-gray-300 rounded w-full p-2"
                 value={formData.first_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
                 required
-              />
-            </div>
-            <div>
+          />
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">Nama Belakang</label>
-              <input
+          <input
                 type="text"
                 className="border border-gray-300 rounded w-full p-2"
-                value={formData.last_name}
+            value={formData.last_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
                 required
-              />
-            </div>
-            <div>
+          />
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">NIK</label>
-              <input
+          <input
                 type="text"
                 className="border border-gray-300 rounded w-full p-2"
-                value={formData.nik}
+            value={formData.nik}
                 onChange={(e) => setFormData(prev => ({ ...prev, nik: e.target.value }))}
-              />
-            </div>
-            <div>
+          />
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">Alamat</label>
-              <input
+          <input
                 type="text"
                 className="border border-gray-300 rounded w-full p-2"
-                value={formData.address}
+            value={formData.address}
                 onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-              />
-            </div>
-            <div>
+          />
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">Tempat Lahir</label>
-              <input
+          <input
                 type="text"
                 className="border border-gray-300 rounded w-full p-2"
                 value={formData.tempat_lahir}
                 onChange={(e) => setFormData(prev => ({ ...prev, tempat_lahir: e.target.value }))}
-              />
-            </div>
-            <div>
+          />
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">Tanggal Lahir</label>
-              <input
-                type="date"
+          <input
+            type="date"
                 className="border border-gray-300 rounded w-full p-2"
                 value={formData.tanggal_lahir}
                 onChange={(e) => setFormData(prev => ({ ...prev, tanggal_lahir: e.target.value }))}
-              />
-            </div>
-            <div>
+          />
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">Jenis Kelamin</label>
-              <select
+          <select
                 className="border border-gray-300 rounded w-full p-2"
                 value={formData.jenis_kelamin}
                 onChange={(e) => setFormData(prev => ({ ...prev, jenis_kelamin: e.target.value }))}
               >
                 <option value="">-- Pilih Jenis Kelamin --</option>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
-            </div>
-            <div>
+            <option value="Laki-laki">Laki-laki</option>
+            <option value="Perempuan">Perempuan</option>
+          </select>
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">Pendidikan Terakhir</label>
-              <select
+          <select
                 className="border border-gray-300 rounded w-full p-2"
-                value={formData.pendidikan}
+            value={formData.pendidikan}
                 onChange={(e) => setFormData(prev => ({ ...prev, pendidikan: e.target.value }))}
-              >
+          >
                 <option value="">-- Pilih Pendidikan --</option>
-                <option value="SMA/SMK">SMA/SMK</option>
-                <option value="D3">D3</option>
-                <option value="S1">S1</option>
-                <option value="S2">S2</option>
-                <option value="S3">S3</option>
-              </select>
-            </div>
-            <div>
+            <option value="SMA/SMK">SMA/SMK</option>
+            <option value="D3">D3</option>
+            <option value="S1">S1</option>
+            <option value="S2">S2</option>
+            <option value="S3">S3</option>
+          </select>
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">Email</label>
-              <input
+          <input
                 type="email"
                 className="border border-gray-300 rounded w-full p-2"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 required
-              />
-            </div>
-            <div>
+          />
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">Password</label>
-              <input
+          <input
                 type="password"
                 className="border border-gray-300 rounded w-full p-2"
                 value={formData.password}
                 onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                 required
-              />
-            </div>
-            <div>
+          />
+        </div>
+        <div>
               <label className="block mb-1 font-semibold">No Telp</label>
-              <input
-                type="text"
+          <input
+            type="text"
                 className="border border-gray-300 rounded w-full p-2"
                 value={formData.no_telp}
                 onChange={(e) => setFormData(prev => ({ ...prev, no_telp: e.target.value }))}
-              />
-            </div>
+          />
+        </div>
           </div>
         </div>
 
@@ -346,40 +346,40 @@ export default function TambahKaryawan() {
                   ))}
                 </select>
               </div>
-              <div>
+        <div>
                 <label className="block mb-1 font-semibold">Jabatan</label>
-                <select
+          <select
                   className="border border-gray-300 rounded w-full p-2"
                   value={formData.id_position}
                   onChange={(e) => handleJabatanChange(e.target.value)}
                   disabled={!selectedDepartment}
                 >
                   <option value="">-- Pilih Jabatan --</option>
-                  {positions.map((pos) => (
-                    <option key={pos.id} value={pos.id}>
-                      {pos.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
+            {positions.map((pos) => (
+              <option key={pos.id} value={pos.id}>
+                {pos.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
                 <label className="block mb-1 font-semibold">Mulai Kerja</label>
-                <input
+          <input
                   type="date"
                   className="border border-gray-300 rounded w-full p-2"
                   value={formData.start_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
-                />
-              </div>
-              <div>
+          />
+        </div>
+        <div>
                 <label className="block mb-1 font-semibold">Akhir Kerja</label>
-                <input
+          <input
                   type="date"
                   className="border border-gray-300 rounded w-full p-2"
                   value={formData.end_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
-                />
-              </div>
+          />
+        </div>
               <div>
                 <label className="block mb-1 font-semibold">Jadwal Kerja</label>
                 <select
@@ -392,7 +392,7 @@ export default function TambahKaryawan() {
                   <option value="Non-Shift">Non-Shift</option>
                 </select>
               </div>
-              <div>
+        <div>
                 <label className="block mb-1 font-semibold">Tipe Kontrak</label>
                 <select
                   className="border border-gray-300 rounded w-full p-2"
@@ -407,14 +407,14 @@ export default function TambahKaryawan() {
               </div>
               <div>
                 <label className="block mb-1 font-semibold">Cabang</label>
-                <input
+          <input
                   type="text"
                   className="border border-gray-300 rounded w-full p-2"
                   value={formData.cabang}
                   onChange={(e) => setFormData(prev => ({ ...prev, cabang: e.target.value }))}
-                />
-              </div>
-              <div>
+          />
+        </div>
+        <div>
                 <label className="block mb-1 font-semibold">Status Kerja</label>
                 <select
                   className="border border-gray-300 rounded w-full p-2"
@@ -427,32 +427,32 @@ export default function TambahKaryawan() {
                 </select>
               </div>
             </div>
-          </div>
+        </div>
 
-          <div>
+        <div>
             <h2 className="text-xl font-semibold text-[#141414] mb-4">Payroll</h2>
             <div className="space-y-4">
               <div>
                 <label className="block mb-1 font-semibold">Tanggal Efektif</label>
-                <input
+          <input
                   type="date"
                   className="border border-gray-300 rounded w-full p-2"
                   value={formData.tanggal_efektif}
                   onChange={(e) => setFormData(prev => ({ ...prev, tanggal_efektif: e.target.value }))}
-                />
-              </div>
-              <div>
+          />
+        </div>
+        <div>
                 <label className="block mb-1 font-semibold">Bank</label>
-                <input
+          <input
                   type="text"
                   className="border border-gray-300 rounded w-full p-2"
                   value={formData.bank}
                   onChange={(e) => setFormData(prev => ({ ...prev, bank: e.target.value }))}
-                />
-              </div>
-              <div>
+          />
+        </div>
+        <div>
                 <label className="block mb-1 font-semibold">Nomor Rekening</label>
-                <input
+          <input
                   type="text"
                   className="border border-gray-300 rounded w-full p-2"
                   value={formData.no_rek}
@@ -469,27 +469,27 @@ export default function TambahKaryawan() {
             <h2 className="text-2xl font-semibold text-[#1e293b] mb-4 border-b pb-2">
               📂 Dokumen Karyawan
             </h2>
-            <div className="relative">
-              <input
-                type="file"
-                accept=".pdf,.docx"
-                multiple
+          <div className="relative">
+            <input
+              type="file"
+              accept=".pdf,.docx"
+              multiple
                 onChange={(e) => {
                   if (e.target.files) {
                     setSelectedDocuments(Array.from(e.target.files));
                   }
                 }}
-                className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
-              />
-              <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
-            </div>
+              className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
+            />
+            <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
+          </div>
             {selectedDocuments.length > 0 && (
-              <ul className="mt-2 list-disc list-inside">
+            <ul className="mt-2 list-disc list-inside">
                 {selectedDocuments.map((file, idx) => (
-                  <li key={idx}>{file.name}</li>
-                ))}
-              </ul>
-            )}
+                <li key={idx}>{file.name}</li>
+              ))}
+            </ul>
+          )}
           </div>
         </div>
 
@@ -501,13 +501,13 @@ export default function TambahKaryawan() {
           >
             Batal
           </button>
-          <button
-            type="submit"
-            className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
+            <button
+              type="submit"
+              className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
             disabled={loading}
-          >
+            >
             {loading ? "Menyimpan..." : "Simpan"}
-          </button>
+            </button>
         </div>
       </form>
     </div>
