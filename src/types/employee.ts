@@ -27,11 +27,11 @@ export type EmployeeFromAPI = {
 export type FEEmployee = {
     id: string;
     nama: string;
-    jenisKelamin: string;
-    notelp: string;
+    jenis_kelamin: string;
+    no_telp: string;
     cabang: string;
     jabatan: string;
     status: string;
-    hireDate: string;
-    employmentType: string;
+    hire_date: string;
+    employment_type: string;
 };
