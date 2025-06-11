@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@/lib/axios";
+import api from "@/lib/axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 

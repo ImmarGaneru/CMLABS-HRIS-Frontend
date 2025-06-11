@@ -2,8 +2,9 @@
 
 import api from '@/lib/axios';
 import { format } from 'date-fns';
-import React, {createContext, useEffect, useState} from "react";
-import {toast} from "sonner";
+import React, { createContext, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { request } from "@/lib/request";
 
 export interface Approval {
     id: string;
@@ -22,6 +23,19 @@ export interface Approval {
             name: string;
         }
     }
+}
+
+interface ApprovalUser {
+    id: string;
+    employee: {
+        first_name: string;
+        last_name: string;
+    };
+}
+
+interface PaginatedResponse<T> {
+    current_page: number;
+    data: T[];
 }
 
 interface ApprovalContext {
@@ -44,17 +58,16 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
 
     const fetchApprovals = async () => {
         try {
-            const response = await api.get("/approvals");
-            setApprovals(response.data.data);
+            const data = await request<Approval[]>(api.get("/approvals"));
+            setApprovals(data);
         } catch (error) {
-            console.error("Error fetching approvals:", error);
             toast.error("Gagal dalam mengambil data persetujuan.");
         }
     };
 
     const approveRequest = async (id: string) => {
         try {
-            await api.post(`/approvals/${id}/approve`);
+            await request(api.post(`/approvals/${id}/approve`));
             toast.success("Persetujuan berhasil diterima.");
             await fetchApprovals();
         } catch (error) {
@@ -65,11 +78,10 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
 
     const rejectRequest = async (id: string) => {
         try {
-            await api.post(`/approvals/${id}/reject`);
+            await request(api.post(`/approvals/${id}/reject`));
             toast.success("Persetujuan berhasil ditolak.");
             await fetchApprovals();
         } catch (error) {
-            console.error("Error rejecting request:", error);
             toast.error("Gagal dalam menolak permintaan.");
         }
     };
@@ -77,16 +89,18 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
     const fetchUsers = async (inputValue: string) => {
         setIsLoading(true);
         try {
-            const response = await api.get("/approvals/create", {
-                params: { search: inputValue.toLowerCase() || ""},
-            });
-            const users = response.data.data.data.map((user: { id: string; employee: { first_name: string; last_name: string }}) => ({
+            const res = await request<PaginatedResponse<ApprovalUser>>(
+                api.get("/approvals/create", {
+                    params: { search: inputValue.toLowerCase() || "" },
+                })
+
+            );
+            const users = res.data.map((user) => ({
                 value: user.id,
                 label: `${user.employee.first_name} ${user.employee.last_name}`.toLowerCase(),
             }));
             setOptions(users);
         } catch (error) {
-            console.error("Error fetching users:", error);
             toast.error("Gagal memuat data karyawan.");
         } finally {
             setIsLoading(false);
@@ -94,7 +108,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
     }
 
     const submitApproval = async (data: any) => {
-        let transformedData = { ...data };
+        const transformedData = { ...data };
 
         if (data.request_type === "overtime") {
             transformedData.start_date = format(new Date(`${data.overtime_dates} ${data.start_time}`), "yyyy-MM-dd HH:mm");
@@ -112,12 +126,10 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         }
 
         try {
-            const response = await api.post("approvals", transformedData);
+            await (api.post("approvals", transformedData));
             toast.success("Data berhasil disimpan!");
-            console.log("Response:", response.data);
         } catch (error) {
             toast.error("Gagal menyimpan data!");
-            console.error("Error submitting approval:", error);
         }
     };
 
