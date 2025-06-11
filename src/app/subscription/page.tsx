@@ -5,10 +5,35 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-// import BillList from '../payment/component_payment/billing';
-// import { SidebarProvider } from '@/components/ui/sidebar';
-// import { SidebarApp } from '@/components/SidebarApp';
-// import { Navbar3 } from '@/components/Navbar3';
+import api from "@/lib/axios";
+
+interface Company {
+  id: string;
+  name: string;
+  id_manager: string;
+  id_subscription: string | null;
+  address: string;
+  deleted_at: string | null;
+  has_used_trial: boolean;
+}
+
+interface Subscription {
+  id: string;
+  id_company: string;
+  package_type: 'standard' | 'premium' | string;
+  seats: number;
+  price_per_seat: number;
+  is_trial: boolean;
+  trial_ends_at: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  status: 'active' | 'trial' | 'expired' | string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  company: Company;
+  is_cancelled: boolean;
+}
 
 interface SubscriptionForm {
   package_type: 'standard' | 'premium';
@@ -16,16 +41,6 @@ interface SubscriptionForm {
 }
 
 const packages = [
-  // {
-  //   id: 'free',
-  //   name: 'Free',
-  //   price: 0,
-  //   features: [
-  //     'Up to 5 seats',
-  //     'Basic features',
-  //     'Community support',
-  //   ],
-  // },
   {
     id: 'standard',
     name: 'Standard',
@@ -57,41 +72,48 @@ export default function SubscriptionPage() {
   const [seats, setSeats] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
-  const [token] = useState("8|DcN7dqelnE4js6rOn6g1VePt26YKixwa1DKrlBJJba4c3347"); //HARD CODED AWAL TOKEN ADMIN
+  const [lastSubscription, setLastSubscription] = useState<Subscription | null>(null);
   const { handleSubmit } = useForm<SubscriptionForm>();
 
   useEffect(() => {
     const checkSubscription = async () => {
       try {
-        console.log("Checking subscription...");//sementara
+        const response = await api.get('/admin/subscription');
 
-        const response = await fetch('http://localhost:8000/api/admin/subscription', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        if (response.data.meta?.success === true && Array.isArray(response.data.data) && response.data.data.length > 0) {
+          const subscriptions = response.data.data;
+          const latestSubscription = subscriptions[0];
+          setLastSubscription(latestSubscription);
+          
+          const hasActiveOrValidTrial = subscriptions.some((subscription: Subscription) => {
+            const now = new Date();
+            const trialEnds = subscription.trial_ends_at ? new Date(subscription.trial_ends_at) : null;
+            const isCancelled = subscription.is_cancelled;
+  
+            return (
+              (subscription.status === 'active' && !isCancelled) ||
+              (subscription.status === 'trial' && trialEnds && trialEnds > now)
+            );
+          });
 
-        const result = await response.json();
-        console.log("Subscription API result:", result);
-
-        if (response.ok && result.meta?.success === true && Array.isArray(result.data) && result.data.length > 0) {
-          setHasSubscription(true);
+          setHasSubscription(hasActiveOrValidTrial);
         } else {
-          setHasSubscription(false)
+          setHasSubscription(false);
+          setLastSubscription(null);
           console.log("No active subscription found");
         }
       
       } catch (error) {
         console.error('Error checking subscription:', error);
+        setHasSubscription(false);
+        setLastSubscription(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     checkSubscription();
-  }, [token]);
+  }, []);
 
   // Sementara
   useEffect(() => {
@@ -113,29 +135,25 @@ export default function SubscriptionPage() {
 
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:8000/api/admin/subscription', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          package_type: selectedPackage,
-          seats: seats,
-        }),
+      const response = await api.post('/admin/subscription', {
+        package_type: selectedPackage,
+        seats: seats,
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Response Error:', errorText);
+      if (response.data.meta?.success) {
+        toast.success('Subscription created successfully');
+        setHasSubscription(true);
+      } else {
         throw new Error('Failed to create subscription');
       }
 
-      toast.success('Subscription created successfully');
-      setHasSubscription(true);
-    } catch (error) {
-      toast.error('Failed to create subscription');
-      console.error(error);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.meta?.message 
+      || error.message 
+      || 'Failed to create subscription';
+
+      toast.error(errorMessage);
+      console.error('Error creating subscription:', error);
     } finally {
       setIsLoading(false);
     }
@@ -150,11 +168,10 @@ export default function SubscriptionPage() {
   }
   
 
-  if (hasSubscription) {
+  if (hasSubscription || (lastSubscription && lastSubscription.is_cancelled)) {
     return (
       <section className="flex flex-col px-2 py-4 gap-6 w-full h-fit">
-            {/* Halaman Billing*/}
-            <BillList/>
+        <BillList />
       </section>
     );
   }

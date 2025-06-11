@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { IoArrowBackOutline } from "react-icons/io5";
 import { InvoiceStatus, SubscriptionStatus } from '@/lib/enums';
 import { getStatusClass } from '@/lib/utils';
 import Button from '@/components/Button';
+import api from '@/lib/axios';
+import { FaArrowUp } from 'react-icons/fa';
 
 import {
   Dialog,
@@ -36,6 +38,7 @@ interface Subscription {
   trial_ends_at: string | null;
   ends_at: string | null;
   status: 'active' | 'trial' | 'expired';
+  is_cancelled: boolean;
 }
 
 interface InvoiceData {
@@ -44,6 +47,7 @@ interface InvoiceData {
   due_datetime: string;
   status: InvoiceStatus;
   display_status: 'paid'|'unpaid'|'overdue';
+  xendit_invoice_id: string;
   invoice_url: string;
   subscription: Subscription;
   payments: Payment[];
@@ -53,60 +57,77 @@ export default function Invoice() {
   const searchParams = useSearchParams();
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [token] = useState("9|CmySPq9oHzxlzpNsWbCXLO6YKOrJhskTj3jOoGi4ff89bed8");
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const router = useRouter();
 
   // Fetch invoice by ID from API
   useEffect(() => {
-    const invoiceId = searchParams.get('id');
-    if (!invoiceId) {
-      console.error("Invoice ID tidak ditemukan di URL");
-      setLoading(false);
-      return;
-    }
-
-    fetch(`http://localhost:8000/api/admin/invoices/${invoiceId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.meta?.success && json.data?.data) {
-          const invoice = json.data.data;
-          const isOverdue = invoice.status === 'unpaid' && new Date(invoice.due_datetime) < new Date();
-        
-          const formattedData: InvoiceData = {
-            id: invoice.id || 'N/A',
-            total_amount: typeof invoice.total_amount === 'number' ? invoice.total_amount : 0,
-            due_datetime: invoice.due_datetime || new Date().toISOString(),
-            status: invoice.status || InvoiceStatus.Unpaid,
-            display_status: isOverdue ? 'overdue' : invoice.status,
-            invoice_url: invoice.invoice_url || '#',
-            subscription: {
-              id: invoice.subscription?.id || '',
-              package_type: invoice.subscription?.package_type || 'free',
-              seats: invoice.subscription?.seats || 0,
-              price_per_seat: invoice.subscription?.price_per_seat || 0,
-              is_trial: invoice.subscription?.is_trial || false,
-              trial_ends_at: invoice.subscription?.trial_ends_at || null,
-              ends_at: invoice.subscription?.ends_at || null,
-              status: invoice.subscription?.status || 'expired'
-            },
-            payments: Array.isArray(invoice.payments) ? invoice.payments : [],
-          };
-        
-          setInvoiceData(formattedData);
+    const fetchInvoice = async ()=>{
+      setLoading(true);
+      try{
+        const invoiceId = searchParams.get('id');
+        if (!invoiceId) {
+          throw new Error("Invoice ID tidak ditemukan di URL");
         }
-      })
-      .catch((err) => {
-        console.error("Error fetching invoice:", err);
-      })
-      .finally(() => {
+
+        const response = await api.get(`/admin/invoices/${invoiceId}`);
+
+        if (response.status === 403) {
+          window.location.href = '/unauthorized';
+          return;
+        }
+
+        if (!response.data.meta?.success) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const item = response.data.data.data;
+
+        const isOverdue = item.status === 'unpaid' && new Date(item.due_datetime) < new Date();
+
+        const subscription = item.subscription || {
+          package_type: '-',
+          seats: 0,
+          price_per_seat: 0,
+          is_trial: false,
+          trial_ends_at: null,
+          ends_at: null,
+          status: 'expired',
+          is_cancelled: false,
+        };
+
+        const formattedData: InvoiceData = {
+          id: item.id || 'N/A',
+          total_amount: typeof item.total_amount === 'number' ? item.total_amount : 0,
+          due_datetime: item.due_datetime || new Date().toISOString(),
+          status: item.status || 'unpaid',
+          display_status: isOverdue ? 'overdue' : item.status,
+          xendit_invoice_id: item.xendit_invoice_id || '',
+          invoice_url: item.invoice_url || '#',
+          subscription: {
+            id: subscription.id || '',
+            package_type: subscription.package_type || '-',
+            seats: subscription.seats ?? 0,
+            price_per_seat: subscription.price_per_seat ?? 0,
+            is_trial: subscription.is_trial ?? false,
+            trial_ends_at: subscription.trial_ends_at,
+            ends_at: subscription.ends_at,
+            status: subscription.status || 'expired',
+            is_cancelled: subscription.is_cancelled ?? false,
+          },
+          payments: Array.isArray(item.payments) ? item.payments : [],
+        };
+
+        setInvoiceData(formattedData);
+      }catch (error) {
+        console.error("Error fetching invoice:", error);
+        setInvoiceData(null);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    fetchInvoice();
   }, [searchParams]);
 
   if (loading) {
@@ -132,27 +153,19 @@ export default function Invoice() {
   const handleCancelSubscription = async () => {
     setIsCancelling(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/admin/subscription/${subscription.id}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+        const response = await api.post(`/admin/subscription/${subscription.id}/cancel`);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to cancel subscription');
-      }
-
-      setIsCancelDialogOpen(false);
-      window.location.reload();
+        if (response.status === 200) {
+            setIsCancelDialogOpen(false);
+            window.location.reload();
+        } else {
+            throw new Error('Failed to cancel subscription');
+        }
     } catch (error) {
-      console.error('Error cancelling subscription:', error);
-      // You might want to show a toast notification here instead
+        console.error('Error cancelling subscription:', error);
+        // Tampilkan toast atau alert jika gagal
     } finally {
-      setIsCancelling(false);
+        setIsCancelling(false);
     }
   };
 
@@ -182,10 +195,21 @@ export default function Invoice() {
         {/* Header */}
         <div className="flex flex-row w-full items-center justify-between">
           <h3 className="text-2xl font-bold text-blue-950">Detail Tagihan</h3>
-          <Button onClick={() => window.history.back()} variant='redirectButton'>
-            <IoArrowBackOutline size={20} />
-            <span className="font-medium">Kembali</span>
-          </Button>
+          <div className="flex gap-2">
+            {subscription?.status === 'active' && !subscription.is_cancelled && (
+              <button
+                onClick={() => router.push('/subscription')}
+                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center gap-2"
+              >
+                <FaArrowUp />
+                Upgrade Plan
+              </button>
+            )}
+            <Button onClick={() => window.history.back()} variant='redirectButton'>
+              <IoArrowBackOutline size={20} />
+              <span className="font-medium">Kembali</span>
+            </Button>
+          </div>
         </div>
 
         {/* Detail Tagihan */}
@@ -271,12 +295,25 @@ export default function Invoice() {
             ) : (
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <p className="text-yellow-700">Belum ada pembayaran untuk faktur ini.</p>
-                <button
-                  onClick={handlePaymentRedirect}
-                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-                >
-                  Bayar Sekarang
-                </button>
+                {!subscription.is_trial && (
+                  <button
+                    onClick={handlePaymentRedirect}
+                    className="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+                  >
+                    Bayar Sekarang
+                  </button>
+                )}
+                {subscription.is_trial && (
+                  <p className="mt-3 text-blue-600">Ini adalah langganan trial dan tidak memerlukan pembayaran.</p>
+                )}
+                {subscription.status === 'expired' && (
+                  <button
+                    onClick={() => window.location.href = '/subscription'}
+                    className="mt-3 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
+                  >
+                    Buat Langganan Baru
+                  </button>
+                )}
               </div>
             )}
 

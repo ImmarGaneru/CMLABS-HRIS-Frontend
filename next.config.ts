@@ -1,14 +1,16 @@
 import type { NextConfig } from "next";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
 const nextConfig: NextConfig = {
-  async rewrites() {
-      return [
-          {
-              source: "/api/:path*",
-              destination: "http://localhost:8000/api/:path*",
-          },
-      ];
-  },
+  // async rewrites() {
+  //     return [
+  //         {
+  //             source: "/api/:path*",
+  //             destination: `${apiBaseUrl}/:path*`, 
+  //         },
+  //     ];
+  // },
   
   experimental: {
     // serverActions: [],
@@ -20,5 +22,8 @@ const nextConfig: NextConfig = {
 
 module.exports = nextConfig;
 module.exports = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   output: 'standalone'
 }

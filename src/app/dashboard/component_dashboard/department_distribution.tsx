@@ -5,11 +5,20 @@ import { Building2 } from 'lucide-react';
 import { IoMdArrowDropdown } from "react-icons/io";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import api from '@/lib/axios';
 
 interface DepartmentData {
+  id: string;
   name: string;
   value: number;
   color: string;
+  positions?: PositionData[];
+}
+
+interface PositionData {
+  id: string;
+  name: string;
+  level: string;
 }
 
 const COLORS = {
@@ -17,6 +26,7 @@ const COLORS = {
   'HR': '#7CA5BF',
   'Finance': '#BA3C54',
   'Marketing': '#257047',
+  'Sales': '#7CA5BF',
   'Operations': '#7CA5BF'
 };
 
@@ -24,18 +34,34 @@ export default function DepartmentDistribution() {
   const [departments, setDepartments] = useState<DepartmentData[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
+  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
         setLoading(true);
-        // TODO: Replace with actual API call
-        // const response = await fetch('/api/departments/distribution');
-        // const data = await response.json();
-        // setDepartments(data.map((dept: any) => ({
-        //   ...dept,
-        //   color: COLORS[dept.name as keyof typeof COLORS] || '#1E3A5F'
-        // })));
+        const response = await api.get('/admin/departments');
+        
+        if (response.data.meta.success) {
+          // Transform the data to include position counts
+          const departmentsData = await Promise.all(
+            response.data.data.map(async (dept: any) => {
+              // Fetch positions for each department
+              const positionsResponse = await api.get(`/admin/departments/${dept.id}`);
+              const positions = positionsResponse.data.meta.success ? positionsResponse.data.data : [];
+              
+              return {
+                id: dept.id,
+                name: dept.name,
+                value: positions.length, // Use number of positions as value
+                color: COLORS[dept.name as keyof typeof COLORS] || '#1E3A5F',
+                positions: positions
+              };
+            })
+          );
+          
+          setDepartments(departmentsData);
+        }
       } catch (error) {
         console.error('Error fetching department distribution:', error);
       } finally {
@@ -52,6 +78,33 @@ export default function DepartmentDistribution() {
       // Here you can add logic to fetch new data based on the selected month
       console.log('Selected month:', date);
     }
+  };
+
+  const handleDepartmentClick = (department: DepartmentData) => {
+    setSelectedDepartment(selectedDepartment === department.id ? null : department.id);
+  };
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-4 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-bold">{data.name}</p>
+          <p>Positions: {data.value}</p>
+          {data.positions && (
+            <div className="mt-2">
+              <p className="font-semibold">Positions:</p>
+              <ul className="list-disc pl-4">
+                {data.positions.map((pos: PositionData) => (
+                  <li key={pos.id}>{pos.name} (Level {pos.level})</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -107,12 +160,17 @@ export default function DepartmentDistribution() {
                 fill="#8884d8"
                 dataKey="value"
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                onClick={(data) => handleDepartmentClick(data)}
               >
                 {departments.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.color}
+                    className="cursor-pointer"
+                  />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip content={<CustomTooltip />} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -124,4 +182,4 @@ export default function DepartmentDistribution() {
       </div>
     </div>
   );
-} 
+}
