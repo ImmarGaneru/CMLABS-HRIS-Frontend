@@ -125,11 +125,22 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         }
 
         Object.entries(data).forEach(([key, value]) => {
-            if (key !== "overtime_dates" )
-        })
+            if (key !== "overtime_dates" && key !== "start_time" && key !== "end_time" && key !== "document") {
+                formData.append(key, value as string);
+            }
+        });
+
+        // Append document if available
+        if (data.document) {
+            formData.append("document", data.document);
+        }
 
         try {
-            await (api.post("approvals", transformedData));
+            await api.post("approvals", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
             toast.success("Data berhasil disimpan!");
             await fetchApprovals();
         } catch (error) {

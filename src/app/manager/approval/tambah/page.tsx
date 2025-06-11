@@ -42,39 +42,17 @@ const FormSchema = z.object({
             required_error: "Alasan harus diisi",
         })
         .min(1, "Alasan harus diisi"),
-    document: z
+    document: z.instanceof(File).optional(),
 })
 
 export default function TambahApproval(){
-    const { fetchUsers, submitApproval, options, isLoading, isAdmin, getCurrentUser } = useApproval();
+    const { fetchUsers, submitApproval, options, isLoading } = useApproval();
     const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
-    const [adminStatus, setAdminStatus] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     useEffect(() => {
         setHydrated(true);
     }, []);
-
-    useEffect(() => {
-        if (!hydrated) return;
-        const fetchInitialData = async () => {
-            const status = await isAdmin();
-            console.log("Admin status:", status);
-            setAdminStatus(status);
-
-            if (!status) {
-                const currentUser = await getCurrentUser();
-                console.log("Current user:", currentUser);
-                setCurrentUserId(currentUser?.id);
-                form.setValue("id_user", currentUser?.id);
-            }
-        };
-
-        fetchInitialData();
-    }, [hydrated, isAdmin, getCurrentUser]);
-
-
 
     const debouncedFetchUsers = debounce(fetchUsers, 300);
 
@@ -89,11 +67,11 @@ export default function TambahApproval(){
         resolver: zodResolver(FormSchema),
     })
 
-    const startDateField = form.control.register("start_date");
-    const endDateField = form.control.register("end_date");
-    const startTimeField = form.control.register("start_time");
-    const endTimeField = form.control.register("end_time");
-    const overtimeDatesField = form.control.register("overtime_dates");
+    form.control.register("start_date");
+    form.control.register("end_date");
+    form.control.register("start_time");
+    form.control.register("end_time");
+    form.control.register("overtime_dates");
 
     const selectedType = form.watch("request_type");
 
@@ -122,43 +100,41 @@ export default function TambahApproval(){
                 <div className="space-y-4 w-full mt-8">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-                            {adminStatus && (
-                                <FormField
-                                    control={form.control}
-                                    name="id_user"
-                                    render={() => (
-                                        <FormItem>
-                                            <FormLabel>Karyawan</FormLabel>
-                                            <ClientOnlySelect
-                                                isClearable
-                                                isMulti={false}
-                                                isLoading={isLoading}
-                                                onInputChange={(inputValue, actionMeta) => {
-                                                    if (actionMeta.action === "input-change") {
-                                                        debouncedFetchUsers(inputValue || "");
-                                                    }
-                                                }}
-                                                options={options}
-                                                onFocus={() => {
-                                                    if (options.length === 0) {
-                                                        fetchUsers("");
-                                                    }
-                                                }}
-                                                onChange={(selectedOption) => {
-                                                    if (!Array.isArray(selectedOption)) {
-                                                        form.setValue("id_user", (selectedOption as OptionType)?.value);
-                                                    }
-                                                }}
-                                                placeholder="Pilih karyawan"
-                                            />
-                                            <FormDescription>
-                                                Pilih karyawan yang mengajukan permohonan.
-                                            </FormDescription>
-                                            <FormMessage/>
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
+                            <FormField
+                                control={form.control}
+                                name="id_user"
+                                render={() => (
+                                    <FormItem>
+                                        <FormLabel>Karyawan</FormLabel>
+                                        <ClientOnlySelect
+                                            isClearable
+                                            isMulti={false}
+                                            isLoading={isLoading}
+                                            onInputChange={(inputValue, actionMeta) => {
+                                                if (actionMeta.action === "input-change") {
+                                                    debouncedFetchUsers(inputValue || "");
+                                                }
+                                            }}
+                                            options={options}
+                                            onFocus={() => {
+                                                if (options.length === 0) {
+                                                    fetchUsers("");
+                                                }
+                                            }}
+                                            onChange={(selectedOption) => {
+                                                if (!Array.isArray(selectedOption)) {
+                                                    form.setValue("id_user", (selectedOption as OptionType)?.value);
+                                                }
+                                            }}
+                                            placeholder="Pilih karyawan"
+                                        />
+                                        <FormDescription>
+                                            Pilih karyawan yang mengajukan permohonan.
+                                        </FormDescription>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
 
                             <FormField
                                 control={form.control}
