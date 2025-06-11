@@ -103,19 +103,31 @@ export default function EmployeeTablePage() {
       try {
         const res = await api.get("/admin/employees/comp-employees");
         
-        const feData = res.data.data.map((emp: Employee) => ({
-          id: emp.id,
-          id_user: emp.id_user,
-          nama: `${emp.first_name} ${emp.last_name}`,
-          jenis_kelamin: emp.jenis_kelamin,
-          no_telp: emp.no_telp || "-",
-          cabang: emp.cabang || "-",
-          jabatan: emp.jabatan || "-",
-          status: emp.employment_status,
-          Email: emp.user?.email || "-",
+        // Fetch position details for each employee
+        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
+          let positionName = "-";
+          if (emp.id_position) {
+            try {
+              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
+              if (positionRes.data.meta.success) {
+                positionName = positionRes.data.data.name;
+              }
+            } catch (err) {
+              console.error(`Error fetching position for employee ${emp.id}:`, err);
+            }
+          }
 
-          // hireDate: emp.created_at,
-          // employmentType: emp.tipe_kontrak || "-",
+          return {
+            id: emp.id,
+            id_user: emp.id_user,
+            nama: `${emp.first_name} ${emp.last_name}`,
+            jenis_kelamin: emp.jenis_kelamin,
+            no_telp: emp.no_telp || "-",
+            cabang: emp.cabang || "-",
+            jabatan: positionName,
+            status: emp.employment_status,
+            Email: emp.user?.email || "-",
+          };
         }));
 
         setEmployees(feData);

@@ -317,7 +317,12 @@ export default function EditKaryawan() {
         cabang: formData.cabang,
         employment_status: formData.employment_status,
         bank: formData.bank,
+        no_rek: formData.no_rek,
         id_position: formData.id_position,
+        id_department: formData.id_department,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
+        tanggal_efektif: formData.tanggal_efektif
       };
 
       console.log("Sending data:", dataToSend);
