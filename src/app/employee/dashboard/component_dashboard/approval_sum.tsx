@@ -25,7 +25,7 @@ export default function ApprovalSum() {
         const fetchApprovals = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://hriscmlabs.my.id/api/admin/employees/dashboard/recent-approvals', {
+                const response = await fetch('http://api.hriscmlabs.my.id/api/admin/employees/dashboard/recent-approvals', {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

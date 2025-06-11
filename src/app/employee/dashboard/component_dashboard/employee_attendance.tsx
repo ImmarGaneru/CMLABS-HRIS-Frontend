@@ -59,7 +59,7 @@ const EmployeeAttendancePie: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // const response = await fetch(`http://hriscmlabs.my.id/api/`)
+        // const response = await fetch(`http://api.hriscmlabs.my.id/api/`)
         // TODO: Implement actual API call
         setLoading(false);
       } catch (error) {
