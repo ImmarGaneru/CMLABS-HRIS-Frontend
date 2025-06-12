@@ -3,17 +3,28 @@ import { useRouter } from "next/navigation";
 import React, { useState, ChangeEvent, useRef, useEffect } from "react";
 import { FaCamera, FaFileUpload } from "react-icons/fa";
 import { createEmployee } from "../../../../utils/employee";
-import { getPositions } from "../../../../utils/position";
+import api from "@/lib/axios";
 import { toast, ToastContainer } from "react-toastify";
+type Position = {
+  id: string;
+  name: string;
+  gaji: number;
+};
 
+type Department = {
+  id: string;
+  name: string;
+};
 export default function TambahKaryawan() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+ const [positions, setPositions] = useState<Position[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
+  const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
 
-  const [positions, setPositions] = useState<
-    { id: string; name: string; gaji: number }[]
-  >([]);
 
   const [formData, setFormData] = useState({
     id_user: "",
@@ -52,24 +63,37 @@ export default function TambahKaryawan() {
     name: string;
     gaji?: number | null;
   }
-
+// Fetch positions by department
   useEffect(() => {
-    async function fetchPositions() {
+    async function fetchPositionsByDepartment() {
+      if (!selectedDepartment) return;
       try {
-        const response = await getPositions();
-        const mapped = response.data.map((pos: PositionResponse) => ({
-          id: pos.id.toString(),
-          name: pos.name,
-          gaji: pos.gaji ?? 0,
-        }));
-        setPositions(mapped);
-      } catch (error) {
-        console.error("Failed to fetch positions:", error);
+        const res = await api.get(`/admin/positions/${selectedDepartment}`);
+        setPositions(
+          res.data.data.map((pos: any) => ({
+            id: pos.id,
+            name: pos.name,
+            gaji: pos.gaji ?? 0,
+          }))
+        );
+      } catch (err) {
+        console.error("Gagal ambil jabatan", err);
       }
     }
 
-    fetchPositions();
-  }, []);
+    fetchPositionsByDepartment();
+  }, [selectedDepartment]);
+
+  const handleDepartmentChange = (deptId: string) => {
+    setSelectedDepartment(deptId);
+    setFormData((prev) => ({ ...prev, id_department: deptId, id_position: "" }));
+  };
+
+  const handleJabatanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const selectedId = e.target.value;
+  setFormData((prev) => ({ ...prev, id_position: selectedId }));
+};
+
 
   const handleBack = () => router.push("/employee");
 
@@ -99,19 +123,7 @@ export default function TambahKaryawan() {
     }
   };
 
-  const handleJabatanChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const selectedPosition = positions.find((pos) => pos.id === selectedId);
 
-    setFormData((prev) => ({
-      ...prev,
-      id_position: selectedId,
-      jabatan: selectedPosition?.name ?? "",
-      gaji: selectedPosition?.gaji ?? 0,
-      total_gaji:
-        (selectedPosition?.gaji ?? 0) + prev.uang_lembur - prev.denda_terlambat,
-    }));
-  };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -145,6 +157,19 @@ export default function TambahKaryawan() {
       return updated;
     });
   };
+ // Fetch departments
+  useEffect(() => {
+    async function fetchDepartments() {
+      try {
+        const response = await api.get("/admin/departments");
+        setDepartments(response.data.data);
+      } catch (err) {
+        console.error("Gagal ambil daftar departemen", err);
+      }
+    }
+
+    fetchDepartments();
+  }, []);
 
  const handleChange = (
   e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -308,7 +333,7 @@ const handleSubmit = async (event: React.FormEvent) => {
           />
         </div>
 
-        <div>
+        {/* <div>
           <label
             htmlFor="id_user"
             className="block text-[20px] font-bold text-[#141414]"
@@ -323,7 +348,7 @@ const handleSubmit = async (event: React.FormEvent) => {
             className="input"
             value={formData.id_user}
           />
-        </div>
+        </div> */}
         <div>
           <label
             htmlFor="id_user"
@@ -633,6 +658,21 @@ const handleSubmit = async (event: React.FormEvent) => {
             value={formData.grade}
           />
         </div> */}
+<div>
+                <label   className="block text-[20px] font-bold text-[#141414]">Departemen</label>
+                <select
+                  className="border border-gray-300 rounded w-full p-2"
+                  value={selectedDepartment}
+                  onChange={(e) => handleDepartmentChange(e.target.value)}
+                >
+                  <option value="">-- Pilih Departemen --</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
         <div>
           <label
