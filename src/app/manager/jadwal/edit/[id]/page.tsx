@@ -124,7 +124,7 @@ export default function Jadwal({
                 {/* Tombol Aksi */}
                 <div className="flex justify-end gap-2">
                     <button
-                        onClick={() => router.push("/jadwal")}
+                        onClick={() => router.push("/manager/jadwal")}
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200 ease-in-out shadow-md cursor-pointer">
                         Batal
                     </button>
