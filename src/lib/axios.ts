@@ -11,12 +11,13 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        if (typeof window !== 'undefined') {
+        // if (typeof window !== 'undefined') {
             const token = localStorage.getItem("token");
+            console.log(localStorage);
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
-        }
+        // }
         console.log("Request sent:", config);
         return config;
     },
