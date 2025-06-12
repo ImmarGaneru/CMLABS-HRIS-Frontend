@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { MdOutlineGroup } from 'react-icons/md';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import dayjs from 'dayjs';
 import api from '@/lib/axios';
 
@@ -40,7 +40,7 @@ export default function EmployeeSumCard() {
             // }
             try {
                 const res = await api.get('/admin/employees/dashboard/getEmployee');
-                
+
                 if (res.data?.data) {
                     setChartData(res.data.data);
                 } else {
@@ -113,7 +113,7 @@ export default function EmployeeSumCard() {
                 <p className='text-[24px] font-bold'>{chartData.active ?? 0}</p>
                 <p className='text-[14px]'>Update: {chartData.last_updated ? dayjs(chartData.last_updated).format('DD MM YYYY') : '-'}</p>
             </div>
-            
+
             {/* Card Karyawan Baru */}
             <div className='bg-gray-50 text-[#257047] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
                 {/* Tittle */}

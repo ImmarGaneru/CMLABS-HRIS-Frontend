@@ -67,21 +67,19 @@ export default function ApprovalPage() {
                 ),
                 size: 60,
             },
-            ...(adminStatus ? [
-                {
-                    accessorKey: "id_user",
-                    header: "Nama Karyawan",
-                    cell: (info: CellContext<Approval, unknown>) => {
-                        const row = info.row.original;
-                        const fullName = `${row.employee?.first_name ?? ""} ${row.employee?.last_name ?? ""}`.trim();
-                        return (
-                            <div className="truncate w-[180px]">
-                                {fullName || "N/A"}
-                            </div>
-                        );
-                    },
+            {
+                accessorKey: "id_user",
+                header: "Nama Karyawan",
+                cell: (info: CellContext<Approval, unknown>) => {
+                    const row = info.row.original;
+                    const fullName = `${row.employee?.first_name ?? ""} ${row.employee?.last_name ?? ""}`.trim();
+                    return (
+                        <div className="truncate w-[180px]">
+                            {fullName || "N/A"}
+                        </div>
+                    );
                 },
-            ] : []),
+            },
             {
                 accessorKey: "request_type",
                 header: "Jenis Pengajuan",
