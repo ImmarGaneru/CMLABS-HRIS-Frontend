@@ -37,9 +37,9 @@ type Employee = {
   tipe_kontrak: string | null;
 
   // tambahan
-  user?: { email: string };
+  user?: { email: string , phone_number: string };
   position?: { name: string };
-  no_telp: string;
+  phone_number: string;
   cabang: string;
   jabatan: string;
 };
@@ -64,36 +64,29 @@ export default function EmployeeTablePage() {
     { label: "active", value: "active" },
     { label: "inactive", value: "inactive" },
   ];
-  const handleSoftDelete = async (id: number | string) => {
-    try {
-      const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
-        method: "DELETE",
-      });
+ const handleSoftDelete = async (id: number | string) => {
+  try {
+    const res = await api.delete(`/admin/employees/${id}`);
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Gagal menghapus data");
-      }
-
-      // Update state untuk menghapus employee yang sudah dihapus
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-    } catch (error) {
-      let errorMessage = "Gagal menghapus data";
-
-      if (error instanceof Error) {
-        errorMessage += `: ${error.message}`;
-      } else if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error
-      ) {
-        errorMessage += `: ${(error as { message: string }).message}`;
-      }
-
-      alert(errorMessage);
-      console.error(error);
+    // Jika responsenya punya struktur `data.success` atau semacam itu, kamu bisa cek di sini
+    if (res.status !== 200) {
+      throw new Error(res.data?.message || "Gagal menghapus data");
     }
-  };
+
+    // Hapus data dari state
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+  } catch (error) {
+    let errorMessage = "Gagal menghapus data";
+
+    if (error instanceof Error) {
+      errorMessage += `: ${error.message}`;
+    }
+
+    alert(errorMessage);
+    console.error(error);
+  }
+};
+
 
   // Fetch data dari backend
   useEffect(() => {
@@ -122,7 +115,55 @@ export default function EmployeeTablePage() {
             id_user: emp.id_user,
             nama: `${emp.first_name} ${emp.last_name}`,
             jenis_kelamin: emp.jenis_kelamin,
-            no_telp: emp.no_telp || "-",
+            phone_number: emp.user?.phone_number || "-",
+            cabang: emp.cabang || "-",
+            jabatan: positionName,
+            status: emp.employment_status,
+            Email: emp.user?.email || "-",
+          };
+        }));
+
+        setEmployees(feData);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.get("/admin/employees/comp-employees");
+        
+        // Fetch position details for each employee
+        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
+          let positionName = "-";
+          if (emp.id_position) {
+            try {
+              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
+              if (positionRes.data.meta.success) {
+                positionName = positionRes.data.data.name;
+              }
+            } catch (err) {
+              console.error(`Error fetching position for employee ${emp.id}:`, err);
+            }
+          }
+
+          return {
+            id: emp.id,
+            id_user: emp.id_user,
+            nama: `${emp.first_name} ${emp.last_name}`,
+            jenis_kelamin: emp.jenis_kelamin,
+            phone_number: emp.user?.phone_number || "-",
             cabang: emp.cabang || "-",
             jabatan: positionName,
             status: emp.employment_status,
@@ -196,7 +237,7 @@ export default function EmployeeTablePage() {
         size: 100,
       },
       {
-        accessorKey: "no_telp",
+        accessorKey: "phone_number",
         header: "Nomor Telepon",
         cell: (info) => (
           <div className="truncate max-w-[120px]">
