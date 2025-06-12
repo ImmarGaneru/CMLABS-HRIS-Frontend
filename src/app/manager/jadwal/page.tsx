@@ -199,7 +199,7 @@ export default function JadwalTablePage() {
             filterOptions={jadwalFilters}
             // onExport={handleExportCSV}
             // onImport={handleImportCSV}
-            onAdd={() => router.push("/jadwal/tambah")}
+            onAdd={() => router.push("/manager/jadwal/tambah")}
           />
 
           {/* Data Tabel Isi Jadwal */}

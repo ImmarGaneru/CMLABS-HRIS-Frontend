@@ -118,7 +118,7 @@ export default function Jadwal() {
         {/* Tombol Aksi */}
         <div className="flex justify-end gap-2">
           <button
-            onClick={() => router.push("/jadwal")}
+            onClick={() => router.push("/manager/jadwal")}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200 ease-in-out shadow-md cursor-pointer">
             Batal
           </button>
@@ -142,9 +142,7 @@ export default function Jadwal() {
               const check_clock_setting_time: CheckClockSettingTime[] = jadwal.map((row, idx) => ({
                 id: "",
                 id_ck_setting: "",
-                day: (document.querySelector(
-                  `input[name="ck_setting_day_${idx}"]`
-                ) as HTMLInputElement).value || row.hari,
+                day: row.hari,
                 clock_in: (document.querySelector(
                   `input[name="ck_setting_clock_in_${idx}"]`
                 ) as HTMLInputElement).value || row.clockIn,
@@ -164,7 +162,7 @@ export default function Jadwal() {
               newCKSetting.check_clock_setting_time = check_clock_setting_time;
 
               completeNewCheckClockSetting(newCKSetting)
-                .then(() => router.push("/jadwal"))
+                .then(() => router.push("/manager/jadwal"))
                 .catch((error) => {
                   console.error("Error saving schedule:", error);
                 });
