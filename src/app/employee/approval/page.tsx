@@ -5,7 +5,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import { ColumnDef} from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
-import {FaArrowLeft, FaDownload, FaEye} from "react-icons/fa";
+import {FaArrowLeft, FaDownload, FaEdit, FaEye} from "react-icons/fa";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -109,8 +109,19 @@ export default function ApprovalPage() {
                                 }}
                                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
                             >
+
                                 <FaEye />
                             </button>
+                            {data.status === 'pending' && (
+                                <button
+                                    title="Edit"
+                                    onClick={() => router.push(`/employee/approval/edit/${data.id}`)}
+                                    className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+                                >
+
+                                    <FaEdit />
+                                </button>
+                            )}
                         </div>
                     );
                 },

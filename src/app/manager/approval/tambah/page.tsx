@@ -56,6 +56,7 @@ export default function TambahApproval(){
     const typeOptions: OptionType[] = [
         { value: "permit", label: "Izin" },
         { value: "sick", label: "Sakit" },
+        { value: "leave", label: "Cuti" },
     ];
 
     const form = useForm<z.infer<typeof FormSchema>>({
