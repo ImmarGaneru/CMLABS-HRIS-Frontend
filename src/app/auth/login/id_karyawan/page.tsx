@@ -45,7 +45,7 @@ export default function LoginIdKaryawanPage() {
           }
 
           alert("Login berhasil!");
-          router.push("/dashboard");
+          router.push("/employee/dashboard");
         } else {
           throw new Error("Token tidak ditemukan.");
         }
