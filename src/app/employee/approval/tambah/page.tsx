@@ -33,22 +33,18 @@ const FormSchema = z.object({
         .min(1, "Tipe pengajuan harus dipilih"),
     start_date: z.string().optional(),
     end_date: z.string().optional(),
-    start_time: z.string().optional(),
-    end_time: z.string().optional(),
-    overtime_dates: z.string().optional(),
     reason: z
         .string({
             required_error: "Alasan harus diisi",
         })
         .min(1, "Alasan harus diisi"),
-
+    document: typeof window !== "undefined" ? z.instanceof(File).optional() : z.any().optional(),
 })
 
 export default function TambahApproval(){
     const { submitApproval, isAdmin, getCurrentUser } = useApproval();
     const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     useEffect(() => {
         setHydrated(true);
@@ -59,8 +55,7 @@ export default function TambahApproval(){
         const fetchInitialData = async () => {
             const currentUser = await getCurrentUser();
             console.log("Current user:", currentUser);
-            setCurrentUserId(currentUser?.id);
-            form.setValue("id_user", currentUserId || "");
+            form.setValue("id_user", currentUser?.id);
         };
 
         fetchInitialData();
@@ -71,7 +66,6 @@ export default function TambahApproval(){
         { value: "permit", label: "Izin" },
         { value: "sick", label: "Sakit" },
         { value: "leave", label: "Cuti" },
-        { value: "overtime", label: "Lembur" },
     ];
 
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -80,11 +74,6 @@ export default function TambahApproval(){
 
     form.control.register("start_date");
     form.control.register("end_date");
-    form.control.register("start_time");
-    form.control.register("end_time");
-    form.control.register("overtime_dates");
-
-    const selectedType = form.watch("request_type");
 
     if (!hydrated) {
         return null; // Render nothing until the component is hydrated
@@ -137,111 +126,45 @@ export default function TambahApproval(){
                             />
 
                             {/*Date fields*/}
-                            {["permit", "sick", "leave"].includes(selectedType) && (
-                                <>
-                                    <FormField
-                                        control={form.control}
-                                        name="start_date"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Start Date</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="date"
-                                                        value={field.value || ""}
-                                                        onChange={(e) => field.onChange(e.target.value)}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>
-                                                    Pilih tanggal mulai pengajuan.
-                                                </FormDescription>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="end_date"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>End Date</FormLabel>
-                                                <FormControl>
-                                                    <Input type="date"
-                                                           value={field.value || ""}
-                                                           onChange={(e) => field.onChange(e.target.value)}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>
-                                                    Pilih tanggal akhir pengajuan.
-                                                </FormDescription>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </>
-                            )}
-                            {selectedType === "overtime" && (
-                                <>
-                                    <FormField
-                                        control={form.control}
-                                        name="start_time"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Start Time</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="time"
-                                                        value={field.value || ""}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>
-                                                    Masukkan jam mulai lembur.
-                                                </FormDescription>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="end_time"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>End Time</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="time"
-                                                        value={field.value || ""}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>
-                                                    Masukkan jam berakhir lembur.
-                                                </FormDescription>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="overtime_dates"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Overtime Dates</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        type="date"
-                                                        value={field.value || ""}
-                                                        onChange={(e) => field.onChange(e.target.value)}
-                                                    />
-                                                </FormControl>
-                                                <FormDescription>
-                                                    Pilih hari lembur.
-                                                </FormDescription>
-                                                <FormMessage/>
-                                            </FormItem>
-                                        )}
-                                    />
-                                </>
-                            )}
+                            <FormField
+                                control={form.control}
+                                name="start_date"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Start Date</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="date"
+                                                value={field.value || ""}
+                                                onChange={(e) => field.onChange(e.target.value)}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Pilih tanggal mulai pengajuan.
+                                        </FormDescription>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="end_date"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>End Date</FormLabel>
+                                        <FormControl>
+                                            <Input type="date"
+                                                   value={field.value || ""}
+                                                   onChange={(e) => field.onChange(e.target.value)}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Pilih tanggal akhir pengajuan.
+                                        </FormDescription>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
                             <FormField
                                 control={form.control}
                                 name="reason"
@@ -257,6 +180,26 @@ export default function TambahApproval(){
                                         </FormControl>
                                         <FormDescription>
                                             Masukkan alasan pengajuan.
+                                        </FormDescription>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="document"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Dokumen Pendukung</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="file"
+                                                accept=".pdf,.doc,.docx,.png,.jpg"
+                                                onChange={(e) => field.onChange(e.target.files?.[0])}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Unggah dokumen pendukung jika ada (format: .pdf, .doc, .docx, .png, .jpg).
                                         </FormDescription>
                                         <FormMessage/>
                                     </FormItem>

@@ -62,7 +62,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         <Head>
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <SidebarEmployee />
+        <SidebarApp />
         <div className="flex-1 flex flex-col bg-gray-300">
           <Navbar3 />
           <div className="flex-1">
@@ -80,7 +80,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
                 <Head>
                     <link rel="icon" href="/favicon.ico" />
                 </Head>
-                <SidebarApp />
+                <SidebarEmployee />
                 <div className="flex-1 flex flex-col bg-gray-300">
                     <Navbar3 />
                     <div className="flex-1">

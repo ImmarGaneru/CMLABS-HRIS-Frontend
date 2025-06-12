@@ -11,7 +11,6 @@ import {
     Clock,
     CalendarDays,
     ClipboardCheck,
-    AlarmClock
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -52,11 +51,11 @@ const sidebarNavItems = [
         url: "/manager/approval",
         icon: ClipboardCheck,
     },
-    {
-        title: "Overtime",
-        url: "/manager/overtime",
-        icon: AlarmClock,
-    }
+    // {
+    //     title: "Overtime",
+    //     url: "/manager/overtime",
+    //     icon: AlarmClock,
+    // }
 ];
 
 export function SidebarApp() {

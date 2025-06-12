@@ -161,7 +161,7 @@ export default function ApprovalPage() {
                         secondFilterValue={filterStatus}
                         onSecondFilterChange={setFilterStatus}
                         secondFilterOptions={statusFilters}
-                        onAdd={() => router.push("/approval/tambah")}
+                        onAdd={() => router.push("/employee/approval/tambah")}
                     />
                     <DataTable columns={approvalColumns} data={filteredData}/>
                 </div>

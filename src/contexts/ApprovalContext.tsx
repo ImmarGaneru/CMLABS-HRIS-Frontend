@@ -112,20 +112,16 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
     const submitApproval = async (data: any) => {
         const formData = new FormData();
 
-        if (data.request_type === "overtime") {
-            formData.append("start_date", format(new Date(`${data.overtime_dates} ${data.start_time}`), "yyyy-MM-dd HH:mm"));
-            formData.append("end_date", format(new Date(`${data.overtime_dates} ${data.end_time}`), "yyyy-MM-dd HH:mm"));
-        } else {
-            if (data.start_date) {
-                formData.append("start_date", format(new Date(data.start_date), "yyyy-MM-dd HH:mm"));
-            }
-            if (data.end_date) {
-                formData.append("end_date", format(new Date(data.end_date), "yyyy-MM-dd HH:mm"));
-            }
+        if (data.start_date) {
+            formData.append("start_date", format(new Date(data.start_date), "yyyy-MM-dd HH:mm"));
+        }
+        if (data.end_date) {
+            formData.append("end_date", format(new Date(data.end_date), "yyyy-MM-dd HH:mm"));
         }
 
+
         Object.entries(data).forEach(([key, value]) => {
-            if (key !== "overtime_dates" && key !== "start_time" && key !== "end_time" && key !== "document") {
+            if (key !== "document" && key !== "start_date" && key !== "end_date") {
                 formData.append(key, value as string);
             }
         });
