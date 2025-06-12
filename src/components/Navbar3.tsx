@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -12,7 +12,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { User, CreditCard, LogOut, Search } from 'lucide-react';
+import { User, CreditCard, LogOut } from 'lucide-react';
 import { searchableItems } from '@/config/searchConfig';
 import {
     Command,
@@ -22,7 +22,6 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command";
-
 import api from "@/lib/axios";
 
 // Interfaces
@@ -73,26 +72,43 @@ export function Navbar3() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Hardcoded token sementara
+    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const userResponse = await api.get('/auth/me');
-                
-                const userData = userResponse.data.data as UserData;
+
+                if (!userResponse.status) {
+                    console.warn('Failed to fetch user', userResponse.status);
+                    return;
+                }
+
+                // const responseJson = await userResponse.data
+                // console.log('Full API Response:', responseJson); // Debug log
+
+                const userData: UserData = userResponse.data.data;
+
+                // Debug logs
+                console.log('User Data:', userData);
+                console.log('Employee Data:', userData.employee);
+                console.log('Workplace Data:', userData.workplace);
 
                 // Ambil nama dari employee
                 let nameToShow = 'User';
                 if (userData.employee) {
                     const { first_name, last_name } = userData.employee;
                     nameToShow = `${first_name}${last_name ? ` ${last_name}` : ''}`;
+                } else {
+                    console.log('No employee data found in response');
                 }
-                setUserName(nameToShow)
 
-                // Ambil avatar
+                setUserName(nameToShow);
+
                 if (userData.employee?.avatar) {
-                    setProfileImage(userData.employee.avatar);
-                  } else {
+                    setProfileImage(userData.employee?.avatar);
+                } else {
                     setProfileImage('/avatar.png');
                 }
 
@@ -115,7 +131,7 @@ export function Navbar3() {
         };
 
         fetchUserData();
-    }, []);
+    }, [token]);
 
     const handleNavigation = (path: string) => {
         router.push(path);
@@ -146,15 +162,6 @@ export function Navbar3() {
             item.category.toLowerCase().includes(searchLower)
         );
     });
-
-    // if (isLoading) {
-    //     return (
-    //         <div className="flex items-center gap-4">
-    //             <div className="w-8 h-8 rounded-full bg-gray-300 animate-pulse"></div>
-    //             <div className="h-4 w-24 bg-gray-300 rounded animate-pulse"></div>
-    //         </div>
-    //     );
-    // }
 
     return (
         <div className="flex items-center justify-between border-b h-16 px-6 bg-white">
@@ -237,7 +244,7 @@ export function Navbar3() {
                             <Button
                                 variant="ghost"
                                 className="justify-start"
-                                onClick={() => handleNavigation('/profile')}
+                                onClick={() => handleNavigation('/manager/profile')}
                             >
                                 <User className="mr-2 h-4 w-4" />
                                 Profile

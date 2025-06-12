@@ -23,6 +23,8 @@ export interface Approval {
             name: string;
         }
     }
+    document: string;
+    document_url: string;
 }
 
 interface ApprovalUser {
@@ -47,6 +49,8 @@ interface ApprovalContext {
     submitApproval: (data: any) => Promise<void>;
     options: { value: string; label: string }[];
     isLoading: boolean;
+    isAdmin: () => Promise<boolean>;
+    getCurrentUser: () => Promise<ApprovalUser>;
 }
 
 const ApprovalContext = createContext<ApprovalContext | undefined>(undefined);
@@ -67,7 +71,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
 
     const approveRequest = async (id: string) => {
         try {
-            await request(api.post(`/approvals/${id}/approve`));
+            await request(api.patch(`/approvals/${id}/approve`));
             toast.success("Persetujuan berhasil diterima.");
             await fetchApprovals();
         } catch (error) {
@@ -78,7 +82,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
 
     const rejectRequest = async (id: string) => {
         try {
-            await request(api.post(`/approvals/${id}/reject`));
+            await request(api.patch(`/approvals/${id}/reject`));
             toast.success("Persetujuan berhasil ditolak.");
             await fetchApprovals();
         } catch (error) {
@@ -108,30 +112,60 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
     }
 
     const submitApproval = async (data: any) => {
-        const transformedData = { ...data };
+        const formData = new FormData();
 
-        if (data.request_type === "overtime") {
-            transformedData.start_date = format(new Date(`${data.overtime_dates} ${data.start_time}`), "yyyy-MM-dd HH:mm");
-            transformedData.end_date = format(new Date(`${data.overtime_dates} ${data.end_time}`), "yyyy-MM-dd HH:mm");
-            delete transformedData.overtime_dates;
-            delete transformedData.start_time;
-            delete transformedData.end_time;
-        } else {
-            if (data.start_date) {
-                transformedData.start_date = format(new Date(data.start_date), "yyyy-MM-dd HH:mm");
+        if (data.start_date) {
+            formData.append("start_date", format(new Date(data.start_date), "yyyy-MM-dd HH:mm"));
+        }
+        if (data.end_date) {
+            formData.append("end_date", format(new Date(data.end_date), "yyyy-MM-dd HH:mm"));
+        }
+
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (key !== "document" && key !== "start_date" && key !== "end_date") {
+                formData.append(key, value as string);
             }
-            if (data.end_date) {
-                transformedData.end_date = format(new Date(data.end_date), "yyyy-MM-dd HH:mm");
-            }
+        });
+
+
+        if (data.document) {
+            formData.append("document", data.document);
         }
 
         try {
-            await (api.post("approvals", transformedData));
+            await api.post("approvals", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+
+                },
+            });
             toast.success("Data berhasil disimpan!");
+            await fetchApprovals();
         } catch (error) {
             toast.error("Gagal menyimpan data!");
         }
     };
+
+    const isAdmin = async (): Promise<boolean> => {
+        try {
+            const response = await api.get('/approvals/isAdmin');
+            return response.data.data.isAdmin;
+        } catch (error) {
+            console.error('Error checking admin status:', error);
+            return false;
+        }
+    };
+
+    const getCurrentUser = async (): Promise<ApprovalUser> => {
+        try {
+            const response = await api.get('/auth/me');
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching current user:', error);
+            throw error;
+        }
+    }
 
     useEffect(() => {
         fetchApprovals();
@@ -147,7 +181,9 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
                 fetchUsers,
                 submitApproval,
                 options,
-                isLoading
+                isLoading,
+                isAdmin,
+                getCurrentUser
             }}
         >
             {children}

@@ -41,7 +41,7 @@ export default function LoginEmailPage() {
           }
 
           alert("Login berhasil!");
-          router.push("/dashboard");
+          router.push("/manager");
         } else {
           throw new Error("Token tidak ditemukan dalam response.");
         }
