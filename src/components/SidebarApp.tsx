@@ -11,6 +11,7 @@ import {
     Clock,
     CalendarDays,
     ClipboardCheck,
+    AlarmClock
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -28,29 +29,34 @@ import { useRouter } from "next/navigation";
 const sidebarNavItems = [
     {
         title: "Dashboard",
-        url: "/dashboard",
+        url: "/manager/dashboard",
         icon: LayoutDashboard,
     },
     {
         title: "Karyawan",
-        url: "/employee",
+        url: "/manager/employee",
         icon: UserCircle,
     },
     {
         title: "Kehadiran",
-        url: "/attendance",
+        url: "/manager/attendance",
         icon: Clock,
     },
     {
         title: "Jadwal",
-        url: "/jadwal",
+        url: "/manager/jadwal",
         icon: CalendarDays,
     },
     {
         title: "Approval",
-        url: "/approval",
+        url: "/manager/approval",
         icon: ClipboardCheck,
     },
+    {
+        title: "Overtime",
+        url: "/manager/overtime",
+        icon: AlarmClock,
+    }
 ];
 
 export function SidebarApp() {
