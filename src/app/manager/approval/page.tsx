@@ -235,7 +235,7 @@ export default function ApprovalPage() {
                                             {selectedApproval.employee?.first_name}{" "}
                                             {selectedApproval.employee?.last_name}
                                         </p>
-                                        <p className="text-sm text-gray-600">{selectedApproval.employee.position.name}</p>
+                                        <p className="text-sm text-gray-600">{selectedApproval.employee?.position?.name || "Tidak memiliki posisi"}</p>
                                     </div>
                                 </div>
                                 <span className={`text-sm font-semibold px-3 py-1 rounded-full ${

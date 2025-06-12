@@ -23,6 +23,8 @@ export interface Approval {
             name: string;
         }
     }
+    document: string;
+    document_url: string;
 }
 
 interface ApprovalUser {
@@ -69,7 +71,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
 
     const approveRequest = async (id: string) => {
         try {
-            await request(api.post(`/approvals/${id}/approve`));
+            await request(api.patch(`/approvals/${id}/approve`));
             toast.success("Persetujuan berhasil diterima.");
             await fetchApprovals();
         } catch (error) {
@@ -80,7 +82,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
 
     const rejectRequest = async (id: string) => {
         try {
-            await request(api.post(`/approvals/${id}/reject`));
+            await request(api.patch(`/approvals/${id}/reject`));
             toast.success("Persetujuan berhasil ditolak.");
             await fetchApprovals();
         } catch (error) {
