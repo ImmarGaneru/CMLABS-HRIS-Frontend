@@ -103,7 +103,7 @@ export default function EmployeeTablePage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/employee", {
+        const res = await fetch("http://api.hriscmlabs.my.id/api/admin/employees/comp-employees", {
           next: { revalidate: 0 },
         });
         if (!res.ok) {
