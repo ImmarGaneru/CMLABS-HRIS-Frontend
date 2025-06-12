@@ -3,7 +3,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import api from "../../../../../../utils/api";
+import api from "@/lib/axios";
 import { FaCamera, FaEye, FaTrash } from "react-icons/fa";
 import axios from "axios";
 
@@ -28,36 +28,36 @@ function parseRupiahToNumber(rupiahStr: string | null | undefined): number {
 }
 type Karyawan = {
   id: string;
-  id_user: string;
-  id_position: string;
+  id_user:string;
+  id_position:string;
   name: string;
-  avatar: string | Blob | undefined;
+  avatar: string;
   first_name: string;
   last_name: string;
   jabatan: string;
   nik: string;
   address: string;
-  tempatLahir: string;
-  tanggalLahir: string;
-  jenisKelamin: string;
+  tempat_lahir: string;
+  tanggal_lahir: string;
+  jenis_kelamin: string;
   pendidikan: string;
   email: string;
-  notelp: string;
+  no_telp: string;
   dokumen: Dokumen[];
-  startDate: string;
+  start_date: string;
   tenure: string;
-  endDate: string;
+  end_date: string;
   jadwal: string;
-  tipeKontrak: string;
+  tipe_kontrak: string;
   cabang: string;
   employment_status: string;
-  tanggalEfektif: string;
+  tanggal_efektif: string;
   bank: string;
   norek: string;
   gaji: string;
-  uangLembur: string;
-  dendaTerlambat: string;
-  TotalGaji: string;
+  uang_lembur: string;
+  denda_terlambat: string;
+  total_gaji: string;
 };
 
 type EditableFieldProps = {
@@ -132,29 +132,28 @@ export default function EditKaryawan() {
     last_name: "",
     nik: "",
     address: "",
-    notelp: "",
+    no_telp: "",
     email: "",
-    tempatLahir: "",
-    tanggalLahir: "",
-    jenisKelamin: "",
+    tempat_lahir: "",
+    tanggal_lahir: "",
+    jenis_kelamin: "",
     pendidikan: "",
     jadwal: "",
-    tipeKontrak: "Tetap",
+    tipe_kontrak: "",
     grade: "",
     jabatan: "",
-    id_position: "", // id dari posisi yang dipilih
-
+    id_position: "",
     cabang: "",
     bank: "",
     norek: "",
-    startDate: "",
-    endDate: "",
+    start_date: "",
+    end_date: "",
     tenure: "",
-    tanggalEfektif: "",
+    tanggal_efektif: "",
     gaji: 0,
-    uangLembur: 0,
-    dendaTerlambat: 0,
-    TotalGaji: 0,
+    uang_lembur: 0,
+    denda_terlambat: 0,
+    total_gaji: 0,
     dokumen: null as File | null,
     employment_status: "",
   });
@@ -238,27 +237,27 @@ export default function EditKaryawan() {
       jabatan: rawData.jabatan ?? "",
       nik: rawData.nik ?? "",
       address: rawData.address ?? "",
-      tempatLahir: rawData.tempatLahir ?? "",
-      tanggalLahir: rawData.tanggalLahir ?? "",
-      jenisKelamin: rawData.jenisKelamin ?? "",
+      tempat_lahir: rawData.tempatLahir ?? "",
+      tanggal_lahir: rawData.tanggalLahir ?? "",
+      jenis_kelamin: rawData.jenisKelamin ?? "",
       pendidikan: rawData.pendidikan ?? "",
       email: rawData.email ?? "-",
-      notelp: rawData.notelp ?? "",
+      no_telp: rawData.notelp ?? "",
       dokumen: rawData.dokumen ?? [],
-      startDate: rawData.startDate ?? "-",
+      start_date: rawData.startDate ?? "-",
       tenure: rawData.tenure ?? "-",
-      endDate: rawData.endDate ?? "-",
+      end_date: rawData.endDate ?? "-",
       jadwal: rawData.jadwal ?? "",
-      tipeKontrak: rawData.tipeKontrak ?? "",
+      tipe_kontrak: rawData.tipeKontrak ?? "",
       cabang: rawData.cabang ?? "",
       employment_status: rawData.employment_status ?? "-",
-      tanggalEfektif: rawData.tanggalEfektif ?? "-",
+      tanggal_efektif: rawData.tanggalEfektif ?? "-",
       bank: rawData.bank ?? "",
       norek: rawData.norek ?? "",
       gaji: gajiNum.toString(),
-      uangLembur: lemburNum.toString(),
-      dendaTerlambat: dendaNum.toString(),
-      TotalGaji: totalNum.toString(),
+      uang_lembur: lemburNum.toString(),
+      denda_terlambat: dendaNum.toString(),
+      total_gaji: totalNum.toString(),
     };
   }
   useEffect(() => {
@@ -281,29 +280,28 @@ export default function EditKaryawan() {
           last_name: mappedData.last_name,
           nik: mappedData.nik,
           address: mappedData.address,
-          notelp: mappedData.notelp,
+          no_telp: mappedData.no_telp,
           email: mappedData.email,
-          tempatLahir: mappedData.tempatLahir,
-          tanggalLahir: mappedData.tanggalLahir,
-          jenisKelamin: mappedData.jenisKelamin,
+          tempat_lahir: mappedData.tempat_lahir,
+          tanggal_lahir: mappedData.tanggal_lahir,
+          jenis_kelamin: mappedData.jenis_kelamin,
           pendidikan: mappedData.pendidikan,
           jadwal: mappedData.jadwal,
-          tipeKontrak: mappedData.tipeKontrak,
+          tipe_kontrak: mappedData.tipe_kontrak,
           grade: "", // jika tidak ada di mappedData, bisa kosong
           jabatan: mappedData.jabatan,
           id_position: mappedData.id_position,
-
           cabang: mappedData.cabang,
           bank: mappedData.bank,
           norek: mappedData.norek,
-          startDate: mappedData.startDate,
-          endDate: mappedData.endDate,
+          start_date: mappedData.start_date,
+          end_date: mappedData.end_date,
           tenure: mappedData.tenure,
-          tanggalEfektif: mappedData.tanggalEfektif,
+          tanggal_efektif: mappedData.tanggal_efektif,
           gaji: Number(mappedData.gaji),
-          uangLembur: Number(mappedData.uangLembur),
-          dendaTerlambat: Number(mappedData.dendaTerlambat),
-          TotalGaji: Number(mappedData.TotalGaji),
+          uang_lembur: Number(mappedData.uang_lembur),
+          denda_terlambat: Number(mappedData.denda_terlambat),
+          total_gaji: Number(mappedData.total_gaji),
           dokumen: null,
           employment_status: mappedData.employment_status,
         });
@@ -338,20 +336,20 @@ export default function EditKaryawan() {
       id_position: selectedId,
       jabatan: selectedPosition.name,
       gaji: selectedPosition.gaji,
-      TotalGaji: selectedPosition.gaji + prev.uangLembur - prev.dendaTerlambat,
+      TotalGaji: selectedPosition.gaji + prev.uang_lembur - prev.denda_terlambat,
     }));
   };
   useEffect(() => {
     const total =
       (Number(formData.gaji) || 0) +
-      (Number(formData.uangLembur) || 0) -
-      (Number(formData.dendaTerlambat) || 0);
+      (Number(formData.uang_lembur) || 0) -
+      (Number(formData.denda_terlambat) || 0);
 
     setFormData((prev) => ({
       ...prev,
       TotalGaji: total,
     }));
-  }, [formData.gaji, formData.uangLembur, formData.dendaTerlambat]);
+  }, [formData.gaji, formData.uang_lembur, formData.denda_terlambat]);
 
   // Handle avatar upload preview
   // const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -376,7 +374,7 @@ export default function EditKaryawan() {
     return;
   }
 
-  const tanggalEfektifForApi = formData.tanggalEfektif;
+  const tanggalEfektifForApi = formData.tanggal_efektif;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(tanggalEfektifForApi)) {
     alert("Format tanggalEfektif salah!");
     return;
@@ -393,53 +391,46 @@ export default function EditKaryawan() {
   try {
     const dataToSend = new FormData();
 
-    // Append data biasa
+    // Map form fields to API field names
     dataToSend.append("first_name", formData.first_name);
     dataToSend.append("last_name", formData.last_name);
     dataToSend.append("jabatan", formData.jabatan || "");
     dataToSend.append("id_position", formData.id_position || "");
     dataToSend.append("nik", formData.nik);
     dataToSend.append("address", formData.address || "");
-    dataToSend.append("tempatLahir", formData.tempatLahir || "");
-    dataToSend.append("tanggalLahir", formData.tanggalLahir || "");
-    dataToSend.append("jenisKelamin", formData.jenisKelamin || "");
+    dataToSend.append("tempatLahir", formData.tempat_lahir || "");
+    dataToSend.append("tanggalLahir", formData.tanggal_lahir || "");
+    dataToSend.append("jenisKelamin", formData.jenis_kelamin || "");
     dataToSend.append("pendidikan", formData.pendidikan || "");
     dataToSend.append("email", formData.email);
-    dataToSend.append("notelp", formData.notelp || "");
-    dataToSend.append("startDate", formData.startDate || "");
+    dataToSend.append("notelp", formData.no_telp || "");
+    dataToSend.append("startDate", formData.start_date || "");
     dataToSend.append("tenure", formData.tenure || "");
-    dataToSend.append("endDate", formData.endDate || "");
+    dataToSend.append("endDate", formData.end_date || "");
     dataToSend.append("jadwal", formData.jadwal || "");
-    dataToSend.append("tipeKontrak", formData.tipeKontrak || "");
+    dataToSend.append("tipeKontrak", formData.tipe_kontrak || "");
     dataToSend.append("cabang", formData.cabang || "");
     dataToSend.append("employment_status", formData.employment_status || "");
     dataToSend.append("tanggalEfektif", tanggalEfektifForApi);
     dataToSend.append("bank", formData.bank || "");
     dataToSend.append("norek", formData.norek || "");
     dataToSend.append("gaji", formData.gaji?.toString() || "0");
-    dataToSend.append("uangLembur", formData.uangLembur?.toString() || "0");
-    dataToSend.append("dendaTerlambat", formData.dendaTerlambat?.toString() || "0");
-    dataToSend.append("TotalGaji", formData.TotalGaji?.toString() || "0");
+    dataToSend.append("uangLembur", formData.uang_lembur?.toString() || "0");
+    dataToSend.append("dendaTerlambat", formData.denda_terlambat?.toString() || "0");
+    dataToSend.append("TotalGaji", formData.total_gaji?.toString() || "0");
 
-    // Avatar tunggal
+    // Handle avatar upload
     if (selectedAvatar) {
       dataToSend.append("avatar", selectedAvatar);
     }
 
-    // Dokumen array
+    // Handle document uploads
     if (dokumenFiles && dokumenFiles.length > 0) {
       dokumenFiles.forEach((file) => {
         dataToSend.append("dokumen[]", file);
       });
     }
 
-    // Debug log
-    console.log("Mengirim ke:", `/employee/${id}`);
-    for (const pair of dataToSend.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
-    // Kirim data
     const response = await api.put(`/employee/${id}`, dataToSend);
     console.log("Response dari server:", response.data);
 
@@ -585,7 +576,7 @@ export default function EditKaryawan() {
             />
             <EditableField
               label="Tempat Lahir"
-              value={formData.tempatLahir}
+              value={formData.tempat_lahir}
               onChange={(v) =>
                 setFormData((prev) => ({ ...prev, tempatLahir: v }))
               }
@@ -593,7 +584,7 @@ export default function EditKaryawan() {
             <EditableField
               label="Tanggal Lahir"
               type="date"
-              value={formData.tanggalLahir}
+              value={formData.tanggal_lahir}
               onChange={(v) =>
                 setFormData((prev) => ({ ...prev, tanggalLahir: v }))
               }
@@ -601,7 +592,7 @@ export default function EditKaryawan() {
             <EditableField
               label="Jenis Kelamin"
               type="select"
-              value={formData.jenisKelamin || ""}
+              value={formData.jenis_kelamin || ""}
               onChange={(v) =>
                 setFormData((prev) => ({ ...prev, jenisKelamin: v }))
               }
@@ -633,7 +624,7 @@ export default function EditKaryawan() {
             />
             <EditableField
               label="No Telp"
-              value={formData.notelp}
+              value={formData.no_telp}
               onChange={(v) => setFormData((prev) => ({ ...prev, notelp: v }))}
             />
           </div>
@@ -649,7 +640,7 @@ export default function EditKaryawan() {
               <EditableField
                 label="Mulai Kerja"
                 type="date"
-                value={formData.startDate}
+                value={formData.start_date}
                 onChange={(v) =>
                   setFormData((prev) => ({ ...prev, startDate: v }))
                 }
@@ -657,7 +648,7 @@ export default function EditKaryawan() {
               <EditableField
                 label="Akhir Kerja"
                 type="date"
-                value={formData.endDate}
+                value={formData.end_date}
                 onChange={(v) =>
                   setFormData((prev) => ({ ...prev, endDate: v }))
                 }
@@ -678,7 +669,7 @@ export default function EditKaryawan() {
               <EditableField
                 label="Tipe Kontrak"
                 type="select"
-                value={formData.tipeKontrak}
+                value={formData.tipe_kontrak}
                 onChange={(v) =>
                   setFormData((prev) => ({ ...prev, tipeKontrak: v }))
                 }
@@ -729,7 +720,7 @@ export default function EditKaryawan() {
               <EditableField
                 label="Tanggal Efektif"
                 type="date"
-                value={formData.tanggalEfektif}
+                value={formData.tanggal_efektif}
                 onChange={(v) =>
                   setFormData((prev) => ({ ...prev, tanggalEfektif: v }))
                 }
@@ -756,7 +747,7 @@ export default function EditKaryawan() {
               <EditableField
                 label="Uang Lembur"
                 type="number"
-                value={formData.uangLembur.toString()}
+                value={formData.uang_lembur.toString()}
                 onChange={(v) =>
                   setFormData((prev) => ({ ...prev, uangLembur: Number(v) }))
                 }
@@ -764,7 +755,7 @@ export default function EditKaryawan() {
               <EditableField
                 label="Denda Terlambat"
                 type="number"
-                value={formData.dendaTerlambat.toString()}
+                value={formData.denda_terlambat.toString()}
                 onChange={(v) =>
                   setFormData((prev) => ({
                     ...prev,
@@ -775,7 +766,7 @@ export default function EditKaryawan() {
               <EditableField
                 label="Total Gaji"
                 type="number"
-                value={formData.TotalGaji.toString()}
+                value={formData.total_gaji.toString()}
                 onChange={(v) =>
                   setFormData((prev) => ({ ...prev, TotalGaji: Number(v) }))
                 }

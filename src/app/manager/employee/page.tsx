@@ -26,7 +26,7 @@ import api from "@/lib/axios";
 
 type Employee = {
   id_user: string;
-  jenisKelamin: string;
+  jenis_kelamin: string;
   id: string;
   first_name: string;
   last_name: string;
@@ -39,7 +39,7 @@ type Employee = {
   // tambahan
   user?: { email: string };
   position?: { name: string };
-  notelp: string;
+  no_telp: string;
   cabang: string;
   jabatan: string;
 };
@@ -72,9 +72,7 @@ export default function EmployeeTablePage() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        console.error(`Gagal menghapus data: ${errorData.message}`);
-        alert(errorData.message || "Gagal menghapus data");
-        return;
+        throw new Error(errorData.message || "Gagal menghapus data");
       }
 
       // Update state untuk menghapus employee yang sudah dihapus
@@ -103,23 +101,14 @@ export default function EmployeeTablePage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("http://api.hriscmlabs.my.id/api/admin/employees/comp-employees", {
-          next: { revalidate: 0 },
-        });
-        if (!res.ok) {
-          console.error(`Fetch failed with status: ${res.status}`);
-          alert(`Gagal mengambil data: ${res.statusText}`);
-            return;
-        }
-
-        const apiData = await res.json();
-
-        const feData = apiData.data.map((emp: Employee) => ({
+        const res = await api.get("/admin/employees/comp-employees");
+        
+        const feData = res.data.data.map((emp: Employee) => ({
           id: emp.id,
           id_user: emp.id_user,
           nama: `${emp.first_name} ${emp.last_name}`,
-          jenisKelamin: emp.jenisKelamin,
-          notelp: emp.notelp || "-",
+          jenis_kelamin: emp.jenis_kelamin,
+          no_telp: emp.no_telp || "-",
           cabang: emp.cabang || "-",
           jabatan: emp.jabatan || "-",
           status: emp.employment_status,
@@ -131,12 +120,11 @@ export default function EmployeeTablePage() {
 
         setEmployees(feData);
       } catch (err: unknown) {
-        const errorMessage =
-            err instanceof Error
-                ? err.message
-                : "Gagal mengambil data dari server";
-        setError(errorMessage);
-        console.error("Error fetching employees:", errorMessage);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unknown error occurred");
+        }
       } finally {
         setLoading(false);
       }
@@ -186,7 +174,7 @@ export default function EmployeeTablePage() {
         size: 120,
       },
       {
-        accessorKey: "jenisKelamin",
+        accessorKey: "jenis_kelamin",
         header: "Jenis Kelamin",
         cell: (info) => (
           <div className="truncate max-w-[100px]">
@@ -196,7 +184,7 @@ export default function EmployeeTablePage() {
         size: 100,
       },
       {
-        accessorKey: "notelp",
+        accessorKey: "no_telp",
         header: "Nomor Telepon",
         cell: (info) => (
           <div className="truncate max-w-[120px]">
@@ -330,10 +318,7 @@ export default function EmployeeTablePage() {
     reader.onload = async (e) => {
       try {
         const data = e.target?.result;
-        if (!data) {
-          alert("File kosong atau tidak terbaca");
-            return;
-        }
+        if (!data) throw new Error("File kosong atau tidak terbaca");
 
         const fileName = file.name.toLowerCase();
 
@@ -363,10 +348,8 @@ export default function EmployeeTablePage() {
           return newRow as FEEmployee;
         });
 
-        if (jsonData.length === 0) {
-            alert("File kosong atau tidak ada data yang valid");
-            return;
-        }
+        if (jsonData.length === 0)
+          throw new Error("Tidak ada data yang terbaca");
 
         // Kirim data ke backend dengan axios instance api
         const response = await api.post("/employee/import", {
@@ -374,8 +357,7 @@ export default function EmployeeTablePage() {
         });
 
         if (response.status !== 200 && response.status !== 201) {
-          alert("Gagal menyimpan data ke server");
-          return;
+          throw new Error("Gagal menyimpan data ke server");
         }
 
         // const savedEmployees = response.data;
@@ -431,10 +413,10 @@ export default function EmployeeTablePage() {
   }, [employees, filterText, filterGender, filterStatus]);
 
   return (
-    <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
+    <div className="px-4 py-6 min-h-screen flex flex-col gap-4">
       <EmployeeCardSum employeesCard={employees} />
 
-      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md mt-6 w-full overflow-x-auto">
+      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">
           {loading && <p>Loading data...</p>}
           {error && <p className="text-red-600">Error: {error}</p>}
