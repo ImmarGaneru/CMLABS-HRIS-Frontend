@@ -4,10 +4,13 @@ import { useState } from "react";
 import { Switch } from "@headlessui/react";
 import { useRouter } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
-export default function Jadwal() {
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
+
+function JadwalBody() {
     const searchParams = useSearchParams();
 
-    const id = searchParams.get('id') || "" ;
+    const id = searchParams.get('id') || "";
 
     const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting } = useAttendance();
     const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
@@ -66,52 +69,52 @@ export default function Jadwal() {
                 <div className="overflow-x-auto border rounded mb-6">
                     <table className="min-w-full text-sm text-left">
                         <thead className="bg-gray-100 text-gray-700 font-semibold">
-                        <tr>
-                            <th className="px-4 py-2">Hari</th>
-                            <th className="px-4 py-2">Clock In</th>
-                            <th className="px-4 py-2">Break Start</th>
-                            <th className="px-4 py-2">Break End</th>
-                            <th className="px-4 py-2">Clock Out</th>
-                        </tr>
+                            <tr>
+                                <th className="px-4 py-2">Hari</th>
+                                <th className="px-4 py-2">Clock In</th>
+                                <th className="px-4 py-2">Break Start</th>
+                                <th className="px-4 py-2">Break End</th>
+                                <th className="px-4 py-2">Clock Out</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        {checkClockSetting?.check_clock_setting_time.map((row, idx) => (
-                            <tr key={idx} className="border-t">
-                                <td className="px-4 py-2">{row.day}</td>
-                                <td className="px-4 py-2">
-                                    <input
-                                        type="time "
-                                        name={`ck_setting_clock_in_${idx}`}
-                                        defaultValue={row.clock_in.split(":").slice(0, 2).join(":")}
-                                        className="border rounded px-2 py-1 w-full  "
-                                    />
-                                </td>
-                                <td className="px-4 py-2">
-                                    <input
-                                        type="time "
-                                        name={`ck_setting_break_start_${idx}`}
-                                        defaultValue={row.break_start.split(":").slice(0, 2).join(":")}
-                                        className="border rounded px-2 py-1 w-full  "
-                                    />
-                                </td>
-                                <td className="px-4 py-2">
-                                    <input
-                                        type="time "
-                                        name={`ck_setting_break_end_${idx}`}
-                                        defaultValue={row.break_end.split(":").slice(0, 2).join(":")}
-                                        className="border rounded px-2 py-1 w-full  "
-                                    />
-                                </td>
-                                <td className="px-4 py-2 ">
-                                    <input
-                                        type="time"
-                                        name={`ck_setting_clock_out_${idx}`}
-                                        defaultValue={row.clock_out.split(":").slice(0, 2).join(":")}
-                                        className="border rounded px-2 py-1 w-full"
-                                    />
-                                </td>
-                            </tr>
-                        ))}
+                            {checkClockSetting?.check_clock_setting_time.map((row, idx) => (
+                                <tr key={idx} className="border-t">
+                                    <td className="px-4 py-2">{row.day}</td>
+                                    <td className="px-4 py-2">
+                                        <input
+                                            type="time "
+                                            name={`ck_setting_clock_in_${idx}`}
+                                            defaultValue={row.clock_in.split(":").slice(0, 2).join(":")}
+                                            className="border rounded px-2 py-1 w-full  "
+                                        />
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <input
+                                            type="time "
+                                            name={`ck_setting_break_start_${idx}`}
+                                            defaultValue={row.break_start.split(":").slice(0, 2).join(":")}
+                                            className="border rounded px-2 py-1 w-full  "
+                                        />
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <input
+                                            type="time "
+                                            name={`ck_setting_break_end_${idx}`}
+                                            defaultValue={row.break_end.split(":").slice(0, 2).join(":")}
+                                            className="border rounded px-2 py-1 w-full  "
+                                        />
+                                    </td>
+                                    <td className="px-4 py-2 ">
+                                        <input
+                                            type="time"
+                                            name={`ck_setting_clock_out_${idx}`}
+                                            defaultValue={row.clock_out.split(":").slice(0, 2).join(":")}
+                                            className="border rounded px-2 py-1 w-full"
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -181,4 +184,8 @@ export default function Jadwal() {
     );
 }
 
-import { useSearchParams } from 'next/navigation'
+export default function Jadwal() {
+    <Suspense>
+        <JadwalBody />
+    </Suspense>
+}
