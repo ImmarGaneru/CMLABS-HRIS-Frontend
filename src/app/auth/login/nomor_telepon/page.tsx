@@ -96,7 +96,7 @@ export default function LoginIdKaryawanPage() {
                 type="text"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="ID12345"
+                placeholder="082232789456"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
                 required
               />
@@ -219,9 +219,9 @@ export default function LoginIdKaryawanPage() {
             </Link>
 
             <Link
-              href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect`}
-              passHref
-            >
+  href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect?login_method=nomer_telepon`}
+  passHref
+>
               <button
                 type="button"
                 className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm cursor-pointer"
