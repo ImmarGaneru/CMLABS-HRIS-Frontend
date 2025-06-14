@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Switch } from "@headlessui/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
-export default function Jadwal() {
+
+function JadwalContent() {
     const searchParams = useSearchParams();
-
-    const id = searchParams.get('id') || "" ;
-
+    const id = searchParams.get('id') || "";
     const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting } = useAttendance();
     const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
     const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
@@ -80,29 +79,29 @@ export default function Jadwal() {
                                 <td className="px-4 py-2">{row.day}</td>
                                 <td className="px-4 py-2">
                                     <input
-                                        type="time "
+                                        type="time"
                                         name={`ck_setting_clock_in_${idx}`}
                                         defaultValue={row.clock_in.split(":").slice(0, 2).join(":")}
-                                        className="border rounded px-2 py-1 w-full  "
+                                        className="border rounded px-2 py-1 w-full"
                                     />
                                 </td>
                                 <td className="px-4 py-2">
                                     <input
-                                        type="time "
+                                        type="time"
                                         name={`ck_setting_break_start_${idx}`}
                                         defaultValue={row.break_start.split(":").slice(0, 2).join(":")}
-                                        className="border rounded px-2 py-1 w-full  "
+                                        className="border rounded px-2 py-1 w-full"
                                     />
                                 </td>
                                 <td className="px-4 py-2">
                                     <input
-                                        type="time "
+                                        type="time"
                                         name={`ck_setting_break_end_${idx}`}
                                         defaultValue={row.break_end.split(":").slice(0, 2).join(":")}
-                                        className="border rounded px-2 py-1 w-full  "
+                                        className="border rounded px-2 py-1 w-full"
                                     />
                                 </td>
-                                <td className="px-4 py-2 ">
+                                <td className="px-4 py-2">
                                     <input
                                         type="time"
                                         name={`ck_setting_clock_out_${idx}`}
@@ -163,15 +162,13 @@ export default function Jadwal() {
 
                                 updatedCKSetting.check_clock_setting_time = check_clock_setting_time;
 
-
                                 completeUpdateCheckClockSetting(checkClockSetting?.id, updatedCKSetting)
                                     .then(() => router.push("/jadwal"))
                                     .catch((error) => {
                                         console.error("Error saving schedule:", error);
                                     });
                             }
-                        }
-                        }
+                        }}
                         className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer">
                         Simpan
                     </button>
@@ -181,4 +178,10 @@ export default function Jadwal() {
     );
 }
 
-import { useSearchParams } from 'next/navigation'
+export default function Jadwal() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <JadwalContent />
+        </Suspense>
+    );
+}
