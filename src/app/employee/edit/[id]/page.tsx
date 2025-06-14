@@ -30,7 +30,7 @@ type Karyawan = {
   jenis_kelamin: string;
   pendidikan: string;
   email: string;
-  no_telp: string;
+  phone_number: string;
   dokumen: Dokumen[];
   start_date: string;
   end_date: string;
@@ -55,6 +55,7 @@ type Karyawan = {
   user?: {
     id: string;
     email: string;
+    phone_number: string;
   };
 };
 
@@ -125,7 +126,7 @@ type FormData = {
   tanggal_lahir: string;
   jenis_kelamin: string;
   pendidikan: string;
-  no_telp: string;
+  phone_number: string;
   start_date: string;
   end_date: string;
   jadwal: string;
@@ -145,8 +146,12 @@ export default function EditKaryawan() {
   const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [positions, setPositions] = useState<{ id: string; name: string; gaji: number }[]>([]);
-  const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
+  const [positions, setPositions] = useState<
+    { id: string; name: string; gaji: number }[]
+  >([]);
+  const [departments, setDepartments] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
 
@@ -163,7 +168,8 @@ export default function EditKaryawan() {
     tanggal_lahir: "",
     jenis_kelamin: "",
     pendidikan: "",
-    no_telp: "",
+    email: "",
+    phone_number: "",
     start_date: "",
     end_date: "",
     jadwal: "",
@@ -173,9 +179,16 @@ export default function EditKaryawan() {
     tanggal_efektif: "",
     bank: "",
     no_rek: "",
-    email: "",
+
     dokumen: null,
   });
+
+  // Sinkronisasi selectedDepartment dari formData setelah fetchEmployee
+  useEffect(() => {
+    if (formData.id_department) {
+      setSelectedDepartment(formData.id_department);
+    }
+  }, [formData.id_department]);
 
   // Fetch departments
   useEffect(() => {
@@ -214,75 +227,128 @@ export default function EditKaryawan() {
 
   // Load employee data
   useEffect(() => {
-    if (!params?.id) return;
-
-    async function fetchEmployee() {
-      setLoading(true);
-      setError(null);
+    async function fetchData() {
       try {
-        const res = await api.get(`/admin/employees/${params.id}`);
-        const rawData = res.data.data;
+        // Ambil semua departemen terlebih dahulu
+        const deptRes = await api.get("/admin/departments");
+        setDepartments(deptRes.data.data);
 
-        if (!rawData) throw new Error("Data karyawan tidak ditemukan");
+        // Jika ada ID karyawan di URL
+        if (params?.id) {
+          const empRes = await api.get(`/admin/employees/${params.id}`);
+          const rawData = empRes.data.data;
 
-        const mappedData: FormData = {
-          id: rawData.id,
-          id_user: rawData.id_user,
-          id_position: rawData.id_position || "",
-          id_department: rawData.id_department || "",
-          first_name: rawData.first_name || "",
-          last_name: rawData.last_name || "",
-          nik: rawData.nik || "",
-          address: rawData.address || "",
-          tempat_lahir: rawData.tempat_lahir || "",
-          tanggal_lahir: rawData.tanggal_lahir || "",
-          jenis_kelamin: rawData.jenis_kelamin || "",
-          pendidikan: rawData.pendidikan || "",
-          email: rawData.user?.email || "-",
-          no_telp: rawData.no_telp || "",
-          start_date: rawData.start_date || "",
-          end_date: rawData.end_date || "",
-          jadwal: rawData.jadwal || "",
-          tipe_kontrak: rawData.tipe_kontrak || "",
-          cabang: rawData.cabang || "",
-          employment_status: rawData.employment_status || "",
-          tanggal_efektif: rawData.tanggal_efektif || "",
-          bank: rawData.bank || "",
-          no_rek: rawData.no_rek || "",
-          dokumen: null,
-        };
+          // Debugging: Lihat struktur data dari API
+          console.log("Data karyawan dari API:", rawData);
+          console.log(
+            "Nomor telepon:",
+            rawData.phone_number,
+            rawData.user?.phone_number
+          );
+          console.log("Departemen:", rawData.department);
+          console.log("Jabatan:", rawData.position);
+          console.log("Dokumen:", rawData.documents);
 
-        setFormData(mappedData);
-        setSelectedDepartment(mappedData.id_department);
-        setKaryawan({
-          ...mappedData,
-          avatar: rawData.avatar || "/default.jpg",
-          jabatan: rawData.position?.name || "",
-          gaji: rawData.position?.gaji || 0,
-          uang_lembur: 0,
-          denda_terlambat: 0,
-          total_gaji: 0,
-          dokumen: rawData.documents || [],
-          tenure: rawData.tenure || "",
-        });
+          if (!rawData) throw new Error("Data karyawan tidak ditemukan");
+
+          // Mapping data ke form
+          const mappedData: FormData = {
+            id: rawData.id,
+            id_user: rawData.id_user,
+            id_position: rawData.id_position || "",
+            id_department: rawData.id_department || "",
+            first_name: rawData.first_name || "",
+            last_name: rawData.last_name || "",
+            nik: rawData.nik || "",
+            address: rawData.address || "",
+            tempat_lahir: rawData.tempat_lahir || "",
+            tanggal_lahir: rawData.tanggal_lahir || "",
+            jenis_kelamin: rawData.jenis_kelamin || "",
+            pendidikan: rawData.pendidikan || "",
+            email: rawData.user?.email || rawData.email || "", // Fix for email
+        phone_number: rawData.user?.phone_number || rawData.phone_number || "",
+
+
+            start_date: rawData.start_date || "",
+            end_date: rawData.end_date || "",
+            jadwal: rawData.jadwal || "",
+            tipe_kontrak: rawData.tipe_kontrak || "",
+            cabang: rawData.cabang || "",
+            employment_status: rawData.employment_status || "",
+            tanggal_efektif: rawData.tanggal_efektif?.slice(0, 10) || "",
+            bank: rawData.bank || "",
+            no_rek: rawData.no_rek || "",
+            dokumen: null,
+          };
+
+          setFormData(mappedData);
+          setSelectedDepartment(mappedData.id_department); // penting untuk jabatan muncul
+
+          // Muat jabatan langsung (jangan tunggu useEffect)
+          if (mappedData.id_department) {
+            const posRes = await api.get(
+              `/admin/positions/${mappedData.id_department}`
+            );
+            setPositions(
+              posRes.data.data.map((pos: any) => ({
+                id: pos.id,
+                name: pos.name,
+                gaji: pos.gaji ?? 0,
+              }))
+            );
+          }
+
+          // Set karyawan setelah posisi terload
+          setKaryawan({
+            ...mappedData,
+            avatar: rawData.avatar || "/default.jpg",
+            jabatan: rawData.position?.name || "",
+            gaji: rawData.position?.gaji ?? 0,
+            uang_lembur: rawData.uang_lembur || 0,
+            denda_terlambat: rawData.denda_terlambat || 0,
+            total_gaji: rawData.total_gaji || 0,
+            dokumen: rawData.documents || [],
+            tenure: rawData.tenure || "",
+            position: rawData.position || null,
+            user: rawData.user || null,
+          });
+        }
       } catch (err) {
-        setError("Gagal mengambil data karyawan.");
+        setError("Gagal mengambil data.");
         console.error(err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchEmployee();
+    fetchData();
   }, [params?.id]);
 
   const handleJabatanChange = (selectedId: string) => {
     setFormData((prev) => ({ ...prev, id_position: selectedId }));
   };
 
-  const handleDepartmentChange = (deptId: string) => {
+  const handleDepartmentChange = async (deptId: string) => {
     setSelectedDepartment(deptId);
-    setFormData((prev) => ({ ...prev, id_department: deptId, id_position: "" }));
+    setFormData((prev) => ({
+      ...prev,
+      id_department: deptId,
+      id_position: "",
+    }));
+
+    try {
+      const res = await api.get(`/admin/positions/${deptId}`);
+      setPositions(
+        res.data.data.map((pos: any) => ({
+          id: pos.id,
+          name: pos.name,
+          gaji: pos.gaji || 0,
+        }))
+      );
+    } catch (err) {
+      console.error("Gagal mengambil jabatan:", err);
+      toast.error("Gagal memuat daftar jabatan");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -296,7 +362,9 @@ export default function EditKaryawan() {
 
     const validStatuses = ["active", "inactive", "resign"];
     if (!validStatuses.includes(formData.employment_status)) {
-      toast.error(`Status kerja harus salah satu dari: ${validStatuses.join(", ")}`);
+      toast.error(
+        `Status kerja harus salah satu dari: ${validStatuses.join(", ")}`
+      );
       return;
     }
 
@@ -310,7 +378,7 @@ export default function EditKaryawan() {
         tanggal_lahir: formData.tanggal_lahir,
         jenis_kelamin: formData.jenis_kelamin,
         pendidikan: formData.pendidikan,
-        no_telp: formData.no_telp,
+        // phone_number: formData.phone_number,
         jadwal: formData.jadwal,
         tipe_kontrak: formData.tipe_kontrak,
         cabang: formData.cabang,
@@ -321,7 +389,7 @@ export default function EditKaryawan() {
         id_department: formData.id_department,
         start_date: formData.start_date,
         end_date: formData.end_date,
-        tanggal_efektif: formData.tanggal_efektif
+        tanggal_efektif: formData.tanggal_efektif,
       };
 
       console.log("Sending data:", dataToSend);
@@ -329,16 +397,21 @@ export default function EditKaryawan() {
       const response = await api.put(`/admin/employees/${id}`, dataToSend);
 
       if (response.data.meta?.success) {
-        toast.success(response.data.meta.message || "Data berhasil diperbarui!");
+        toast.success(
+          response.data.meta.message || "Data berhasil diperbarui!"
+        );
         setTimeout(() => {
           router.push("/employee");
         }, 1500);
       } else {
-        throw new Error(response.data.meta?.message || "Gagal memperbarui data");
+        throw new Error(
+          response.data.meta?.message || "Gagal memperbarui data"
+        );
       }
     } catch (err: any) {
       console.error("Error details:", err.response?.data);
-      const message = err.response?.data?.message || err.message || "Terjadi kesalahan.";
+      const message =
+        err.response?.data?.message || err.message || "Terjadi kesalahan.";
       toast.error(`Gagal memperbarui data: ${message}`);
     }
   };
@@ -442,16 +515,12 @@ export default function EditKaryawan() {
             <EditableField
               label="NIK"
               value={formData.nik}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, nik: v }))
-              }
+              onChange={(v) => setFormData((prev) => ({ ...prev, nik: v }))}
             />
             <EditableField
               label="Alamat"
               value={formData.address}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, address: v }))
-              }
+              onChange={(v) => setFormData((prev) => ({ ...prev, address: v }))}
             />
             <EditableField
               label="Tempat Lahir"
@@ -500,18 +569,17 @@ export default function EditKaryawan() {
             <EditableField
               label="Email"
               value={formData.email}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, email: v }))
-              }
-              readOnly
+              onChange={(val) => setFormData({ ...formData, email: val })}
             />
+
             <EditableField
-              label="No Telp"
-              value={formData.no_telp}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, no_telp: v }))
-              }
-            />
+      label="Nomor Telepon"
+      value={formData.phone_number || ""}
+      onChange={(val) =>
+        setFormData({ ...formData, phone_number: val })
+      }
+      type="tel"
+    />
           </div>
         </div>
 
@@ -522,6 +590,7 @@ export default function EditKaryawan() {
               Informasi Kepegawaian
             </h2>
             <div className="space-y-4">
+              {/* Department selection */}
               <EditableField
                 label="Departemen"
                 type="select"
@@ -532,6 +601,8 @@ export default function EditKaryawan() {
                   label: d.name,
                 }))}
               />
+
+              {/* Position selection */}
               <EditableField
                 label="Jabatan"
                 type="select"
@@ -543,6 +614,7 @@ export default function EditKaryawan() {
                 }))}
                 disabled={!selectedDepartment}
               />
+
               <EditableField
                 label="Mulai Kerja"
                 type="date"
@@ -600,16 +672,18 @@ export default function EditKaryawan() {
                   setFormData((prev) => ({ ...prev, employment_status: v }))
                 }
                 options={[
-                  { value: "active", label: "Aktif" },
-                  { value: "inactive", label: "Tidak Aktif" },
-                  { value: "resign", label: "Resign" },
+                  { value: "active", label: "active" },
+                  { value: "inactive", label: "inactive" },
+                  { value: "resign", label: "resign" },
                 ]}
               />
             </div>
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold text-[#141414] mb-4">Payroll</h2>
+            <h2 className="text-xl font-semibold text-[#141414] mb-4">
+              Payroll
+            </h2>
             <div className="space-y-4">
               <EditableField
                 label="Tanggal Efektif"
@@ -623,9 +697,7 @@ export default function EditKaryawan() {
               <EditableField
                 label="Bank"
                 value={formData.bank}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, bank: v }))
-                }
+                onChange={(v) => setFormData((prev) => ({ ...prev, bank: v }))}
               />
               <EditableField
                 label="Nomor Rekening"
@@ -669,23 +741,10 @@ export default function EditKaryawan() {
                         <td className="px-6 py-4 text-center">
                           <button
                             title="Detail"
-                            onClick={() => window.open(doc.file, "_blank")}
+                            onClick={() => window.open(doc.url, "_blank")}
                             className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
                           >
                             <FaEye />
-                          </button>
-                          <button
-                            title="Hapus"
-                            onClick={() => {
-                              if (
-                                confirm("Yakin ingin menghapus dokumen ini?")
-                              ) {
-                                // Tambahkan logika delete dokumen di sini
-                              }
-                            }}
-                            className="border border-red-600 ml-2 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
-                          >
-                            <FaTrash />
                           </button>
                         </td>
                       </tr>
@@ -694,9 +753,7 @@ export default function EditKaryawan() {
                 </table>
               </div>
             ) : (
-              <p className="text-sm text-gray-600 italic">
-                Tidak ada dokumen
-              </p>
+              <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
             )}
           </div>
         </div>

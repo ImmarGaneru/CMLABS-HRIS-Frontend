@@ -19,21 +19,21 @@ export default function TambahKaryawan() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
- const [positions, setPositions] = useState<Position[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
   const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
 
-
   const [formData, setFormData] = useState({
     id_user: "",
+    password: "",
     avatar: null as File | null,
     first_name: "",
     last_name: "",
     nik: "",
     address: "",
-    no_telp: "",
+    phone_number: "",
     email: "",
     tempat_lahir: "",
     tanggal_lahir: "",
@@ -46,7 +46,7 @@ export default function TambahKaryawan() {
     id_position: "", // id dari posisi yang dipilih
     cabang: "",
     bank: "",
-    norek: "",
+    no_rek: "",
     start_date: "",
     end_date: "",
     tenure: "",
@@ -63,37 +63,69 @@ export default function TambahKaryawan() {
     name: string;
     gaji?: number | null;
   }
-// Fetch positions by department
-  useEffect(() => {
-    async function fetchPositionsByDepartment() {
-      if (!selectedDepartment) return;
-      try {
-        const res = await api.get(`/admin/positions/${selectedDepartment}`);
-        setPositions(
-          res.data.data.map((pos: any) => ({
-            id: pos.id,
-            name: pos.name,
-            gaji: pos.gaji ?? 0,
-          }))
-        );
-      } catch (err) {
-        console.error("Gagal ambil jabatan", err);
-      }
-    }
+  // Fetch positions by department
+  // useEffect(() => {
+  //   async function fetchPositionsByDepartment() {
+  //     if (!selectedDepartment) return;
+  //     try {
+  //       const res = await api.get(`/admin/positions`);
+  //       setPositions(
+  //         res.data.data.map((pos: any) => ({
+  //           id: pos.id,
+  //           name: pos.name,
+  //           gaji: pos.gaji ?? 0,
+  //         }))
+  //       );
+  //     } catch (err) {
+  //       console.error("Gagal ambil jabatan", err);
+  //     }
+  //   }
 
-    fetchPositionsByDepartment();
-  }, [selectedDepartment]);
+  //   fetchPositionsByDepartment();
+  // }, [selectedDepartment]);
 
   const handleDepartmentChange = (deptId: string) => {
     setSelectedDepartment(deptId);
-    setFormData((prev) => ({ ...prev, id_department: deptId, id_position: "" }));
+    setFormData((prev) => ({
+      ...prev,
+      id_department: deptId,
+      id_position: "",
+    }));
   };
 
+  // Handle perubahan jabatan
   const handleJabatanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  const selectedId = e.target.value;
-  setFormData((prev) => ({ ...prev, id_position: selectedId }));
-};
+    const selectedId = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      id_position: selectedId,
+    }));
+  };
 
+  // Ambil data posisi berdasarkan department yang dipilih
+  useEffect(() => {
+    const fetchPositionsByDepartment = async () => {
+      if (!selectedDepartment) return;
+
+      try {
+        const res = await api.get(`/admin/positions`, {
+          params: { department_id: selectedDepartment }, // optional: jika butuh filter posisi by department
+        });
+
+        const posisiFormatted = res.data.data.map((pos: any) => ({
+          id: pos.id,
+          name: pos.name,
+          gaji: pos.gaji ?? 0,
+        }));
+
+        setPositions(posisiFormatted);
+      } catch (err) {
+        console.error("Gagal mengambil jabatan:", err);
+      }
+    };
+
+    fetchPositionsByDepartment();
+  }, [selectedDepartment]);
 
   const handleBack = () => router.push("/employee");
 
@@ -122,8 +154,6 @@ export default function TambahKaryawan() {
       }));
     }
   };
-
-
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -157,7 +187,7 @@ export default function TambahKaryawan() {
       return updated;
     });
   };
- // Fetch departments
+  // Fetch departments
   useEffect(() => {
     async function fetchDepartments() {
       try {
@@ -171,105 +201,108 @@ export default function TambahKaryawan() {
     fetchDepartments();
   }, []);
 
- const handleChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-) => {
-  const { name, value } = e.target;
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
 
-  setFormData((prev) => {
-    let updatedValue: string | number = value;
+    setFormData((prev) => {
+      let updatedValue: string | number = value;
 
-    if (["gaji", "uang_lembur", "denda_terlambat"].includes(name)) {
-      updatedValue = parseFloat(value) || 0;
-    }
+      if (["gaji", "uang_lembur", "denda_terlambat"].includes(name)) {
+        updatedValue = parseFloat(value) || 0;
+      }
 
-    const updated = {
-      ...prev,
-      [name]: updatedValue,
-    };
+      const updated = {
+        ...prev,
+        [name]: updatedValue,
+      };
 
-    updated.total_gaji =
-      (typeof updated.gaji === "number"
-        ? updated.gaji
-        : parseFloat(updated.gaji as string)) +
-      (typeof updated.uang_lembur === "number"
-        ? updated.uang_lembur
-        : parseFloat(updated.uang_lembur as string)) -
-      (typeof updated.denda_terlambat === "number"
-        ? updated.denda_terlambat
-        : parseFloat(updated.denda_terlambat as string));
+      updated.total_gaji =
+        (typeof updated.gaji === "number"
+          ? updated.gaji
+          : parseFloat(updated.gaji as string)) +
+        (typeof updated.uang_lembur === "number"
+          ? updated.uang_lembur
+          : parseFloat(updated.uang_lembur as string)) -
+        (typeof updated.denda_terlambat === "number"
+          ? updated.denda_terlambat
+          : parseFloat(updated.denda_terlambat as string));
 
-    return updated;
-  });
-};
+      return updated;
+    });
+  };
 
-function isUUID(str: string) {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
-}
-
-const handleSubmit = async (event: React.FormEvent) => {
-  event.preventDefault();
-
-  if (!isUUID(formData.id_position)) {
-    toast.error("ID posisi harus dalam format UUID yang benar!");
-    return;
+  function isUUID(str: string) {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
   }
 
-  try {
-    const data = new FormData();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
-    // Tambahkan properti biasa (kecuali dokumen)
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === "dokumen") return; // abaikan dokumen di sini
+    if (!isUUID(formData.id_position)) {
+      toast.error("ID posisi harus dalam format UUID yang benar!");
+      return;
+    }
 
-      if (value instanceof File) {
-        data.append(key, value);
-      } else if (value !== null && value !== undefined) {
-        data.append(key, value.toString());
-      }
-    });
+    try {
+      const data = new FormData();
 
-    // Tambahkan dokumen satu per satu
-    formData.dokumen.forEach((file: File) => {
-      data.append("dokumen[]", file);
-    });
+      // Tambahkan properti biasa (kecuali dokumen)
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === "dokumen") return; // abaikan dokumen di sini
 
-    await createEmployee(data);
+        if (value instanceof File) {
+          data.append(key, value);
+        } else if (value !== null && value !== undefined) {
+          data.append(key, value.toString());
+        }
+      });
 
-    toast.success("Data berhasil ditambahkan!");
-    router.push("/employee");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    if (error.response?.data) {
-      const data = error.response.data;
+      // Tambahkan dokumen satu per satu
+      formData.dokumen.forEach((file: File) => {
+        data.append("dokumen[]", file);
+      });
+      await api.post("/admin/employees", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      if (data.errors) {
-        const messages = Object.entries(data.errors)
-          .map(([field, msgs]) => {
-            const text = Array.isArray(msgs) ? msgs.join(", ") : msgs;
-            return `${field}: ${text}`;
-          })
-          .join("\n");
+      toast.success("Data berhasil ditambahkan!");
+      router.push("/employee");
 
-        toast.error(`Gagal menambahkan data:\n${messages}`);
-      } else if (typeof data.message === "string") {
-        toast.error(`Gagal menambahkan data: ${data.message}`);
+      toast.success("Data berhasil ditambahkan!");
+      router.push("/employee");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (error.response?.data) {
+        const data = error.response.data;
+
+        if (data.errors) {
+          const messages = Object.entries(data.errors)
+            .map(([field, msgs]) => {
+              const text = Array.isArray(msgs) ? msgs.join(", ") : msgs;
+              return `${field}: ${text}`;
+            })
+            .join("\n");
+
+          toast.error(`Gagal menambahkan data:\n${messages}`);
+        } else if (typeof data.message === "string") {
+          toast.error(`Gagal menambahkan data: ${data.message}`);
+        } else {
+          toast.error(`Gagal menambahkan data: ${JSON.stringify(data)}`);
+        }
+
+        console.error("Detail error:", data);
       } else {
-        toast.error(`Gagal menambahkan data: ${JSON.stringify(data)}`);
+        toast.error("Gagal menambahkan data karyawan. Silakan coba lagi.");
+        console.error(error);
       }
-
-      console.error("Detail error:", data);
-    } else {
-      toast.error("Gagal menambahkan data karyawan. Silakan coba lagi.");
-      console.error(error);
     }
-  }
-};
-
-
-  
+  };
 
   return (
     <div className="mt-3 p-6 bg-white rounded shadow w-full ml-0 mr-auto">
@@ -417,22 +450,55 @@ const handleSubmit = async (event: React.FormEvent) => {
             value={formData.address}
           />
         </div>
-
         <div>
           <label
-            htmlFor="no_telp"
+            htmlFor="password"
+            className="block text-[20px] font-bold text-[#141414]"
+          >
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            placeholder="Enter password"
+            onChange={handleChange}
+            className="input"
+            value={formData.password}
+          />
+        </div>
+     
+        <div>
+          <label
+            htmlFor="phone_number"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Nomor Telepon
           </label>
           <input
-            id="no_telp"
-            name="no_telp"
+            id="phone_number"
+            name="phone_number"
             type="number"
             placeholder="Enter phone number"
             onChange={handleChange}
             className="input"
-            value={formData.no_telp}
+            value={formData.phone_number}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-[20px] font-bold text-[#141414]"
+          >
+            email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="Enter email"
+            onChange={handleChange}
+            className="input"
+            value={formData.email}
           />
         </div>
 
@@ -658,21 +724,23 @@ const handleSubmit = async (event: React.FormEvent) => {
             value={formData.grade}
           />
         </div> */}
-<div>
-                <label   className="block text-[20px] font-bold text-[#141414]">Departemen</label>
-                <select
-                  className="border border-gray-300 rounded w-full p-2"
-                  value={selectedDepartment}
-                  onChange={(e) => handleDepartmentChange(e.target.value)}
-                >
-                  <option value="">-- Pilih Departemen --</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        <div>
+          <label className="block text-[20px] font-bold text-[#141414]">
+            Departemen
+          </label>
+          <select
+            className="border border-gray-300 rounded w-full p-2"
+            value={selectedDepartment}
+            onChange={(e) => handleDepartmentChange(e.target.value)}
+          >
+            <option value="">-- Pilih Departemen --</option>
+            {departments.map((dept) => (
+              <option key={dept.id} value={dept.id}>
+                {dept.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div>
           <label
@@ -750,19 +818,19 @@ const handleSubmit = async (event: React.FormEvent) => {
 
         <div>
           <label
-            htmlFor="norek"
+            htmlFor="no_rek"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Nomor Rekening
           </label>
           <input
-            id="norek"
-            name="norek"
+            id="no_rek"
+            name="no_rek"
             type="number"
             placeholder="Enter bank account number"
             onChange={handleChange}
             className="input"
-            value={formData.norek}
+            value={formData.no_rek}
           />
         </div>
 

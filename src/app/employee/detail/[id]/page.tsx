@@ -12,7 +12,8 @@ import React from "react";
 // import DataTableHeader from "@/components/DatatableHeader";
 import api from "@/lib/axios";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
+import { parseISO, intervalToDuration } from "date-fns";
 type Dokumen = {
   id: number;
   name: string;
@@ -28,13 +29,14 @@ type Karyawan = {
   last_name: string;
   jabatan: string;
   nik: string;
+  id_position: string;
   address: string;
   tempat_lahir: string;
   tanggal_lahir: string;
   jenis_kelamin: string;
   pendidikan: string;
   email: string;
-  no_telp: string;
+  phone_number: string;
   dokumen: Dokumen[];
   start_date: string;
   tenure: string;
@@ -45,7 +47,7 @@ type Karyawan = {
   employment_status: string;
   tanggal_efektif: string;
   bank: string;
-  norek: string;
+  no_rek: string;
   gaji: string;
   uang_lembur: string;
   denda_terlambat: string;
@@ -59,6 +61,31 @@ export default function DetailKaryawan() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  function calculateTenure(start: string, end?: string): string {
+    if (!start || start === "-") return "-";
+
+    try {
+      const startDate = parseISO(start);
+      const endDate = end && end !== "-" ? parseISO(end) : new Date();
+
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.log("Tanggal tidak valid:", start, end);
+        return "-";
+      }
+
+      const duration = intervalToDuration({ start: startDate, end: endDate });
+
+      const parts: string[] = [];
+      if (duration.years) parts.push(`${duration.years} tahun`);
+      if (duration.months) parts.push(`${duration.months} bulan`);
+      if (duration.days) parts.push(`${duration.days} hari`);
+
+      return parts.length > 0 ? parts.join(" ") : "0 hari";
+    } catch (error) {
+      console.log("Error menghitung tenure:", error);
+      return "-";
+    }
+  }
 
   function parseRupiahToNumber(rupiahStr: string | null | undefined): number {
     if (!rupiahStr) return 0;
@@ -75,94 +102,114 @@ export default function DetailKaryawan() {
       ? "-"
       : `Rp ${numericValue.toLocaleString("id-ID")}`;
   };
-console.log("ID dari params:", params?.id);
+  console.log("ID dari params:", params?.id);
 
- useEffect(() => {
-  const id = params?.id;
-  if (!id) {
-    setError("ID karyawan tidak tersedia");
-    return;
-  }
+  useEffect(() => {
+    const id = params?.id;
+    if (!id) {
+      setError("ID karyawan tidak tersedia");
+      return;
+    }
 
-  const fetchEmployee = async () => {
-    setLoading(true);
-    setError(null);
+    const fetchEmployee = async () => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const response = await api.get(`/admin/employees/${id}`);
-      const rawData = response.data.data;
-console.log("RAW DATA:", rawData);
+      try {
+        const response = await api.get(`/admin/employees/${id}`);
+        const rawData = response.data.data;
+        console.log("RAW DATA:", rawData);
 
-      // Cek apakah data yang dibutuhkan tersedia
-      if (!rawData) {
-        throw new Error("Data karyawan tidak ditemukan.");
+        // Cek apakah data yang dibutuhkan tersedia
+        if (!rawData) {
+          throw new Error("Data karyawan tidak ditemukan.");
+        }
+        // Ambil nama posisi berdasarkan id_position
+        let positionName = rawData.jabatan || "-";
+        if (rawData.id_position) {
+          try {
+            const positionRes = await api.get(
+              `/admin/positions/get/${rawData.id_position}`
+            );
+            if (
+              positionRes.data?.meta?.success &&
+              positionRes.data?.data?.name
+            ) {
+              positionName = positionRes.data.data.name;
+            }
+          } catch (err) {
+            console.error("Gagal mengambil data posisi:", err);
+            // Biarkan positionName tetap "-"
+          }
+        }
+    
+
+        // Pastikan parseRupiahToNumber tidak error
+        const gajiNum = parseRupiahToNumber(rawData.gaji || "Rp 0");
+        const lemburNum = parseRupiahToNumber(rawData.uang_lembur || "Rp 0");
+        const dendaNum = parseRupiahToNumber(rawData.denda_terlambat || "Rp 0");
+        const totalNum = gajiNum + lemburNum - dendaNum;
+
+        const mappedData: Karyawan = {
+          id: rawData.id_user,
+          name: `${rawData.first_name || ""} ${rawData.last_name || ""}`,
+          avatar: rawData.avatar || "/default.jpg",
+          jabatan: positionName,
+          id_position: rawData.id_position || "-",
+
+          nik: rawData.nik || "-",
+          address: rawData.address || "-",
+          tempat_lahir: rawData.tempat_lahir || "-",
+          tanggal_lahir: rawData.tanggal_lahir || "-",
+          jenis_kelamin: rawData.jenis_kelamin || "-",
+          pendidikan: rawData.pendidikan || "-",
+         phone_number: rawData.user?.phone_number || "-",
+      email: rawData.user?.email || "-",
+          dokumen: rawData.dokumen || [],
+          start_date: rawData.start_date || "-",
+          tenure: calculateTenure(rawData.start_date, rawData.end_date),
+
+          end_date: rawData.end_date || "-",
+          jadwal: rawData.jadwal || "-",
+          tipe_kontrak: rawData.tipe_kontrak || "-",
+          cabang: rawData.cabang || "-",
+          employment_status: rawData.employment_status || "-",
+          tanggal_efektif: rawData.tanggal_efektif || "-",
+          bank: rawData.bank || "-",
+          no_rek: rawData.no_rek || "-",
+          gaji: gajiNum.toString(),
+          uang_lembur: lemburNum.toString(),
+          denda_terlambat: dendaNum.toString(),
+          total_gaji: totalNum.toString(),
+          first_name: rawData.first_name || "-",
+          last_name: rawData.last_name || "-",
+        };
+
+        setKaryawan(mappedData);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Terjadi kesalahan saat mengambil data karyawan.");
+        }
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Pastikan parseRupiahToNumber tidak error
-      const gajiNum = parseRupiahToNumber(rawData.gaji || "Rp 0");
-      const lemburNum = parseRupiahToNumber(rawData.uang_lembur || "Rp 0");
-      const dendaNum = parseRupiahToNumber(rawData.denda_terlambat || "Rp 0");
-      const totalNum = gajiNum + lemburNum - dendaNum;
+    fetchEmployee();
+  }, [params?.id]);
 
-      const mappedData: Karyawan = {
-        id: rawData.id_user,
-        name: `${rawData.first_name || ""} ${rawData.last_name || ""}`,
-        avatar: rawData.avatar || "/default.jpg",
-        jabatan: rawData.jabatan || "-",
-        nik: rawData.nik || "-",
-        address: rawData.address || "-",
-        tempat_lahir: rawData.tempat_lahir || "-",
-        tanggal_lahir: rawData.tanggal_lahir || "-",
-        jenis_kelamin: rawData.jenisKelamin || "-",
-        pendidikan: rawData.pendidikan || "-",
-        email: rawData.email || "-",
-        no_telp: rawData.no_telp || "-",
-        dokumen: rawData.dokumen || [],
-        start_date: rawData.start_date || "-",
-        tenure: rawData.tenure || "-",
-        end_date: rawData.end_date || "-",
-        jadwal: rawData.jadwal || "-",
-        tipe_kontrak: rawData.tipe_kontrak || "-",
-        cabang: rawData.cabang || "-",
-        employment_status: rawData.employment_status || "-",
-        tanggal_efektif: rawData.tanggal_efektif || "-",
-        bank: rawData.bank || "-",
-        norek: rawData.norek || "-",
-        gaji: gajiNum.toString(),
-        uang_lembur: lemburNum.toString(),
-        denda_terlambat: dendaNum.toString(),
-        total_gaji: totalNum.toString(),
-        first_name: rawData.first_name || "-",
-        last_name: rawData.last_name || "-",
-      };
-
-      setKaryawan(mappedData);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Terjadi kesalahan saat mengambil data karyawan.");
-      }
-    } finally {
-      setLoading(false);
+  const [dokumen, setDokumen] = React.useState<File[]>([]);
+  const handleDokumenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setDokumen(Array.from(e.target.files));
     }
   };
 
-  fetchEmployee();
-}, [params?.id]);
-
-
-  const [dokumen, setDokumen] = React.useState<File[]>([]);
-
-  // const handleDokumenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files) {
-  //     setDokumen(Array.from(e.target.files));
-  //   }
-  // };
-
   const employeeId = params?.id as string | undefined;
 
-const handleUpload = async () => {
+  const handleUpload = async () => {
   if (!employeeId) {
     alert("Employee ID tidak tersedia");
     return;
@@ -185,71 +232,81 @@ const handleUpload = async () => {
           "Content-Type": "multipart/form-data",
         },
       }
+      
     );
+    
 
     if (response.status === 200) {
       toast.success("Berhasil Menggunggah Dokumen.");
 
-      // Ambil dokumen baru dari response
       const uploadedFiles = response.data.dokumen || [];
 
-      // Tambahkan dokumen yang baru ke state karyawan
-     setKaryawan((prev) => {
-  if (!prev) return prev; // atau bisa juga return null;
+      // ✅ Tambahkan dokumen ke state karyawan tanpa reload
+      setKaryawan((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          dokumen: [
+            ...(prev.dokumen || []),
+            ...uploadedFiles.map((doc: any) => ({
+              id: doc.id,
+               dokumen: response.data.dokumen || [],
+              name: doc.name,
+              file: doc.file, // pastikan ini adalah full URL dari backend
+              uploaded_at: new Date().toISOString(), // opsional
+            })),
+          ],
+        };
+      });
 
-  return {
-    ...prev,
-    dokumen: [...(prev.dokumen || []), ...uploadedFiles],
-  };
-});
+      // Kosongkan file input setelah upload
+      setDokumen([]);
     }
-  } catch (err: unknown) {
-  if (typeof err === "object" && err !== null && "response" in err) {
-    const error = err as any;
-
-    if (error.response?.status === 422) {
-      const errors = error.response.data.errors;
+  } catch (err: any) {
+    if (err.response?.status === 422) {
+      const errors = err.response.data.errors;
       const messages = Object.entries(errors)
         .map(([key, val]) => `${key}: ${(val as string[]).join(", ")}`)
         .join("\n");
       toast.error(`Validasi gagal:\n${messages}`);
     } else {
       toast.error(
-        `Upload gagal: ${error.response.data.message || error.response.statusText}`
+        `Upload gagal: ${err.response?.data?.message || err.message}`
       );
     }
-  } else if (typeof err === "object" && err !== null && "request" in err) {
-    toast.error("Tidak ada respon dari server.");
-  } else if (err instanceof Error) {
-    toast.error(`Terjadi error: ${err.message}`);
-  } else {
-    toast.error("Terjadi error yang tidak diketahui.");
   }
-}
-
 };
 
 
   const handleViewDocument = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
- if (loading) {
-  return (
-    <div className="flex justify-center items-center p-6 space-x-2">
-      <span className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce" style={{ animationDelay: '0s' }}></span>
-      <span className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-      <span className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce" style={{ animationDelay: '0.4s' }}></span>
-    </div>
-  );
-}
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-6 space-x-2">
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0s" }}
+        ></span>
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0.2s" }}
+        ></span>
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0.4s" }}
+        ></span>
+      </div>
+    );
+  }
 
-if (error) {
-  return <div className="p-6 text-red-600">Error: {error}</div>;
-}
+  if (error) {
+    return <div className="p-6 text-red-600">Error: {error}</div>;
+  }
 
-if (!karyawan) {
-  return <div className="p-6">Data karyawan tidak ditemukan.</div>;
-}
+  if (!karyawan) {
+    return <div className="p-6">Data karyawan tidak ditemukan.</div>;
+  }
 
   return (
     <div className=" px-6 py-4 bg-white rounded shadow w-full mt-2 min-h-screen font-sans">
@@ -306,7 +363,7 @@ if (!karyawan) {
             <FieldRow label="Jenis Kelamin" value={karyawan.jenis_kelamin} />
             <FieldRow label="Pendidikan Terakhir" value={karyawan.pendidikan} />
             <FieldRow label="Email" value={karyawan.email} />
-            <FieldRow label="No Telp" value={karyawan.no_telp} />
+            <FieldRow label="No Telp" value={karyawan.phone_number} />
           </Section>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -330,7 +387,7 @@ if (!karyawan) {
                 value={karyawan.tanggal_efektif}
               />
               <FieldRow label="Bank" value={karyawan.bank} />
-              <FieldRow label="Nomer Rekening" value={karyawan.norek} />
+              <FieldRow label="Nomer Rekening" value={karyawan.no_rek} />
               <FieldRow
                 label="Gaji Pokok"
                 value={formatRupiah(karyawan.gaji)}
@@ -349,107 +406,120 @@ if (!karyawan) {
               />
             </Section>
           </div>
-        <div className="w-full mt-10">
-  <div className="mb-4 flex items-center justify-between">
-    <div className="flex items-center gap-2">
-      <h2 className="text-2xl font-semibold text-[#1e293b]">📂 Dokumen Karyawan</h2>
-      <label
-        htmlFor="fileUpload"
-        className="flex items-center gap-2 bg-[#1E3A5F] text-white px-2 py-2 rounded-md shadow-md hover:bg-[#155A8A] cursor-pointer transition duration-200 select-none"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-        </svg>
-        Tambah Dokumen
-      </label>
-    </div>
-
-    <input
-      id="fileUpload"
-      type="file"
-      multiple
-      className="hidden"
-      onChange={(e) => {
-        if (e.target.files) {
-          const newFiles = Array.from(e.target.files);
-          setDokumen((prevFiles) => {
-            const combinedFiles = [...prevFiles];
-            newFiles.forEach((file) => {
-              if (!combinedFiles.some((f) => f.name === file.name && f.size === file.size)) {
-                combinedFiles.push(file);
-              }
-            });
-            return combinedFiles;
-          });
-        }
-      }}
-    />
-  </div>
-
-  {dokumen.length > 0 && (
-    <div className="mt-10">
-      <h3 className="text-lg font-semibold text-gray-700 mb-2">📎 Dokumen yang dipilih:</h3>
-      <ul className="mt-2 list-disc list-inside">
-        {dokumen.map((file, idx) => (
-          <li key={idx}>{file.name}</li>
-        ))}
-      </ul>
-      <button
-        onClick={handleUpload}
-        className="mt-5 mb-5 bg-[#1E3A5F] text-white px-4 py-2 rounded"
-      >
-        Upload Dokumen
-      </button>
-    </div>
-  )}
-
-  {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
-    <div className="w-full overflow-x-auto rounded-lg shadow-md">
-      <table className="min-w-[640px] w-full text-left text-sm text-gray-700 border border-gray-300">
-        <thead className="bg-gray-100 text-gray-700 uppercase tracking-wide border-b border-gray-300">
-          <tr>
-            <th className="px-6 py-3 border-r border-gray-300">Nama Dokumen</th>
-            <th className="px-6 py-3 text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {karyawan.dokumen.map((doc, index) => (
-            <tr
-              key={doc.id ?? index}
-              className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
-                index % 2 === 0 ? "bg-white" : "bg-gray-50"
-              }`}
-            >
-              <td className="px-6 py-4 border-r border-gray-200 font-medium whitespace-nowrap">
-                {doc.name}
-              </td>
-              <td className="px-6 py-4 text-center">
-                <button
-                  onClick={() => handleViewDocument(doc.file)}
-                  title="Lihat Dokumen"
-                  className="text-blue-600 border border-blue-600 rounded-md px-3 py-1 hover:bg-blue-100 transition"
-                  type="button"
+          <div className="w-full mt-10">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-semibold text-[#1e293b]">
+                  📂 Dokumen Karyawan
+                </h2>
+                <label
+                  htmlFor="fileUpload"
+                  className="flex items-center gap-2 bg-[#1E3A5F] text-white px-2 py-2 rounded-md shadow-md hover:bg-[#155A8A] cursor-pointer transition duration-200 select-none"
                 >
-                  <FaEye />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  ) : (
-    <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
-  )}
-</div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Tambah Dokumen
+                </label>
+              </div>
 
+              <input
+                id="fileUpload"
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    const newFiles = Array.from(e.target.files);
+                    setDokumen((prevFiles) => {
+                      const combinedFiles = [...prevFiles];
+                      newFiles.forEach((file) => {
+                        if (
+                          !combinedFiles.some(
+                            (f) => f.name === file.name && f.size === file.size
+                          )
+                        ) {
+                          combinedFiles.push(file);
+                        }
+                      });
+                      return combinedFiles;
+                    });
+                  }
+                }}
+              />
+            </div>
+
+            {dokumen.length > 0 && (
+              <div className="mt-10">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  📎 Dokumen yang dipilih:
+                </h3>
+                <ul className="mt-2 list-disc list-inside">
+                  {dokumen.map((file, idx) => (
+                    <li key={idx}>{file.name}</li>
+                  ))}
+                </ul>
+                <button
+                  onClick={handleUpload}
+                  className="mt-5 mb-5 bg-[#1E3A5F] text-white px-4 py-2 rounded"
+                >
+                  Upload Dokumen
+                </button>
+              </div>
+            )}
+
+            {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
+              <div className="w-full overflow-x-auto rounded-lg shadow-md">
+                <table className="min-w-[640px] w-full text-left text-sm text-gray-700 border border-gray-300">
+                  <thead className="bg-gray-100 text-gray-700 uppercase tracking-wide border-b border-gray-300">
+                    <tr>
+                      <th className="px-6 py-3 border-r border-gray-300">
+                        Nama Dokumen
+                      </th>
+                      <th className="px-6 py-3 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {karyawan.dokumen.map((doc, index) => (
+                      <tr
+                        key={doc.id ?? index}
+                        className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        }`}
+                      >
+                        <td className="px-6 py-4 border-r border-gray-200 font-medium whitespace-nowrap">
+                          {doc.name}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button
+                            onClick={() => handleViewDocument(doc.file)}
+                            title="Lihat Dokumen"
+                            className="text-blue-600 border border-blue-600 rounded-md px-3 py-1 hover:bg-blue-100 transition"
+                            type="button"
+                          >
+                            <FaEye />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
