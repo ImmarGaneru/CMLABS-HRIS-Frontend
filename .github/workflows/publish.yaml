@@ -20,6 +20,15 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: build and push hoshigakikisame/hris_frontend_nginx image
+        id: build-push-nginx
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/production/nginx/Dockerfile
+          push: true
+          tags: hoshigakikisame/hris_frontend_nginx:latest
       
       - name: build and push hoshigakikisame/hris_frontend-prod image
         id: build-push-web
