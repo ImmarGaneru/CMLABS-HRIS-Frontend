@@ -2,7 +2,7 @@ name: hris_frontend-prod
 
 services:
   nginx:
-    image: nginx:latest
+    image: hoshigakikisame/hris_frontend_nginx:latest
     container_name: hris_frontend_nginx
     user: root
     build:
