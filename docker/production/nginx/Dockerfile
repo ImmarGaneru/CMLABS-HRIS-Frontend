@@ -12,5 +12,5 @@ WORKDIR /var/www/html
 
 # Expose port 80 and start Nginx
 EXPOSE 80
-EXPOSE 443
+
 CMD ["nginx", "-g", "daemon off;"]
