@@ -49,7 +49,6 @@ interface ApprovalContext {
     submitApproval: (data: any) => Promise<void>;
     options: { value: string; label: string }[];
     isLoading: boolean;
-    isAdmin: () => Promise<boolean>;
     getCurrentUser: () => Promise<ApprovalUser>;
     updateApproval: (id: string, data: { start_date?: string; end_date?: string; request_type?: string; reason?: string }) => Promise<void>;
 }
@@ -181,16 +180,6 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const isAdmin = async (): Promise<boolean> => {
-        try {
-            const response = await api.get('/approvals/isAdmin');
-            return response.data.data.isAdmin;
-        } catch (error) {
-            console.error('Error checking admin status:', error);
-            return false;
-        }
-    };
-
     const getCurrentUser = async (): Promise<ApprovalUser> => {
         try {
             const response = await api.get('/auth/me');
@@ -216,7 +205,6 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
                 submitApproval,
                 options,
                 isLoading,
-                isAdmin,
                 getCurrentUser,
                 updateApproval
             }}

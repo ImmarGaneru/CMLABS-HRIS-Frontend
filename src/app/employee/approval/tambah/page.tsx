@@ -42,7 +42,7 @@ const FormSchema = z.object({
 })
 
 export default function TambahApproval(){
-    const { submitApproval, isAdmin, getCurrentUser } = useApproval();
+    const { submitApproval, getCurrentUser } = useApproval();
     const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
 
@@ -59,7 +59,7 @@ export default function TambahApproval(){
         };
 
         fetchInitialData();
-    }, [hydrated, isAdmin, getCurrentUser]);
+    }, [hydrated, getCurrentUser]);
 
 
     const typeOptions: OptionType[] = [
@@ -88,7 +88,7 @@ export default function TambahApproval(){
     return (
         <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
-                <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+                <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
                     {/* Tambahkan komponen header atau tombol di sini jika diperlukan */}
                     <h3 className="text-xl font-bold text-[#1E3A5F]">Tambah Approval</h3>
                     <Button onClick={() => {router.back(); }} variant="redirectButton" className="flex items-center">

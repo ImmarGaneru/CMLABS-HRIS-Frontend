@@ -13,21 +13,15 @@ import { useApproval, Approval } from "@/contexts/ApprovalContext";
 
 
 export default function ApprovalPage() {
-    const { approvals, approveRequest, rejectRequest, isAdmin } = useApproval();
+    const { approvals, approveRequest, rejectRequest } = useApproval();
     const router = useRouter();
     const [filterText, setFilterText] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
     const [filterType, setFilterType] = useState("");
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedApproval, setSelectedApproval] = useState<Approval | null>(null);
-    const [adminStatus, setAdminStatus] = useState(false);
 
     useEffect(() => {
-        const fetchAdminStatus = async () => {
-            const status = await isAdmin();
-            setAdminStatus(status);
-        };
-        fetchAdminStatus();
     }, []);
 
     const statusFilters = [
@@ -147,7 +141,7 @@ export default function ApprovalPage() {
                 },
             },
         ],
-        [adminStatus]
+        []
     );
 
 //FUNGSI-FUNGSI FILTER==
@@ -316,7 +310,7 @@ export default function ApprovalPage() {
                         </div>
 
                         {/* Actions */}
-                        {(selectedApproval.status === "pending" && adminStatus) && (
+                        {(selectedApproval.status === "pending") && (
                             <div className="flex justify-end gap-4">
                                 <button
                                     className="bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700"

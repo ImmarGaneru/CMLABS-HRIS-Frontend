@@ -10,6 +10,7 @@ import Button from "@/components/Button";
 import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
+import {FaArrowLeft} from "react-icons/fa";
 
 const FormSchema = z.object({
     request_type: z
@@ -56,17 +57,15 @@ export default function ApprovalEdit({ params }: { params: Promise<{ id: string 
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
             {/* Form Tambah Jadwal */}
-            <div className="bg-white p-6 rounded-xl shadow">
-                <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <div className="bg-[#f8f8f8] p-8 rounded-xl shadow-md mt-6">
+                <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
                     <h1 className="text-xl font-bold text-[#1E3A5F]">Edit Approval</h1>
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
-                    >
-                        Kembali
-                    </button>
+                    <Button onClick={() => {router.back(); }} variant="redirectButton" className="flex items-center">
+                        <FaArrowLeft size={16} />
+                        <span className="font-medium">Kembali</span>
+                    </Button>
                 </div>
 
                 {/* Input Nama Jadwal dan Tanggal */}
