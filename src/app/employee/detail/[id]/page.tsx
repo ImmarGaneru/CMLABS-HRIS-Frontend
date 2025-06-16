@@ -149,23 +149,33 @@ export default function DetailKaryawan() {
             // Biarkan positionName tetap "-"
           }
         }
-        // Ambil nama posisi berdasarkan id_position
-        let departemenName = rawData.department || "-";
-        if (rawData.id_department) {
-          try {
-            const departmentRes = await api.get(
-              `/admin/departments/get/${rawData.id_department}`
-            );
-            if (
-              departmentRes.data?.meta?.success &&
-              departmentRes.data?.data?.name
-            ) {
-              departemenName = departmentRes.data.data.name;
-            }
-          } catch (err) {
-            console.error("Gagal mengambil data department:", err);
-          }
-        }
+       
+    // Ambil nama departemen berdasarkan id_department
+let departemenName = rawData.department || "-";
+
+if (rawData.id_department && !rawData.department) {
+  try {
+    const departmentRes = await api.get(
+      `/admin/departments/get/${rawData.id_department}`
+    );
+    if (
+      departmentRes.data?.meta?.success &&
+      departmentRes.data?.data?.name
+    ) {
+      departemenName = departmentRes.data.data.name;
+    }
+  } catch (err) {
+    console.error("Gagal mengambil data department:", err);
+  }
+}
+
+// Simpan hasil ke objek
+const karyawan = {
+  ...rawData,
+  id_department: rawData.id_department || "-",
+  department: departemenName,
+};
+
 
         // Pastikan parseRupiahToNumber tidak error
         const gajiNum = parseRupiahToNumber(rawData.gaji || "Rp 0");
@@ -389,7 +399,7 @@ export default function DetailKaryawan() {
             <FieldRow label="No Telp" value={karyawan.phone_number} />
           </Section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-13">
             <Section title="Informasi Kepegawaian">
               <FieldRow label="Mulai Kerja" value={karyawan.start_date} />
               <FieldRow label="Masa Kerja" value={karyawan.tenure} />
@@ -397,7 +407,9 @@ export default function DetailKaryawan() {
               <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} />
               <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
               <FieldRow label="Jabatan" value={karyawan.jabatan} />
-              <FieldRow label="Department" value={karyawan.department} />
+              <FieldRow label="Departemen" value={karyawan.department} />
+            
+            
               <FieldRow label="Cabang" value={karyawan.cabang} />
               <FieldRow
                 label="Status Kerja"

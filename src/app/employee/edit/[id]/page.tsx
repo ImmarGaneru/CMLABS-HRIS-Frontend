@@ -2,7 +2,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { FaCamera, FaEye, FaTrash } from "react-icons/fa";
 import axios from "axios";
@@ -226,11 +226,6 @@ export default function EditKaryawan() {
     }
   }, [departments, formData.id_department]);
 
-  console.log("ID yang dicari:", formData.id_department);
-  console.log(
-    "Semua department:",
-    departments.map((d) => d.id)
-  );
   const handleDeleteConfirm = async (docId: string) => {
     if (!karyawan?.id_user || !docId) {
       toast.error("Data tidak lengkap.");
@@ -311,7 +306,7 @@ export default function EditKaryawan() {
     async function fetchEmployee() {
       setLoading(true);
       setError(null);
-      
+
       try {
         const res = await api.get(`admin/employees/${params.id}`);
         const mappedData = mapRawToKaryawan(res.data.data);
@@ -355,7 +350,6 @@ export default function EditKaryawan() {
           dokumen: null,
           employment_status: mappedData.employment_status,
         });
-        
       } catch (error) {
         if (axios.isAxiosError(error)) {
           setError(error.response?.data?.message ?? "Error API");
@@ -371,23 +365,23 @@ export default function EditKaryawan() {
 
     fetchEmployee();
   }, [params?.id]);
-useEffect(() => {
-  if (!formData.id_position || !positions.length) return;
+  useEffect(() => {
+    if (!formData.id_position || !positions.length) return;
 
-  const selectedPosition = positions.find(
-    (pos) => pos.id === formData.id_position
-  );
+    const selectedPosition = positions.find(
+      (pos) => pos.id === formData.id_position
+    );
 
-  if (selectedPosition) {
-    setFormData((prev) => ({
-      ...prev,
-      jabatan: selectedPosition.name,
-      gaji: selectedPosition.gaji,
-      total_gaji:
-        selectedPosition.gaji + prev.uang_lembur - prev.denda_terlambat,
-    }));
-  }
-}, [formData.id_position, positions]);
+    if (selectedPosition) {
+      setFormData((prev) => ({
+        ...prev,
+        jabatan: selectedPosition.name,
+        gaji: selectedPosition.gaji,
+        total_gaji:
+          selectedPosition.gaji + prev.uang_lembur - prev.denda_terlambat,
+      }));
+    }
+  }, [formData.id_position, positions]);
   const handleJabatanChange = (selectedId: string) => {
     const selectedPosition = positions.find(
       (pos) => pos.id.toString() === selectedId
@@ -407,36 +401,44 @@ useEffect(() => {
         selectedPosition.gaji + prev.uang_lembur - prev.denda_terlambat,
     }));
   };
-useEffect(() => {
-  if (!formData.id_department || !departments.length) return;
+  useEffect(() => {
+    if (!formData.id_department || !departments.length) return;
 
-  const selectedDept = departments.find(
-    (dept) => dept.id === formData.id_department
-  );
+    const selectedDept = departments.find(
+      (dept) => dept.id === formData.id_department
+    );
 
-  if (selectedDept) {
+    if (selectedDept) {
+      setFormData((prev) => ({
+        ...prev,
+        department: selectedDept.name,
+      }));
+    }
+  }, [formData.id_department, departments]);
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      const res = await api.get("/admin/departments");
+      if (res.data?.meta?.success) {
+        setDepartments(res.data.data);
+      }
+    };
+    fetchDepartments();
+  }, []);
+
+  const handleDepartmentChange = (selectedId: string) => {
+    const selectedDept = departments.find((dept) => dept.id === selectedId);
+
+    if (!selectedDept) {
+      console.warn("Department tidak ditemukan:", selectedId);
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
+      id_department: selectedId,
       department: selectedDept.name,
     }));
-  }
-}, [formData.id_department, departments]);
-
- const handleDepartmentChange = (selectedId: string) => {
-  const selectedDept = departments.find((dept) => dept.id === selectedId);
-
-  if (!selectedDept) {
-    console.warn("Department tidak ditemukan:", selectedId);
-    return;
-  }
-
-  setFormData((prev) => ({
-    ...prev,
-    id_department: selectedId,
-    department: selectedDept.name,
-  }));
-};
-
+  };
 
   useEffect(() => {
     const total =
@@ -450,25 +452,24 @@ useEffect(() => {
     }));
   }, [formData.gaji, formData.uang_lembur, formData.denda_terlambat]);
   const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-useEffect(() => {
-  if (karyawan?.avatar) {
-    setPreview(`/storage/${karyawan.avatar}`);
-  }
-}, [karyawan]);
 
-const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    setSelectedAvatar(file);
+  const [preview, setPreview] = useState<string | Blob | null>(null);
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string); // base64 untuk preview
-    };
-    reader.readAsDataURL(file);
-  }
-};
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedAvatar(file);
+      setPreview(URL.createObjectURL(file)); // 
+    }
+  };
+
+  useEffect(() => {
+    if (karyawan?.avatar) {
+      setPreview(karyawan.avatar); // gunakan full URL langsung
+    } else {
+      setPreview("");
+    }
+  }, [karyawan]);
 
   // Submit updated data
 
@@ -519,7 +520,7 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       dataToSend.append("start_date", formData.start_date || "");
       dataToSend.append("tenure", formData.tenure || "");
       dataToSend.append("end_date", formData.end_date || "");
-      dataToSend.append("jadwal", formData.jadwal || "");
+      // dataToSend.append("jadwal", formData.jadwal || "");
       dataToSend.append("tipe_kontrak", formData.tipe_kontrak || "");
       dataToSend.append("cabang", formData.cabang || "");
       dataToSend.append("employment_status", formData.employment_status || "");
@@ -534,11 +535,6 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       );
       dataToSend.append("total_gaji", formData.total_gaji?.toString() || "0");
       // Kirim semua field string/angka kecuali avatar
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && key !== "avatar") {
-          dataToSend.append(key, String(value));
-        }
-      });
 
       // Kirim avatar jika ada
       if (selectedAvatar instanceof File) {
@@ -574,24 +570,34 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
       console.log("Response dari server:", response.data);
 
+
       toast.success("Data berhasil diperbarui!");
       setTimeout(() => {
         router.push("/employee");
       }, 1500);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.log("Detail error avatar:", error.response?.data?.data?.avatar);
-        console.error("Response error data:", error.response?.data);
-        toast.error(
-          `Gagal memperbarui data: ${
-            error.response?.data?.message || "Terjadi kesalahan."
-          }`
-        );
-      } else {
-        console.error(error);
+   if (axios.isAxiosError(error)) {
+  const responseData = error.response?.data;
 
-        toast.error("Gagal memperbarui data.");
-      }
+  // Coba ambil error dari `errors` Laravel (kalau pakai FormRequest)
+  const errorDetail = responseData?.errors || responseData?.data?.errors;
+
+  console.log("🔴 Detail semua error:", errorDetail);
+
+  if (errorDetail) {
+    // Tampilkan semua pesan error
+    Object.entries(errorDetail).forEach(([field, messages]) => {
+      toast.error(`${field}: ${messages}`);
+    });
+  } else {
+    // Fallback
+    toast.error(responseData?.message || "Terjadi kesalahan saat update.");
+  }
+} else {
+  toast.error("Gagal memperbarui data.");
+}
+
+
     }
   };
 
@@ -658,12 +664,10 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           <div className="flex items-center gap-6">
             {/* Kotak foto dengan border, bayangan dan rounded */}
             <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
-             <img
-  src={preview || (karyawan.avatar ? `/storage/${karyawan.avatar}` : "/default.jpg")}
-  alt={karyawan.name}
-  className="w-full h-full object-cover"
-/>
-
+              <img
+                src={preview || "/default-avatar.jpg"}
+                alt="Preview Avatar"
+              />
             </div>
 
             {/* Tombol upload file custom */}
@@ -674,13 +678,14 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             >
               <FaCamera className="mb-2 text-lg" />
               <span className="text-sm font-semibold">Ubah Foto</span>
-             <input
-  id="avatarUpload"
-  type="file"
-  accept="image/*"
-  className="hidden"
-  onChange={handleAvatarChange}
-/>
+
+              <input
+                id="avatarUpload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
             </label>
           </div>
 
@@ -771,16 +776,15 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               value={formData.email}
               onChange={(v) => setFormData((prev) => ({ ...prev, email: v }))}
             />
-          <EditableField
-  label="No Telp"
-  value={formData.phone_number}
-  onChange={(v) =>
-    setFormData((prev) => {
-      console.log("Phone number updated to:", v);
-      return { ...prev, phone_number: v };
-    })
-  }
-
+            <EditableField
+              label="No Telp"
+              value={formData.phone_number}
+              onChange={(v) =>
+                setFormData((prev) => {
+                  console.log("Phone number updated to:", v);
+                  return { ...prev, phone_number: v };
+                })
+              }
             />
           </div>
         </div>
@@ -834,16 +838,16 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   { value: "Magang", label: "Magang" },
                 ]}
               />
-           <EditableField
-  label="Department"
-  type="select"
-  value={formData.id_department || ""}
-  onChange={(v) => handleDepartmentChange(v)}
-  options={departments.map((dept) => ({
-    value: dept.id,
-    label: dept.name,
-  }))}
-/>
+              <EditableField
+                label="Department"
+                type="select"
+                value={formData.id_department || ""}
+                onChange={(v) => handleDepartmentChange(v)}
+                options={departments.map((dept) => ({
+                  value: dept.id,
+                  label: dept.name,
+                }))}
+              />
 
               <EditableField
                 label="Jabatan"
