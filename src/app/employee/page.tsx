@@ -118,6 +118,7 @@ export default function EmployeeTablePage() {
             phone_number: emp.user?.phone_number || "-",
             cabang: emp.cabang || "-",
             jabatan: positionName,
+            tipe_kontrak: emp.tipe_kontrak,
             status: emp.employment_status,
             Email: emp.user?.email || "-",
           };
@@ -165,6 +166,7 @@ export default function EmployeeTablePage() {
             jenis_kelamin: emp.jenis_kelamin,
             phone_number: emp.user?.phone_number || "-",
             cabang: emp.cabang || "-",
+            tipe_kontrak: emp.tipe_kontrak,
             jabatan: positionName,
             status: emp.employment_status,
             Email: emp.user?.email || "-",
@@ -207,14 +209,23 @@ export default function EmployeeTablePage() {
         size: 20,
       },
       {
-        id: "Avatar",
-        header: "Avatar",
-        cell: () => (
-          <div className="flex items-center justify-center text-lg">
-            <RxAvatar size={24} />
-          </div>
-        ),
-        size: 40,
+      id: "Avatar",
+  header: "Avatar",
+  cell: ({ row }) => (
+    <div className="flex items-center justify-center">
+      {row.original.avatar ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`/storage/${row.original.avatar}`} // atau URL lengkap jika disimpan sebagai path lengkap
+          alt="Avatar"
+          className="w-8 h-8 rounded-full object-cover"
+        />
+      ) : (
+        <RxAvatar size={24} className="text-gray-400" />
+      )}
+    </div>
+  ),
+  size: 60,
       },
       {
         accessorKey: "nama",
@@ -266,30 +277,49 @@ export default function EmployeeTablePage() {
         ),
         size: 120,
       },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: (info) => {
-          const status = info.getValue() as "active" | "inactive";
+   {
+  accessorKey: "tipe_kontrak",
+  header: "Tipe Kontrak",
+  cell: (info) => (
+    <div className="flex justify-center">
+      <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+        {(info.getValue() as string) || "-"}
+      </span>
+    </div>
+  ),
+  size: 100,
+},
+{
+  accessorKey: "status",
+  header: "Status",
+  cell: (info) => {
+    const status = (info.getValue() as string)?.toLowerCase();
 
-          let displayStatus = "Unknown";
-          if (status === "active") displayStatus = "Aktif";
-          else if (status === "inactive") displayStatus = "inactive";
+    let displayLabel = "Tidak Diketahui";
+    let color = "bg-gray-200 text-gray-600";
 
-          return (
-            <div className="flex justify-center w-[100px]">
-              <span
-                className={`px-2 py-1 text-xs rounded ${getStatusStyle(
-                  displayStatus
-                )}`}
-              >
-                {displayStatus}
-              </span>
-            </div>
-          );
-        },
-        size: 100,
-      },
+    if (status === "active") {
+      displayLabel = "active";
+      color = "bg-green-100 text-green-700";
+    } else if (status === "resign") {
+      displayLabel = "resign";
+      color = "bg-red-100 text-red-700";
+    } else if (status === "inactive") {
+      displayLabel = "inactive";
+      color = "bg-yellow-100 text-yellow-700";
+    }
+
+    return (
+      <div className="flex justify-center">
+        <span className={`px-2 py-1 text-xs rounded ${color}`}>
+          {displayLabel}
+        </span>
+      </div>
+    );
+  },
+  size: 100,
+},
+
       {
         id: "actions",
         header: "Aksi",

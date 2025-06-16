@@ -30,13 +30,15 @@ type Karyawan = {
   jabatan: string;
   nik: string;
   id_position: string;
+  id_department: string;
+  department: string;
   address: string;
   tempat_lahir: string;
   tanggal_lahir: string;
   jenis_kelamin: string;
   pendidikan: string;
   email: string;
-  phone_number: string;
+
   dokumen: Dokumen[];
   start_date: string;
   tenure: string;
@@ -52,6 +54,11 @@ type Karyawan = {
   uang_lembur: string;
   denda_terlambat: string;
   total_gaji: string;
+
+  // tambahan
+  user?: { email: string; phone_number: string };
+  position?: { name: string; gaji?: string };
+  phone_number: string;
 };
 
 export default function DetailKaryawan() {
@@ -142,7 +149,23 @@ export default function DetailKaryawan() {
             // Biarkan positionName tetap "-"
           }
         }
-    
+        // Ambil nama posisi berdasarkan id_position
+        let departemenName = rawData.department || "-";
+        if (rawData.id_department) {
+          try {
+            const departmentRes = await api.get(
+              `/admin/departments/get/${rawData.id_department}`
+            );
+            if (
+              departmentRes.data?.meta?.success &&
+              departmentRes.data?.data?.name
+            ) {
+              departemenName = departmentRes.data.data.name;
+            }
+          } catch (err) {
+            console.error("Gagal mengambil data department:", err);
+          }
+        }
 
         // Pastikan parseRupiahToNumber tidak error
         const gajiNum = parseRupiahToNumber(rawData.gaji || "Rp 0");
@@ -156,15 +179,16 @@ export default function DetailKaryawan() {
           avatar: rawData.avatar || "/default.jpg",
           jabatan: positionName,
           id_position: rawData.id_position || "-",
-
+          id_department: rawData.id_department || "-",
+          department: departemenName,
           nik: rawData.nik || "-",
           address: rawData.address || "-",
           tempat_lahir: rawData.tempat_lahir || "-",
           tanggal_lahir: rawData.tanggal_lahir || "-",
           jenis_kelamin: rawData.jenis_kelamin || "-",
           pendidikan: rawData.pendidikan || "-",
-         phone_number: rawData.user?.phone_number || "-",
-      email: rawData.user?.email || "-",
+          phone_number: rawData.user?.phone_number || "-",
+          email: rawData.user?.email || "-",
           dokumen: rawData.dokumen || [],
           start_date: rawData.start_date || "-",
           tenure: calculateTenure(rawData.start_date, rawData.end_date),
@@ -210,73 +234,70 @@ export default function DetailKaryawan() {
   const employeeId = params?.id as string | undefined;
 
   const handleUpload = async () => {
-  if (!employeeId) {
-    alert("Employee ID tidak tersedia");
-    return;
-  }
-
-  if (!dokumen || dokumen.length === 0) {
-    alert("Pilih file terlebih dahulu");
-    return;
-  }
-
-  const formData = new FormData();
-  dokumen.forEach((file) => formData.append("dokumen[]", file));
-
-  try {
-    const response = await api.post(
-      `/admin/employees/${employeeId}/upload-document`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-      
-    );
-    
-
-    if (response.status === 200) {
-      toast.success("Berhasil Menggunggah Dokumen.");
-
-      const uploadedFiles = response.data.dokumen || [];
-
-      // ✅ Tambahkan dokumen ke state karyawan tanpa reload
-      setKaryawan((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          dokumen: [
-            ...(prev.dokumen || []),
-            ...uploadedFiles.map((doc: any) => ({
-              id: doc.id,
-               dokumen: response.data.dokumen || [],
-              name: doc.name,
-              file: doc.file, // pastikan ini adalah full URL dari backend
-              uploaded_at: new Date().toISOString(), // opsional
-            })),
-          ],
-        };
-      });
-
-      // Kosongkan file input setelah upload
-      setDokumen([]);
+    if (!employeeId) {
+      alert("Employee ID tidak tersedia");
+      return;
     }
-  } catch (err: any) {
-    if (err.response?.status === 422) {
-      const errors = err.response.data.errors;
-      const messages = Object.entries(errors)
-        .map(([key, val]) => `${key}: ${(val as string[]).join(", ")}`)
-        .join("\n");
-      toast.error(`Validasi gagal:\n${messages}`);
-    } else {
-      toast.error(
-        `Upload gagal: ${err.response?.data?.message || err.message}`
+
+    if (!dokumen || dokumen.length === 0) {
+      alert("Pilih file terlebih dahulu");
+      return;
+    }
+
+    const formData = new FormData();
+    dokumen.forEach((file) => formData.append("dokumen[]", file));
+
+    try {
+      const response = await api.post(
+        `/admin/employees/${employeeId}/upload-document`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
-    }
-  }
-};
 
+      if (response.status === 200) {
+        toast.success("Berhasil Menggunggah Dokumen.");
+
+        const uploadedFiles = response.data.dokumen || [];
+
+        // ✅ Tambahkan dokumen ke state karyawan tanpa reload
+        setKaryawan((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            dokumen: [
+              ...(prev.dokumen || []),
+              ...uploadedFiles.map((doc: any) => ({
+                id: doc.id,
+                dokumen: response.data.dokumen || [],
+                name: doc.name,
+                file: doc.file, // pastikan ini adalah full URL dari backend
+                uploaded_at: new Date().toISOString(), // opsional
+              })),
+            ],
+          };
+        });
+
+        // Kosongkan file input setelah upload
+        setDokumen([]);
+      }
+    } catch (err: any) {
+      if (err.response?.status === 422) {
+        const errors = err.response.data.errors;
+        const messages = Object.entries(errors)
+          .map(([key, val]) => `${key}: ${(val as string[]).join(", ")}`)
+          .join("\n");
+        toast.error(`Validasi gagal:\n${messages}`);
+      } else {
+        toast.error(
+          `Upload gagal: ${err.response?.data?.message || err.message}`
+        );
+      }
+    }
+  };
 
   const handleViewDocument = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
@@ -349,6 +370,7 @@ export default function DetailKaryawan() {
           </div>
           <p className="font-bold text-lg">{karyawan.name}</p>
           <p className="text-sm text-gray-500">{karyawan.jabatan}</p>
+          <p className="text-sm text-gray-500">{karyawan.department}</p>
         </div>
 
         {/* Detail Info */}
@@ -374,6 +396,7 @@ export default function DetailKaryawan() {
               <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} />
               <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
               <FieldRow label="Jabatan" value={karyawan.jabatan} />
+              <FieldRow label="Department" value={karyawan.department} />
               <FieldRow label="Cabang" value={karyawan.cabang} />
               <FieldRow
                 label="Status Kerja"
@@ -390,7 +413,7 @@ export default function DetailKaryawan() {
               <FieldRow label="Nomer Rekening" value={karyawan.no_rek} />
               <FieldRow
                 label="Gaji Pokok"
-                value={formatRupiah(karyawan.gaji)}
+                value={formatRupiah(karyawan?.position?.gaji || "0")}
               />
               <FieldRow
                 label="Uang Lembur"

@@ -25,6 +25,8 @@ export type EmployeeFromAPI = {
   
 // Untuk UI
 export type FEEmployee = {
+    created_at: any;
+    avatar: any;
     id: string;
     nama: string;
     jenis_kelamin: string;

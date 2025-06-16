@@ -10,6 +10,8 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getPositions } from "../../../../../utils/position";
+import { getDepartments } from "../../../../../utils/department";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +23,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
 
 type Dokumen = {
   file: string | URL | undefined;
@@ -42,6 +43,8 @@ type Karyawan = {
   id: string;
   id_user: string;
   id_position: string;
+  id_department: string;
+  department: string;
   name: string;
   avatar: string | Blob | undefined;
   first_name: string;
@@ -54,7 +57,7 @@ type Karyawan = {
   jenis_kelamin: string;
   pendidikan: string;
   email: string;
-  no_telp: string;
+  phone_number: string;
   dokumen: Dokumen[];
   start_date: string;
   tenure: string;
@@ -65,7 +68,7 @@ type Karyawan = {
   employment_status: string;
   tanggal_efektif: string;
   bank: string;
-  norek: string;
+  no_rek: string;
   gaji: string;
   uang_lembur: string;
   denda_terlambat: string;
@@ -133,8 +136,10 @@ export default function EditKaryawan() {
   const [positions, setPositions] = useState<
     { id: string; name: string; gaji: number }[]
   >([]);
+  const [departments, setDepartments] = useState<
+    { id: string; name: string }[]
+  >([]);
 
-  const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [docToDelete, setDocToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -145,7 +150,7 @@ export default function EditKaryawan() {
     last_name: "",
     nik: "",
     address: "",
-    no_telp: "",
+    phone_number: "",
     email: "",
     tempat_lahir: "",
     tanggal_lahir: "",
@@ -154,12 +159,13 @@ export default function EditKaryawan() {
     jadwal: "",
     tipe_kontrak: "Tetap",
     grade: "",
-    jabatan: "",
     id_position: "", // id dari posisi yang dipilih
-
+    jabatan: "",
+    id_department: "",
+    department: "",
     cabang: "",
     bank: "",
-    norek: "",
+    no_rek: "",
     start_date: "",
     end_date: "",
     tenure: "",
@@ -179,6 +185,10 @@ export default function EditKaryawan() {
     uang_lembur?: number | null;
     denda_terlambat?: number | null;
     total_gaji?: number | null;
+  }
+  interface DepartmentResponse {
+    id: string | number;
+    name: string;
   }
 
   // Fetch positions once on mount
@@ -202,8 +212,25 @@ export default function EditKaryawan() {
     fetchPositions();
   }, []);
 
+  useEffect(() => {
+    if (departments.length > 0 && formData.id_department) {
+      const selectedDepartment = departments.find(
+        (dep) => dep.id.toString() === formData.id_department
+      );
+      if (selectedDepartment) {
+        setFormData((prev) => ({
+          ...prev,
+          department: selectedDepartment.name,
+        }));
+      }
+    }
+  }, [departments, formData.id_department]);
 
-
+  console.log("ID yang dicari:", formData.id_department);
+  console.log(
+    "Semua department:",
+    departments.map((d) => d.id)
+  );
   const handleDeleteConfirm = async (docId: string) => {
     if (!karyawan?.id_user || !docId) {
       toast.error("Data tidak lengkap.");
@@ -212,7 +239,9 @@ export default function EditKaryawan() {
     }
 
     try {
-      await api.delete(`/admin/employees/user/${karyawan.id_user}/document/${docId}`);
+      await api.delete(
+        `/admin/employees/user/${karyawan.id_user}/document/${docId}`
+      );
 
       // Update state dokumen
       const updatedDokumen = karyawan.dokumen?.filter(
@@ -244,11 +273,13 @@ export default function EditKaryawan() {
       id: rawData.id ?? "",
       id_user: rawData.id_user ?? "",
       id_position: rawData.id_position ?? "",
+      id_department: rawData.id_department ?? "",
+      jabatan: rawData.jabatan ?? "",
+      department: rawData.department ?? "",
       first_name: rawData.first_name ?? "",
       last_name: rawData.last_name ?? "",
       name: `${rawData.first_name ?? ""} ${rawData.last_name ?? ""}`.trim(),
       avatar: rawData.avatar || "/default.jpg",
-      jabatan: rawData.jabatan ?? "",
       nik: rawData.nik ?? "",
       address: rawData.address ?? "",
       tempat_lahir: rawData.tempat_lahir ?? "",
@@ -256,7 +287,7 @@ export default function EditKaryawan() {
       jenis_kelamin: rawData.jenis_kelamin ?? "",
       pendidikan: rawData.pendidikan ?? "",
       email: rawData.email ?? "-",
-      no_telp: rawData.no_telp ?? "",
+      phone_number: rawData.phone_number ?? "",
       dokumen: rawData.dokumen ?? [],
       start_date: rawData.start_date ?? "-",
       tenure: rawData.tenure ?? "-",
@@ -267,7 +298,7 @@ export default function EditKaryawan() {
       employment_status: rawData.employment_status ?? "-",
       tanggal_efektif: rawData.tanggal_efektif ?? "",
       bank: rawData.bank ?? "",
-      norek: rawData.norek ?? "",
+      no_rek: rawData.no_rek ?? "",
       gaji: gajiNum.toString(),
       uang_lembur: lemburNum.toString(),
       denda_terlambat: dendaNum.toString(),
@@ -280,6 +311,7 @@ export default function EditKaryawan() {
     async function fetchEmployee() {
       setLoading(true);
       setError(null);
+      
       try {
         const res = await api.get(`admin/employees/${params.id}`);
         const mappedData = mapRawToKaryawan(res.data.data);
@@ -294,7 +326,7 @@ export default function EditKaryawan() {
           last_name: mappedData.last_name,
           nik: mappedData.nik,
           address: mappedData.address,
-          no_telp: mappedData.no_telp,
+          phone_number: mappedData.phone_number,
           email: mappedData.email,
           tempat_lahir: mappedData.tempat_lahir,
           tanggal_lahir: mappedData.tanggal_lahir,
@@ -305,10 +337,11 @@ export default function EditKaryawan() {
           grade: "", // jika tidak ada di mappedData, bisa kosong
           jabatan: mappedData.jabatan,
           id_position: mappedData.id_position,
-
+          id_department: mappedData.id_department,
+          department: mappedData.department,
           cabang: mappedData.cabang,
           bank: mappedData.bank,
-          norek: mappedData.norek,
+          no_rek: mappedData.no_rek,
           start_date: mappedData.start_date,
           end_date: mappedData.end_date,
           tenure: mappedData.tenure,
@@ -320,6 +353,7 @@ export default function EditKaryawan() {
           dokumen: null,
           employment_status: mappedData.employment_status,
         });
+        
       } catch (error) {
         if (axios.isAxiosError(error)) {
           setError(error.response?.data?.message ?? "Error API");
@@ -335,7 +369,23 @@ export default function EditKaryawan() {
 
     fetchEmployee();
   }, [params?.id]);
+useEffect(() => {
+  if (!formData.id_position || !positions.length) return;
 
+  const selectedPosition = positions.find(
+    (pos) => pos.id === formData.id_position
+  );
+
+  if (selectedPosition) {
+    setFormData((prev) => ({
+      ...prev,
+      jabatan: selectedPosition.name,
+      gaji: selectedPosition.gaji,
+      total_gaji:
+        selectedPosition.gaji + prev.uang_lembur - prev.denda_terlambat,
+    }));
+  }
+}, [formData.id_position, positions]);
   const handleJabatanChange = (selectedId: string) => {
     const selectedPosition = positions.find(
       (pos) => pos.id.toString() === selectedId
@@ -351,9 +401,41 @@ export default function EditKaryawan() {
       id_position: selectedId,
       jabatan: selectedPosition.name,
       gaji: selectedPosition.gaji,
-      total_gaji: selectedPosition.gaji + prev.uang_lembur - prev.denda_terlambat,
+      total_gaji:
+        selectedPosition.gaji + prev.uang_lembur - prev.denda_terlambat,
     }));
   };
+useEffect(() => {
+  if (!formData.id_department || !departments.length) return;
+
+  const selectedDept = departments.find(
+    (dept) => dept.id === formData.id_department
+  );
+
+  if (selectedDept) {
+    setFormData((prev) => ({
+      ...prev,
+      department: selectedDept.name,
+    }));
+  }
+}, [formData.id_department, departments]);
+
+ const handleDepartmentChange = (selectedId: string) => {
+  const selectedDept = departments.find((dept) => dept.id === selectedId);
+
+  if (!selectedDept) {
+    console.warn("Department tidak ditemukan:", selectedId);
+    return;
+  }
+
+  setFormData((prev) => ({
+    ...prev,
+    id_department: selectedId,
+    department: selectedDept.name,
+  }));
+};
+
+
   useEffect(() => {
     const total =
       (Number(formData.gaji) || 0) +
@@ -365,16 +447,26 @@ export default function EditKaryawan() {
       total_gaji: total,
     }));
   }, [formData.gaji, formData.uang_lembur, formData.denda_terlambat]);
+  const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+useEffect(() => {
+  if (karyawan?.avatar) {
+    setPreview(`/storage/${karyawan.avatar}`);
+  }
+}, [karyawan]);
 
-  // Handle avatar upload preview
-  // const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files && e.target.files.length > 0) {
-  //     setSelectedAvatar(e.target.files[0]);
-  //     setKaryawan((prev) =>
-  //       prev ? { ...prev, photo: URL.createObjectURL(e.target.files![0]) } : prev
-  //     );
-  //   }
-  // };
+const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setSelectedAvatar(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result as string); // base64 untuk preview
+    };
+    reader.readAsDataURL(file);
+  }
+};
 
   // Submit updated data
 
@@ -394,7 +486,6 @@ export default function EditKaryawan() {
       alert("Format tanggal_efektif salah!");
       return;
     }
-
     const validStatuses = ["active", "inactive", "resign"];
     if (!validStatuses.includes(formData.employment_status)) {
       toast.error(
@@ -413,6 +504,8 @@ export default function EditKaryawan() {
       dataToSend.append("last_name", formData.last_name);
       dataToSend.append("jabatan", formData.jabatan || "");
       dataToSend.append("id_position", formData.id_position || "");
+      dataToSend.append("id_department", formData.id_department || "");
+      dataToSend.append("department", formData.department || "");
       dataToSend.append("nik", formData.nik);
       dataToSend.append("address", formData.address || "");
       dataToSend.append("tempat_lahir", formData.tempat_lahir || "");
@@ -420,7 +513,7 @@ export default function EditKaryawan() {
       dataToSend.append("jenis_kelamin", formData.jenis_kelamin || "");
       dataToSend.append("pendidikan", formData.pendidikan || "");
       dataToSend.append("email", formData.email);
-      dataToSend.append("no_telp", formData.no_telp || "");
+      dataToSend.append("phone_number", formData.phone_number || "");
       dataToSend.append("start_date", formData.start_date || "");
       dataToSend.append("tenure", formData.tenure || "");
       dataToSend.append("end_date", formData.end_date || "");
@@ -430,7 +523,7 @@ export default function EditKaryawan() {
       dataToSend.append("employment_status", formData.employment_status || "");
       dataToSend.append("tanggal_efektif", tanggal_efektifForApi);
       dataToSend.append("bank", formData.bank || "");
-      dataToSend.append("norek", formData.norek || "");
+      dataToSend.append("no_rek", formData.no_rek || "");
       dataToSend.append("gaji", formData.gaji?.toString() || "0");
       dataToSend.append("uang_lembur", formData.uang_lembur?.toString() || "0");
       dataToSend.append(
@@ -438,10 +531,21 @@ export default function EditKaryawan() {
         formData.denda_terlambat?.toString() || "0"
       );
       dataToSend.append("total_gaji", formData.total_gaji?.toString() || "0");
+      // Kirim semua field string/angka kecuali avatar
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== undefined && key !== "avatar") {
+          dataToSend.append(key, String(value));
+        }
+      });
 
-      // Avatar tunggal
-      if (selectedAvatar) {
+      // Kirim avatar jika ada
+      if (selectedAvatar instanceof File) {
         dataToSend.append("avatar", selectedAvatar);
+      }
+
+      // Debug FormData
+      for (const pair of dataToSend.entries()) {
+        console.log(pair[0], pair[1]);
       }
 
       // Dokumen array
@@ -458,7 +562,14 @@ export default function EditKaryawan() {
       }
 
       // Kirim data
-      const response = await api.put(`admin/employees/${id}`, dataToSend);
+      const response = await api.post(
+        `admin/employees/${id}?_method=PUT`,
+        dataToSend,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
       console.log("Response dari server:", response.data);
 
       toast.success("Data berhasil diperbarui!");
@@ -467,6 +578,7 @@ export default function EditKaryawan() {
       }, 1500);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
+        console.log("Detail error avatar:", error.response?.data?.data?.avatar);
         console.error("Response error data:", error.response?.data);
         toast.error(
           `Gagal memperbarui data: ${
@@ -475,6 +587,7 @@ export default function EditKaryawan() {
         );
       } else {
         console.error(error);
+
         toast.error("Gagal memperbarui data.");
       }
     }
@@ -532,24 +645,23 @@ export default function EditKaryawan() {
           Kembali
         </button>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form
+        onSubmit={handleSubmit}
+        encType="multipart/form-data"
+        className="space-y-8"
+      >
         <ToastContainer />
 
         <div className="flex flex-col items-start space-y-4">
           <div className="flex items-center gap-6">
             {/* Kotak foto dengan border, bayangan dan rounded */}
             <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
-              <img
-                src={
-                  selectedAvatar
-                    ? URL.createObjectURL(selectedAvatar)
-                    : karyawan.avatar || "/default.jpg"
-                }
-                alt={karyawan.name || "Avatar"}
-                width={200}
-                height={200}
-                className="w-full h-full object-cover"
-              />
+             <img
+  src={preview || (karyawan.avatar ? `/storage/${karyawan.avatar}` : "/default.jpg")}
+  alt={karyawan.name}
+  className="w-full h-full object-cover"
+/>
+
             </div>
 
             {/* Tombol upload file custom */}
@@ -560,25 +672,13 @@ export default function EditKaryawan() {
             >
               <FaCamera className="mb-2 text-lg" />
               <span className="text-sm font-semibold">Ubah Foto</span>
-              <input
-                id="avatarUpload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setSelectedAvatar(e.target.files[0]);
-                    setKaryawan((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            avatar: URL.createObjectURL(e.target.files![0]),
-                          }
-                        : prev
-                    );
-                  }
-                }}
-              />
+             <input
+  id="avatarUpload"
+  type="file"
+  accept="image/*"
+  className="hidden"
+  onChange={handleAvatarChange}
+/>
             </label>
           </div>
 
@@ -671,8 +771,10 @@ export default function EditKaryawan() {
             />
             <EditableField
               label="No Telp"
-              value={formData.no_telp}
-              onChange={(v) => setFormData((prev) => ({ ...prev, no_telp: v }))}
+              value={formData.phone_number}
+              onChange={(v) =>
+                setFormData((prev) => ({ ...prev, phone_number: v }))
+              }
             />
           </div>
         </div>
@@ -700,7 +802,7 @@ export default function EditKaryawan() {
                   setFormData((prev) => ({ ...prev, end_date: v }))
                 }
               />
-              <EditableField
+              {/* <EditableField
                 label="Jadwal Kerja"
                 type="select"
                 value={formData.jadwal || ""}
@@ -712,7 +814,7 @@ export default function EditKaryawan() {
                   { value: "Shift", label: "Shift" },
                   { value: "Non-Shift", label: "Non-Shift" },
                 ]}
-              />
+              /> */}
               <EditableField
                 label="Tipe Kontrak"
                 type="select"
@@ -726,6 +828,17 @@ export default function EditKaryawan() {
                   { value: "Magang", label: "Magang" },
                 ]}
               />
+           <EditableField
+  label="Department"
+  type="select"
+  value={formData.id_department || ""}
+  onChange={(v) => handleDepartmentChange(v)}
+  options={departments.map((dept) => ({
+    value: dept.id,
+    label: dept.name,
+  }))}
+/>
+
               <EditableField
                 label="Jabatan"
                 type="select"
@@ -736,6 +849,7 @@ export default function EditKaryawan() {
                   label: pos.name,
                 }))}
               />
+
               <EditableField
                 label="Cabang"
                 value={formData.cabang}
@@ -780,8 +894,10 @@ export default function EditKaryawan() {
               <EditableField
                 label="Nomer Rekening"
                 type="number"
-                value={formData.norek}
-                onChange={(v) => setFormData((prev) => ({ ...prev, norek: v }))}
+                value={formData.no_rek}
+                onChange={(v) =>
+                  setFormData((prev) => ({ ...prev, no_rek: v }))
+                }
               />
               <EditableField
                 label="Gaji Pokok"
