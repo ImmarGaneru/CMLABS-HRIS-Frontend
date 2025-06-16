@@ -315,6 +315,8 @@ export default function EditKaryawan() {
       try {
         const res = await api.get(`admin/employees/${params.id}`);
         const mappedData = mapRawToKaryawan(res.data.data);
+        console.log("Data dari backend:", res.data.data);
+
         setKaryawan(mappedData);
 
         // Update formData dari mappedData:
@@ -769,12 +771,16 @@ const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
               value={formData.email}
               onChange={(v) => setFormData((prev) => ({ ...prev, email: v }))}
             />
-            <EditableField
-              label="No Telp"
-              value={formData.phone_number}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, phone_number: v }))
-              }
+          <EditableField
+  label="No Telp"
+  value={formData.phone_number}
+  onChange={(v) =>
+    setFormData((prev) => {
+      console.log("Phone number updated to:", v);
+      return { ...prev, phone_number: v };
+    })
+  }
+
             />
           </div>
         </div>

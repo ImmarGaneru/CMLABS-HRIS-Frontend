@@ -202,6 +202,7 @@ export default function DetailKaryawan() {
           bank: rawData.bank || "-",
           no_rek: rawData.no_rek || "-",
           gaji: gajiNum.toString(),
+         
           uang_lembur: lemburNum.toString(),
           denda_terlambat: dendaNum.toString(),
           total_gaji: totalNum.toString(),
@@ -413,20 +414,20 @@ export default function DetailKaryawan() {
               <FieldRow label="Nomer Rekening" value={karyawan.no_rek} />
               <FieldRow
                 label="Gaji Pokok"
-                value={formatRupiah(karyawan?.position?.gaji || "0")}
+                value={formatRupiah(karyawan.gaji)}
               />
-              <FieldRow
+              {/* <FieldRow
                 label="Uang Lembur"
                 value={formatRupiah(karyawan.uang_lembur)}
-              />
-              <FieldRow
+              /> */}
+              {/* <FieldRow
                 label="Denda Terlambat"
                 value={formatRupiah(karyawan.denda_terlambat)}
               />
               <FieldRow
                 label="Total Gaji"
                 value={formatRupiah(karyawan.total_gaji)}
-              />
+              /> */}
             </Section>
           </div>
           <div className="w-full mt-10">

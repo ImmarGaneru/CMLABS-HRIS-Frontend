@@ -39,7 +39,7 @@ type Employee = {
   // tambahan
   user?: { email: string , phone_number: string };
   position?: { name: string };
-  phone_number: string;
+  // phone_number: string;
   cabang: string;
   jabatan: string;
 };
