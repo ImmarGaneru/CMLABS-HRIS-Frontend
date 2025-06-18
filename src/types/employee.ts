@@ -34,13 +34,8 @@ export type FEEmployee = {
     cabang: string;
     jabatan: string;
     status: string;
-<<<<<<< HEAD
     // hireDate: string;
     start_date: string;
     // employmentType: string;
     tipe_kontrak: string;
-=======
-    hire_date: string;
-    employment_type: string;
->>>>>>> 8ab03d8dbf0c163da7ca2af2a21c052e42463f6a
 };

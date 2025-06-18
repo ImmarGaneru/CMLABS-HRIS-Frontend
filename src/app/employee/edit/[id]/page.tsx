@@ -629,7 +629,9 @@ export default function EditKaryawan() {
   }
 
   return (
-    <div className="p-6 bg-white rounded shadow w-full mt-2 font-sans">
+  <div className="min-h-screen bg-gray-100 p-5">
+    <ToastContainer />
+    <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#141414]">Edit Karyawan</h1>
         <button
@@ -658,7 +660,7 @@ export default function EditKaryawan() {
         encType="multipart/form-data"
         className="space-y-8"
       >
-        <ToastContainer />
+     
 
         <div className="flex flex-col items-start space-y-4">
           <div className="flex items-center gap-6">
@@ -1073,7 +1075,10 @@ export default function EditKaryawan() {
             </button>
           </div>
         </div>
+      
       </form>
     </div>
+    </div>
+
   );
 }

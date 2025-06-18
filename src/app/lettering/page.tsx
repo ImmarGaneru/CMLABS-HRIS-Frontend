@@ -9,7 +9,8 @@ import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
 import { Bold, Underline as UnderlineIcon, Link2, Image, Smile } from "lucide-react";
 import api from "@/lib/axios";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 type LetterFormat = {
   id: string;
   name: string;
@@ -40,7 +41,7 @@ export default function LetteringPage() {
         const res = await api.get("admin/employees/letter/formats");
         setLetterFormats(res.data.data);
       } catch (err) {
-        console.error("❌ Gagal ambil format surat:", err);
+        console.error("Gagal ambil format surat:", err);
       }
     };
 
@@ -49,7 +50,7 @@ export default function LetteringPage() {
         const res = await api.get("admin/employees/comp-employees");
         setEmployees(res.data.data);
       } catch (err) {
-        console.error("❌ Gagal ambil data karyawan:", err);
+        console.error("Gagal ambil data karyawan:", err);
       }
     };
 
@@ -57,37 +58,38 @@ export default function LetteringPage() {
     fetchEmployees();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const content = editor?.getHTML() || "";
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const content = editor?.getHTML() || "";
 
-    if (!selectedFormat || !recipient || !subject || content.trim() === "") {
-      alert("Pastikan semua field diisi.");
-      return;
-    }
+  if (!selectedFormat || !recipient || !subject || content.trim() === "") {
+    toast.error("Pastikan semua field diisi.");
+    return;
+  }
 
-    try {
-      await api.post("/admin/employees/letter", {
-        id_user: recipient,
-        id_letter_format: selectedFormat.id,
-        subject,
-        body: content,
-      });
+  try {
+    await api.post("/admin/employees/letter", {
+      id_user: recipient,
+      id_letter_format: selectedFormat.id,
+      subject,
+      body: content,
+    });
 
-      alert("Surat berhasil dikirim!");
-      setSubject("");
-      setRecipient("");
-      setSelectedFormat(null);
-      editor?.commands.clearContent();
-    } catch (error: any) {
-      console.error("Gagal mengirim surat:", error.response?.data || error.message);
-      alert("Gagal mengirim surat.");
-    }
-  };
+    toast.success("Surat berhasil dikirim!");
+    setSubject("");
+    setRecipient("");
+    setSelectedFormat(null);
+    editor?.commands.clearContent();
+  } catch (error: any) {
+    console.error("Gagal mengirim surat:", error.response?.data || error.message);
+    toast.error("Gagal mengirim surat.");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <div className="w-full max-w-7xl mx-auto bg-white shadow-lg rounded-2xl p-8">
+      <ToastContainer />
+      <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-8">
         <h1 className="text-3xl font-bold mb-6 text-gray-700">Buat Surat</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

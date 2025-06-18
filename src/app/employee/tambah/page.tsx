@@ -290,8 +290,9 @@ export default function TambahKaryawan() {
   };
 
   return (
-    <div className="mt-3 p-6 bg-white rounded shadow w-full ml-0 mr-auto">
+      <div className="min-h-screen bg-gray-100 p-6">
       <ToastContainer />
+        <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-[#1E3A5F]">
           Tambah Karyawan Baru
@@ -929,5 +930,7 @@ export default function TambahKaryawan() {
         }
       `}</style>
     </div>
+    </div>
+
   );
 }

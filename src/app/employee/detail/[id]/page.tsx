@@ -341,9 +341,10 @@ const karyawan = {
   }
 
   return (
-    <div className=" px-6 py-4 bg-white rounded shadow w-full mt-2 min-h-screen font-sans">
-      <ToastContainer />
-      <div className="flex items-center justify-between mb-6">
+     <div className="min-h-screen bg-gray-100 p-5">
+       <ToastContainer />
+       <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
+         <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#141414]">Detail Karyawan</h1>
         <button
           onClick={() => router.push("/employee")}
@@ -558,6 +559,7 @@ const karyawan = {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
