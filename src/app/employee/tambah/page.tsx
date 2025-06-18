@@ -46,7 +46,7 @@ export default function TambahKaryawan() {
     id_position: "", // id dari posisi yang dipilih
     cabang: "",
     bank: "",
-    norek: "",
+    no_rek: "",
     start_date: "",
     end_date: "",
     tenure: "",
@@ -101,6 +101,32 @@ export default function TambahKaryawan() {
       id_position: selectedId,
     }));
   };
+
+  // Ambil data posisi berdasarkan department yang dipilih
+  useEffect(() => {
+    const fetchPositionsByDepartment = async () => {
+      if (!selectedDepartment) return;
+
+      try {
+        const res = await api.get(`/admin/positions`, {
+          params: { department_id: selectedDepartment }, // optional: jika butuh filter posisi by department
+        });
+
+        const posisiFormatted = res.data.data.map((pos: any) => ({
+          id: pos.id,
+          name: pos.name,
+          gaji: pos.gaji ?? 0,
+        }));
+
+        setPositions(posisiFormatted);
+      } catch (err) {
+        console.error("Gagal mengambil jabatan:", err);
+      }
+    };
+
+    fetchPositionsByDepartment();
+  }, [selectedDepartment]);
+
 
   // Ambil data posisi berdasarkan department yang dipilih
   useEffect(() => {
@@ -690,7 +716,7 @@ export default function TambahKaryawan() {
             Tipe Kontrak
           </label>
           <div className="flex items-center gap-4 col-span-2">
-            {["Tetap", "Kontrak", "Resign"].map((val) => (
+            {["Tetap", "Kontrak", "Magang"].map((val) => (
               <label
                 key={val}
                 className="flex items-center cursor-pointer hover:text-blue-500"
@@ -818,19 +844,19 @@ export default function TambahKaryawan() {
 
         <div>
           <label
-            htmlFor="norek"
+            htmlFor="no_rek"
             className="block text-[20px] font-bold text-[#141414]"
           >
             Nomor Rekening
           </label>
           <input
-            id="norek"
-            name="norek"
+            id="no_rek"
+            name="no_rek"
             type="number"
             placeholder="Enter bank account number"
             onChange={handleChange}
             className="input"
-            value={formData.norek}
+            value={formData.no_rek}
           />
         </div>
 
