@@ -322,7 +322,7 @@ export default function TambahKaryawan() {
       </div>
       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
         <div className="col-span-2 flex items-center gap-4">
-          <div className="w-40 h-52 rounded bg-gray-300 overflow-hidden">
+      <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
             {" "}
             {/* Menyesuaikan ukuran */}
             {preview && (

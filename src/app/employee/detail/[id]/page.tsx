@@ -371,12 +371,10 @@ const karyawan = {
       <div className="flex flex-col md:flex-row gap-20 items-start">
         {/* Foto dan Identitas */}
         <div className="flex flex-col items-start mb-6">
-          <div className="w-40 h-50 overflow-hidden mb-3 bg-gray-200 rectangle">
+           <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
             <img
               src={karyawan.avatar || "/default.jpg"}
               alt={karyawan.name}
-              width={160}
-              height={160}
               className="w-full h-full object-cover"
             />
           </div>
