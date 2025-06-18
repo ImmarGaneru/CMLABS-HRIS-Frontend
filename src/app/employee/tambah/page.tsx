@@ -58,31 +58,7 @@ export default function TambahKaryawan() {
     dokumen: [] as File[],
   });
 
-  interface PositionResponse {
-    id: string | number;
-    name: string;
-    gaji?: number | null;
-  }
-  // Fetch positions by department
-  // useEffect(() => {
-  //   async function fetchPositionsByDepartment() {
-  //     if (!selectedDepartment) return;
-  //     try {
-  //       const res = await api.get(`/admin/positions`);
-  //       setPositions(
-  //         res.data.data.map((pos: any) => ({
-  //           id: pos.id,
-  //           name: pos.name,
-  //           gaji: pos.gaji ?? 0,
-  //         }))
-  //       );
-  //     } catch (err) {
-  //       console.error("Gagal ambil jabatan", err);
-  //     }
-  //   }
 
-  //   fetchPositionsByDepartment();
-  // }, [selectedDepartment]);
 
   const handleDepartmentChange = (deptId: string) => {
     setSelectedDepartment(deptId);
@@ -93,39 +69,22 @@ export default function TambahKaryawan() {
     }));
   };
 
+
+
   // Handle perubahan jabatan
-  const handleJabatanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    setFormData((prev) => ({
-      ...prev,
-      id_position: selectedId,
-    }));
-  };
+ const handleJabatanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const selectedId = e.target.value;
 
-  // Ambil data posisi berdasarkan department yang dipilih
-  useEffect(() => {
-    const fetchPositionsByDepartment = async () => {
-      if (!selectedDepartment) return;
+  // Cari posisi berdasarkan ID yang dipilih
+  const selectedPos = positions.find((pos) => pos.id === selectedId);
 
-      try {
-        const res = await api.get(`/admin/positions`, {
-          params: { department_id: selectedDepartment }, // optional: jika butuh filter posisi by department
-        });
+  setFormData((prev) => ({
+    ...prev,
+    id_position: selectedId,
+    gaji: selectedPos ? selectedPos.gaji : 0,
+  }));
+};
 
-        const posisiFormatted = res.data.data.map((pos: any) => ({
-          id: pos.id,
-          name: pos.name,
-          gaji: pos.gaji ?? 0,
-        }));
-
-        setPositions(posisiFormatted);
-      } catch (err) {
-        console.error("Gagal mengambil jabatan:", err);
-      }
-    };
-
-    fetchPositionsByDepartment();
-  }, [selectedDepartment]);
 
 
   // Ambil data posisi berdasarkan department yang dipilih
@@ -482,17 +441,17 @@ export default function TambahKaryawan() {
             className="block text-[20px] font-bold text-[#141414]"
           >
             Password
-            <input
-              id="password"
-              name="password"
-              type="text"
-              placeholder="Enter password"
-              onChange={handleChange}
-              className="input"
-              value={formData.password}
-            />
           </label>
+          <input
+            id="password"
+            name="password"
+            placeholder="Enter password"
+            onChange={handleChange}
+            className="input"
+            value={formData.password}
+          />
         </div>
+     
         <div>
           <label
             htmlFor="phone_number"

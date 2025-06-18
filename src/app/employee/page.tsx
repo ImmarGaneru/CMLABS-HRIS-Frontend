@@ -39,7 +39,7 @@ type Employee = {
   // tambahan
   user?: { email: string , phone_number: string };
   position?: { name: string };
-  phone_number: string;
+  // phone_number: string;
   cabang: string;
   jabatan: string;
 };
@@ -89,54 +89,6 @@ export default function EmployeeTablePage() {
 
 
   // Fetch data dari backend
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await api.get("/admin/employees/comp-employees");
-        
-        // Fetch position details for each employee
-        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
-          let positionName = "-";
-          if (emp.id_position) {
-            try {
-              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
-              if (positionRes.data.meta.success) {
-                positionName = positionRes.data.data.name;
-              }
-            } catch (err) {
-              console.error(`Error fetching position for employee ${emp.id}:`, err);
-            }
-          }
-
-          return {
-            id: emp.id,
-            id_user: emp.id_user,
-            nama: `${emp.first_name} ${emp.last_name}`,
-            jenis_kelamin: emp.jenis_kelamin,
-            phone_number: emp.user?.phone_number || "-",
-            cabang: emp.cabang || "-",
-            jabatan: positionName,
-            status: emp.employment_status,
-            Email: emp.user?.email || "-",
-          };
-        }));
-
-        setEmployees(feData);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Unknown error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmployees();
-  }, []);
   useEffect(() => {
     const fetchEmployees = async () => {
       setLoading(true);
