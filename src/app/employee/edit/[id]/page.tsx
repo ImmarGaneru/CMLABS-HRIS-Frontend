@@ -701,9 +701,11 @@ export default function EditKaryawan() {
 
         {/* Bagian Informasi Pribadi */}
         <div>
-          <h2 className="text-xl font-bold text-[#141414] mb-4">
-            Informasi Pribadi
-          </h2>
+         <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
+            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+              Informasi Pribadi
+            </h1>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <EditableField
               label="Nama Depan"
@@ -794,9 +796,11 @@ export default function EditKaryawan() {
         {/* Bagian Informasi Kepegawaian & Payroll */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <h2 className="text-xl font-semibold text-[#141414] mb-4">
+          <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
+            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
               Informasi Kepegawaian
-            </h2>
+            </h1>
+          </div>
             <div className="space-y-4">
               <EditableField
                 label="Mulai Kerja"
@@ -886,9 +890,11 @@ export default function EditKaryawan() {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold text-[#141414] mb-4">
+           <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
+            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
               Payroll
-            </h2>
+            </h1>
+          </div>
             <div className="space-y-4">
               <EditableField
                 label="Tanggal Efektif"
@@ -953,9 +959,12 @@ export default function EditKaryawan() {
 
         <div className="relative mb-24">
           <div className="w-full mt-10">
-            <h2 className="text-2xl font-semibold text-[#1e293b] mb-4 border-b pb-2">
-              📂 Dokumen Karyawan
-            </h2>
+   
+             <div className="col-span-2 border-b border-gray-300 pb-2">
+            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+               📂 Dokumen Karyawan
+            </h1>
+          </div>
 
             {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
               <div className="w-full overflow-x-auto rounded-lg shadow-md mb-6">

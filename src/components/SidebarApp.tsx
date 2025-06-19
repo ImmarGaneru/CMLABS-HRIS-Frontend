@@ -25,6 +25,7 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Card } from "./ui/card";
+import { FaEnvelopeOpenText } from "react-icons/fa";
 
 const sidebarNavItems = [
     {
@@ -55,7 +56,8 @@ const sidebarNavItems = [
     {
         title: "Lettering",
         url: "/lettering",
-        icon: ClipboardCheck,
+       icon: FaEnvelopeOpenText,
+
     },
 ];
 

@@ -564,16 +564,16 @@ const karyawan = {
 
 function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center mb-3">
-      <div className="sm:w-40 font-semibold text-gray-700">{label}</div>
-      <div className="flex justify-center items-center w-6 text-gray-400 select-none">
-        :
-      </div>
-      <div className="flex-1 text-gray-500 font-semibold">{value}</div>
-    </div>
+ <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 py-2">
+  <div className="sm:w-40 font-semibold text-gray-700">{label}</div>
+  <div className="w-4 flex justify-center items-start pt-[2px] text-gray-400 select-none">
+    :
+  </div>
+  <div className="flex-1 text-gray-500 font-semibold break-words">{value || '-'}</div>
+</div>
+
   );
 }
-
 function Section({
   title,
   children,
@@ -582,11 +582,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-[#141414] mb-4">{title}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-        {children}
-      </div>
+    <div className="mb-6">
+      <h2 className="text-xl md:text-2xl font-bold text-[#1E3A5F] mb-4 border-b border-blue-200 pb-2">
+        {title}
+      </h2>
+      <div>{children}</div>
     </div>
   );
 }

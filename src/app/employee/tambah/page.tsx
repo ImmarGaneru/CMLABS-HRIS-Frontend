@@ -58,8 +58,6 @@ export default function TambahKaryawan() {
     dokumen: [] as File[],
   });
 
-
-
   const handleDepartmentChange = (deptId: string) => {
     setSelectedDepartment(deptId);
     setFormData((prev) => ({
@@ -69,23 +67,19 @@ export default function TambahKaryawan() {
     }));
   };
 
-
-
   // Handle perubahan jabatan
- const handleJabatanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  const selectedId = e.target.value;
+  const handleJabatanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
 
-  // Cari posisi berdasarkan ID yang dipilih
-  const selectedPos = positions.find((pos) => pos.id === selectedId);
+    // Cari posisi berdasarkan ID yang dipilih
+    const selectedPos = positions.find((pos) => pos.id === selectedId);
 
-  setFormData((prev) => ({
-    ...prev,
-    id_position: selectedId,
-    gaji: selectedPos ? selectedPos.gaji : 0,
-  }));
-};
-
-
+    setFormData((prev) => ({
+      ...prev,
+      id_position: selectedId,
+      gaji: selectedPos ? selectedPos.gaji : 0,
+    }));
+  };
 
   // Ambil data posisi berdasarkan department yang dipilih
   useEffect(() => {
@@ -290,69 +284,75 @@ export default function TambahKaryawan() {
   };
 
   return (
-      <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 p-6">
       <ToastContainer />
-        <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-[#1E3A5F]">
-          Tambah Karyawan Baru
-        </h1>
+      <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-xl font-bold text-[#1E3A5F]">
+            Tambah Karyawan Baru
+          </h1>
 
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md cursor-pointer hover:bg-[#155A8A] transition duration-200 ease-in-out"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md cursor-pointer hover:bg-[#155A8A] transition duration-200 ease-in-out"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Kembali
-        </button>
-      </div>
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
-        <div className="col-span-2 flex items-center gap-4">
-      <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
-            {" "}
-            {/* Menyesuaikan ukuran */}
-            {preview && (
-              <img
-                src={preview}
-                alt="Avatar"
-                className="w-full h-full object-cover"
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
               />
-            )}
-          </div>
-          <label
-            onClick={handleUploadClick}
-            htmlFor="avatarUpload"
-            className="cursor-pointer flex flex-col items-center justify-center px-4 py-3 bg-[#1E3A5F]  text-white rounded-md shadow-md hover:bg-[#155A8A]  transition-colors duration-300"
-            title="Upload Foto Avatar"
-          >
-            <FaCamera className="mb-2 text-lg" />
-            <span className="text-sm font-semibold">Upload Foto</span>
-          </label>
-
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={handleAvatarChange}
-            style={{ display: "none" }}
-          />
+            </svg>
+            Kembali
+          </button>
         </div>
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
+          <div className="col-span-2 flex items-center gap-4">
+            <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
+              {" "}
+              {/* Menyesuaikan ukuran */}
+              {preview && (
+                <img
+                  src={preview}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+            <label
+              onClick={handleUploadClick}
+              htmlFor="avatarUpload"
+              className="cursor-pointer flex flex-col items-center justify-center px-4 py-3 bg-[#1E3A5F]  text-white rounded-md shadow-md hover:bg-[#155A8A]  transition-colors duration-300"
+              title="Upload Foto Avatar"
+            >
+              <FaCamera className="mb-2 text-lg" />
+              <span className="text-sm font-semibold">Upload Foto</span>
+            </label>
 
-        {/* <div>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleAvatarChange}
+              style={{ display: "none" }}
+            />
+          </div>
+          {/* Informasi Pribadi */}
+          <div className="col-span-2 border-b border-gray-300 pb-2">
+            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+              Informasi Pribadi
+            </h1>
+          </div>
+
+          {/* <div>
           <label
             htmlFor="id_user"
             className="block text-[20px] font-bold text-[#141414]"
@@ -368,130 +368,128 @@ export default function TambahKaryawan() {
             value={formData.id_user}
           />
         </div> */}
-        <div>
-          <label
-            htmlFor="id_user"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Nama Depan
-          </label>
-          <input
-            id="first_name"
-            name="first_name"
-            placeholder="Enter first name"
-            onChange={handleChange}
-            className="input"
-            value={formData.first_name}
-          />
-        </div>
 
-        <div>
-          <label
-            htmlFor="last_name"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Nama Belakang
-          </label>
-          <input
-            id="last_name"
-            name="last_name"
-            placeholder="Enter last name"
-            onChange={handleChange}
-            className="input"
-            value={formData.last_name}
-          />
-        </div>
+          <div>
+            <label
+              htmlFor="first_name"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Nama Depan
+            </label>
+            <input
+              id="first_name"
+              name="first_name"
+              placeholder="Enter first name"
+              onChange={handleChange}
+              className="input"
+              value={formData.first_name}
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="nik"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            NIK
-          </label>
-          <input
-            id="nik"
-            name="nik"
-            type="number"
-            placeholder="Enter NIK"
-            onChange={handleChange}
-            className="input"
-            value={formData.nik}
-          />
-        </div>
+          <div>
+            <label
+              htmlFor="last_name"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Nama Belakang
+            </label>
+            <input
+              id="last_name"
+              name="last_name"
+              placeholder="Enter last name"
+              onChange={handleChange}
+              className="input"
+              value={formData.last_name}
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="address"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Alamat
-          </label>
-          <input
-            id="address"
-            name="address"
-            placeholder="Enter address"
-            onChange={handleChange}
-            className="input"
-            value={formData.address}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            name="password"
-            placeholder="Enter password"
-            onChange={handleChange}
-            className="input"
-            value={formData.password}
-          />
-        </div>
-     
-        <div>
-          <label
-            htmlFor="phone_number"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Nomor Telepon
-          </label>
-          <input
-            id="phone_number"
-            name="phone_number"
-            type="number"
-            placeholder="Enter phone number"
-            onChange={handleChange}
-            className="input"
-            value={formData.phone_number}
-          />
-        </div>
-        <div>
+          <div>
+            <label htmlFor="nik" className="block text-[20px]  text-[#141414]">
+              NIK
+            </label>
+            <input
+              id="nik"
+              name="nik"
+              type="number"
+              placeholder="Enter NIK"
+              onChange={handleChange}
+              className="input"
+              value={formData.nik}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="address"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Alamat
+            </label>
+            <input
+              id="address"
+              name="address"
+              placeholder="Enter address"
+              onChange={handleChange}
+              className="input"
+              value={formData.address}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              placeholder="Enter password"
+              onChange={handleChange}
+              className="input"
+              value={formData.password}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="phone_number"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Nomor Telepon
+            </label>
+            <input
+              id="phone_number"
+              name="phone_number"
+              type="number"
+              placeholder="Enter phone number"
+              onChange={handleChange}
+              className="input"
+              value={formData.phone_number}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-[20px]  text-[#141414]"
+            >
+              email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter email"
+              onChange={handleChange}
+              className="input"
+              value={formData.email}
+            />
+          </div>
+
+          {/* <div>
           <label
             htmlFor="email"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="Enter email"
-            onChange={handleChange}
-            className="input"
-            value={formData.email}
-          />
-        </div>
-
-        {/* <div>
-          <label
-            htmlFor="email"
-            className="block text-[20px] font-bold text-[#141414]"
+            className="block text-[20px]  text-[#141414]"
           >
             Email
           </label>
@@ -505,87 +503,87 @@ export default function TambahKaryawan() {
           />
         </div> */}
 
-        <div>
-          <label
-            htmlFor="tempat_lahir"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Tempat Lahir
-          </label>
-          <input
-            id="tempat_lahir"
-            name="tempat_lahir"
-            placeholder="Enter birthplace"
-            onChange={handleChange}
-            className="input"
-            value={formData.tempat_lahir}
-          />
-        </div>
+          <div>
+            <label
+              htmlFor="tempat_lahir"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Tempat Lahir
+            </label>
+            <input
+              id="tempat_lahir"
+              name="tempat_lahir"
+              placeholder="Enter birthplace"
+              onChange={handleChange}
+              className="input"
+              value={formData.tempat_lahir}
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="tanggal_lahir"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Tanggal Lahir
-          </label>
-          <input
-            id="tanggal_lahir"
-            name="tanggal_lahir"
-            type="date"
-            onChange={handleChange}
-            className="input"
-            value={formData.tanggal_lahir}
-          />
-        </div>
+          <div>
+            <label
+              htmlFor="tanggal_lahir"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Tanggal Lahir
+            </label>
+            <input
+              id="tanggal_lahir"
+              name="tanggal_lahir"
+              type="date"
+              onChange={handleChange}
+              className="input"
+              value={formData.tanggal_lahir}
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="jenis_kelamin"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Jenis Kelamin
-          </label>
-          <select
-            id="jenis_kelamin"
-            name="jenis_kelamin"
-            onChange={handleChange}
-            className="input"
-            value={formData.jenis_kelamin}
-          >
-            <option value="">-Select Gender-</option>
-            <option value="Laki-laki">Laki-laki</option>
-            <option value="Perempuan">Perempuan</option>
-          </select>
-        </div>
+          <div>
+            <label
+              htmlFor="jenis_kelamin"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Jenis Kelamin
+            </label>
+            <select
+              id="jenis_kelamin"
+              name="jenis_kelamin"
+              onChange={handleChange}
+              className="input"
+              value={formData.jenis_kelamin}
+            >
+              <option value="">-Select Gender-</option>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
 
-        <div>
-          <label
-            htmlFor="pendidikan"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Pendidikan Terakhir
-          </label>
-          <select
-            id="pendidikan"
-            name="pendidikan"
-            onChange={handleChange}
-            className="input"
-            value={formData.pendidikan}
-          >
-            <option value="">-Pilih Pendidikan-</option>
-            <option value="SMA/SMK">SMA/SMK</option>
-            <option value="D3">D3</option>
-            <option value="S1">S1</option>
-            <option value="S2">S2</option>
-            <option value="S3">S3</option>
-          </select>
-        </div>
+          <div>
+            <label
+              htmlFor="pendidikan"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Pendidikan Terakhir
+            </label>
+            <select
+              id="pendidikan"
+              name="pendidikan"
+              onChange={handleChange}
+              className="input"
+              value={formData.pendidikan}
+            >
+              <option value="">-Pilih Pendidikan-</option>
+              <option value="SMA/SMK">SMA/SMK</option>
+              <option value="D3">D3</option>
+              <option value="S1">S1</option>
+              <option value="S2">S2</option>
+              <option value="S3">S3</option>
+            </select>
+          </div>
 
-        <div>
+          {/* <div>
           <label
             htmlFor="jadwal"
-            className="block text-[20px] font-bold text-[#141414]"
+            className="block text-[20px]  text-[#141414]"
           >
             Jadwal Kerja
           </label>
@@ -600,104 +598,109 @@ export default function TambahKaryawan() {
             <option value="Shift">Shift</option>
             <option value="Non-Shift">Non-Shift</option>
           </select>
-        </div>
-        <div>
-          <label
-            htmlFor="start_date"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Mulai Kerja
-          </label>
-          <input
-            type="date"
-            id="start_date"
-            name="start_date"
-            value={formData.start_date}
-            onChange={handleDateChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="end_date"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Akhir Kerja
-          </label>
-          <input
-            type="date"
-            id="end_date"
-            name="end_date"
-            value={formData.end_date}
-            onChange={handleDateChange}
-            className="input"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="tanggal_efektif"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Tanggal Efektif
-          </label>
-          <input
-            type="date"
-            id="tanggal_efektif"
-            name="tanggal_efektif"
-            value={formData.tanggal_efektif}
-            onChange={handleDateChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="tenure"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Masa Kerja
-          </label>
-          <input
-            type="text"
-            id="tenure"
-            name="tenure"
-            value={formData.tenure}
-            readOnly
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="tipe_kontrak"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Tipe Kontrak
-          </label>
-          <div className="flex items-center gap-4 col-span-2">
-            {["Tetap", "Kontrak", "Magang"].map((val) => (
-              <label
-                key={val}
-                className="flex items-center cursor-pointer hover:text-blue-500"
-              >
-                <input
-                  type="radio"
-                  name="tipe_kontrak"
-                  value={val}
-                  checked={formData.tipe_kontrak === val}
-                  onChange={handleChange}
-                />
-                {" " + val}
-              </label>
-            ))}
+        </div> */}
+          <div className="col-span-2 border-b border-gray-300 pb-2">
+            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+              Informasi Kepegawaian
+            </h1>
           </div>
-        </div>
+          <div>
+            <label
+              htmlFor="start_date"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Mulai Kerja
+            </label>
+            <input
+              type="date"
+              id="start_date"
+              name="start_date"
+              value={formData.start_date}
+              onChange={handleDateChange}
+              className="input"
+            />
+          </div>
 
-        {/* <div>
+          <div>
+            <label
+              htmlFor="end_date"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Akhir Kerja
+            </label>
+            <input
+              type="date"
+              id="end_date"
+              name="end_date"
+              value={formData.end_date}
+              onChange={handleDateChange}
+              className="input"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="tanggal_efektif"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Tanggal Efektif
+            </label>
+            <input
+              type="date"
+              id="tanggal_efektif"
+              name="tanggal_efektif"
+              value={formData.tanggal_efektif}
+              onChange={handleDateChange}
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="tenure"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Masa Kerja
+            </label>
+            <input
+              type="text"
+              id="tenure"
+              name="tenure"
+              value={formData.tenure}
+              readOnly
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="tipe_kontrak"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Tipe Kontrak
+            </label>
+            <div className="flex items-center gap-4 col-span-2">
+              {["Tetap", "Kontrak", "Magang"].map((val) => (
+                <label
+                  key={val}
+                  className="flex items-center cursor-pointer hover:text-blue-500"
+                >
+                  <input
+                    type="radio"
+                    name="tipe_kontrak"
+                    value={val}
+                    checked={formData.tipe_kontrak === val}
+                    onChange={handleChange}
+                  />
+                  {" " + val}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* <div>
           <label
             htmlFor="grade"
-            className="block text-[20px] font-bold text-[#141414]"
+            className="block text-[20px]  text-[#141414]"
           >
             Grade
           </label>
@@ -711,226 +714,228 @@ export default function TambahKaryawan() {
           />
         </div> */}
         <div>
-          <label className="block text-[20px] font-bold text-[#141414]">
-            Departemen
-          </label>
-          <select
-            className="border border-gray-300 rounded w-full p-2"
-            value={selectedDepartment}
-            onChange={(e) => handleDepartmentChange(e.target.value)}
-          >
-            <option value="">-- Pilih Departemen --</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="id_position"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Jabatan
-          </label>
-          <select
-            id="id_position"
-            name="id_position"
-            onChange={handleJabatanChange}
-            className="input"
-            value={formData.id_position || ""}
-            required
-          >
-            <option value="">- Pilih Jabatan -</option>
-            {positions.map((pos) => (
-              <option key={pos.id} value={pos.id}>
-                {pos.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="gaji"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Gaji
-          </label>
-          <input
-            id="gaji"
-            name="gaji"
-            type="number"
-            className="input"
-            value={formData.gaji}
-            readOnly
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="cabang"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Cabang
-          </label>
-          <input
-            id="cabang"
-            name="cabang"
-            placeholder="Enter branch"
-            onChange={handleChange}
-            className="input"
-            value={formData.cabang}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="bank"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Bank
-          </label>
-          <input
-            id="bank"
-            name="bank"
-            placeholder="Enter bank name"
-            onChange={handleChange}
-            className="input"
-            value={formData.bank}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="no_rek"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Nomor Rekening
-          </label>
-          <input
-            id="no_rek"
-            name="no_rek"
-            type="number"
-            placeholder="Enter bank account number"
-            onChange={handleChange}
-            className="input"
-            value={formData.no_rek}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="uang_lembur"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Uang Lembur
-          </label>
-          <input
-            id="uang_lembur"
-            name="uang_lembur"
-            type="number"
-            placeholder="Enter overtime pay"
-            onChange={handleChange}
-            className="input"
-            value={formData.uang_lembur}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="denda_terlambat"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Denda Terlambat
-          </label>
-          <input
-            id="denda_terlambat"
-            name="denda_terlambat"
-            type="number"
-            placeholder="Enter late fine"
-            onChange={handleChange}
-            className="input"
-            value={formData.denda_terlambat}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="total_gaji"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Total Gaji
-          </label>
-          <input
-            id="total_gaji"
-            name="total_gaji"
-            type="number"
-            placeholder="Enter total salary"
-            onChange={handleChange}
-            className="input"
-            value={formData.total_gaji}
-          />
-        </div>
-
-        <div className="col-span-2">
-          <label className="block text-[20px] font-bold text-[#141414]">
-            Upload Dokumen
-          </label>
-          <div className="relative">
-            <input
-              name="dokumen[]"
-              type="file"
-              accept=".pdf,.docx"
-              multiple
-              onChange={handleDokumenChange}
-              className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
-            />
-            <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
-          </div>
-
-          {/* Contoh tampil nama file yang sudah dipilih */}
-          {dokumen.length > 0 && (
-            <ul className="mt-2 list-disc list-inside">
-              {dokumen.map((file, idx) => (
-                <li key={idx}>{file.name}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="col-span-2 flex justify-end gap-4">
-          <button
-            type="button"
-            className="text-blue-500 cursor-pointer hover:text-blue-700"
-            onClick={() => (window.location.href = "/employee")}
-          >
-            Batal
-          </button>
-          {/* Submit Button */}
-          <div className="col-span-2 text-right">
-            <button
-              type="submit"
-              className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
+            <label
+              htmlFor="cabang"
+              className="block text-[20px]  text-[#141414]"
             >
-              Simpan
-            </button>
+              Cabang
+            </label>
+            <input
+              id="cabang"
+              name="cabang"
+              placeholder="Enter branch"
+              onChange={handleChange}
+              className="input"
+              value={formData.cabang}
+            />
           </div>
-        </div>
-      </form>
+          <div>
+            <label className="block text-[20px]  text-[#141414]">
+              Departemen
+            </label>
+            <select
+              className="border border-gray-300 rounded w-full p-2"
+              value={selectedDepartment}
+              onChange={(e) => handleDepartmentChange(e.target.value)}
+            >
+              <option value="">-- Pilih Departemen --</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <style jsx>{`
-        .input {
-          border: 1px solid #ccc;
-          padding: 0.5rem;
-          border-radius: 0.25rem;
-          width: 100%;
-        }
-        .input-file {
-          cursor: pointer;
-        }
-      `}</style>
-    </div>
-    </div>
+          <div>
+            <label
+              htmlFor="id_position"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Jabatan
+            </label>
+            <select
+              id="id_position"
+              name="id_position"
+              onChange={handleJabatanChange}
+              className="input"
+              value={formData.id_position || ""}
+              required
+            >
+              <option value="">- Pilih Jabatan -</option>
+              {positions.map((pos) => (
+                <option key={pos.id} value={pos.id}>
+                  {pos.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+           <div className="col-span-2 border-b border-gray-300 pb-2">
+            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+              Payroll
+            </h1>
+          </div>
+          <div>
+            <label htmlFor="gaji" className="block text-[20px]  text-[#141414]">
+              Gaji
+            </label>
+            <input
+              id="gaji"
+              name="gaji"
+              type="number"
+              className="input"
+              value={formData.gaji}
+              readOnly
+            />
+          </div>
 
+          <div>
+            <label htmlFor="bank" className="block text-[20px]  text-[#141414]">
+              Bank
+            </label>
+            <input
+              id="bank"
+              name="bank"
+              placeholder="Enter bank name"
+              onChange={handleChange}
+              className="input"
+              value={formData.bank}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="no_rek"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Nomor Rekening
+            </label>
+            <input
+              id="no_rek"
+              name="no_rek"
+              type="number"
+              placeholder="Enter bank account number"
+              onChange={handleChange}
+              className="input"
+              value={formData.no_rek}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="uang_lembur"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Uang Lembur
+            </label>
+            <input
+              id="uang_lembur"
+              name="uang_lembur"
+              type="number"
+              placeholder="Enter overtime pay"
+              onChange={handleChange}
+              className="input"
+              value={formData.uang_lembur}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="denda_terlambat"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Denda Terlambat
+            </label>
+            <input
+              id="denda_terlambat"
+              name="denda_terlambat"
+              type="number"
+              placeholder="Enter late fine"
+              onChange={handleChange}
+              className="input"
+              value={formData.denda_terlambat}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="total_gaji"
+              className="block text-[20px]  text-[#141414]"
+            >
+              Total Gaji
+            </label>
+            <input
+              id="total_gaji"
+              name="total_gaji"
+              type="number"
+              placeholder="Enter total salary"
+              onChange={handleChange}
+              className="input"
+              value={formData.total_gaji}
+            />
+          </div>
+ <div className="col-span-2 border-b border-gray-300 pb-2">
+            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+              Dokumen
+            </h1>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-[20px]  text-[#141414]">
+              Upload Dokumen
+            </label>
+            <div className="relative">
+              <input
+                name="dokumen[]"
+                type="file"
+                accept=".pdf,.docx"
+                multiple
+                onChange={handleDokumenChange}
+                className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
+              />
+              <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
+            </div>
+
+            {/* Contoh tampil nama file yang sudah dipilih */}
+            {dokumen.length > 0 && (
+              <ul className="mt-2 list-disc list-inside">
+                {dokumen.map((file, idx) => (
+                  <li key={idx}>{file.name}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="col-span-2 flex justify-end gap-4">
+            <button
+              type="button"
+              className="text-blue-500 cursor-pointer hover:text-blue-700"
+              onClick={() => (window.location.href = "/employee")}
+            >
+              Batal
+            </button>
+            {/* Submit Button */}
+            <div className="col-span-2 text-right">
+              <button
+                type="submit"
+                className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <style jsx>{`
+          .input {
+            border: 1px solid #ccc;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            width: 100%;
+          }
+          .input-file {
+            cursor: pointer;
+          }
+        `}</style>
+      </div>
+    </div>
   );
 }
