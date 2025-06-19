@@ -1,4 +1,4 @@
-"use client";
+import {redirect} from "next/navigation";
 
 import { useRouter } from "next/navigation";
 import { FEEmployee } from "@/types/employee";
@@ -8,7 +8,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import { RxAvatar } from "react-icons/rx";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
-import EmployeeCardSum from "./component_employee/employee_card_sum";
+// import EmployeeCardSum from "./component_employee/employee_card_sum";
 import DataTableHeader from "@/components/DatatableHeader";
 import {
   AlertDialog,
@@ -497,7 +497,7 @@ export default function EmployeeTablePage() {
 
   return (
     <div className="px-4 py-6 min-h-screen flex flex-col gap-4">
-      <EmployeeCardSum employeesCard={employees} />
+      {/* <EmployeeCardSum employeesCard={employees} /> */}
 
       <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">

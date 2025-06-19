@@ -41,7 +41,7 @@ export default function LoginEmailPage() {
           }
 
           alert("Login berhasil!");
-          router.push("/dashboard");
+          router.push("/manager/dashboard");
         } else {
           throw new Error("Token tidak ditemukan dalam response.");
         }
@@ -182,9 +182,9 @@ export default function LoginEmailPage() {
             </Link>
 
             <Link
-              href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect`}
-              passHref
-            >
+  href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect?login_method=email`}
+  passHref
+>
               <button
                 type="button"
                 className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm cursor-pointer"

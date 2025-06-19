@@ -1,20 +1,51 @@
 name: hris_frontend-prod
 
 services:
+  nginx:
+    image: hoshigakikisame/hris_frontend_nginx:latest
+    container_name: hris_frontend_nginx
+    user: root
+    build:
+      context: ../../
+      dockerfile: docker/production/nginx/Dockerfile
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - /etc/letsencrypt/live/hriscmlabs.my.id:/etc/nginx/ssl:ro
+      - /etc/letsencrypt/live/hriscmlabs.my.id/fullchain.pem:/etc/nginx/ssl/fullchain.pem
+      - /etc/letsencrypt/live/hriscmlabs.my.id/privkey.pem:/etc/nginx/ssl/privkey.pem
+    restart: unless-stopped
+    networks:
+      - hris_frontend-prod
+
   hris_frontend-prod:
     container_name: hris_frontend-prod 
     build:
       context: ../../
       dockerfile: docker/production/Dockerfile
-    image: hris_frontend-prod
+    image: hoshigakikisame/hris_frontend-prod:latest
     ports:
-      - "3002:3000"
+      - "3000:3000"
     deploy:
       resources:
         limits:
           memory: 512m
     networks:
       - hris_frontend-prod
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    command: --cleanup --interval 30 --include-stopped
+    environment:
+      - WATCHTOWER_CLEANUP=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - hris_frontend-prod
+
     
 networks:
   hris_frontend-prod:

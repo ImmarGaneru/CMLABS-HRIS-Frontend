@@ -47,6 +47,8 @@ interface ApprovalContext {
     submitApproval: (data: any) => Promise<void>;
     options: { value: string; label: string }[];
     isLoading: boolean;
+    isAdmin: () => Promise<boolean>;
+    getCurrentUser: () => Promise<ApprovalUser>;
 }
 
 const ApprovalContext = createContext<ApprovalContext | undefined>(undefined);
@@ -108,30 +110,64 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
     }
 
     const submitApproval = async (data: any) => {
-        const transformedData = { ...data };
+        const formData = new FormData();
 
         if (data.request_type === "overtime") {
-            transformedData.start_date = format(new Date(`${data.overtime_dates} ${data.start_time}`), "yyyy-MM-dd HH:mm");
-            transformedData.end_date = format(new Date(`${data.overtime_dates} ${data.end_time}`), "yyyy-MM-dd HH:mm");
-            delete transformedData.overtime_dates;
-            delete transformedData.start_time;
-            delete transformedData.end_time;
+            formData.append("start_date", format(new Date(`${data.overtime_dates} ${data.start_time}`), "yyyy-MM-dd HH:mm"));
+            formData.append("end_date", format(new Date(`${data.overtime_dates} ${data.end_time}`), "yyyy-MM-dd HH:mm"));
         } else {
             if (data.start_date) {
-                transformedData.start_date = format(new Date(data.start_date), "yyyy-MM-dd HH:mm");
+                formData.append("start_date", format(new Date(data.start_date), "yyyy-MM-dd HH:mm"));
             }
             if (data.end_date) {
-                transformedData.end_date = format(new Date(data.end_date), "yyyy-MM-dd HH:mm");
+                formData.append("end_date", format(new Date(data.end_date), "yyyy-MM-dd HH:mm"));
             }
         }
 
+        Object.entries(data).forEach(([key, value]) => {
+            if (key !== "overtime_dates" && key !== "start_time" && key !== "end_time" && key !== "document") {
+                formData.append(key, value as string);
+            }
+        });
+
+
+        if (data.document) {
+            formData.append("document", data.document);
+        }
+
         try {
-            await (api.post("approvals", transformedData));
+            await api.post("approvals", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+
+                },
+            });
             toast.success("Data berhasil disimpan!");
+            await fetchApprovals();
         } catch (error) {
             toast.error("Gagal menyimpan data!");
         }
     };
+
+    const isAdmin = async (): Promise<boolean> => {
+        try {
+            const response = await api.get('/approvals/isAdmin');
+            return response.data.data.isAdmin;
+        } catch (error) {
+            console.error('Error checking admin status:', error);
+            return false;
+        }
+    };
+
+    const getCurrentUser = async (): Promise<ApprovalUser> => {
+        try {
+            const response = await api.get('/auth/me');
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching current user:', error);
+            throw error;
+        }
+    }
 
     useEffect(() => {
         fetchApprovals();
@@ -147,7 +183,9 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
                 fetchUsers,
                 submitApproval,
                 options,
-                isLoading
+                isLoading,
+                isAdmin,
+                getCurrentUser
             }}
         >
             {children}
