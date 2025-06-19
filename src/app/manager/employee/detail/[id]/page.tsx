@@ -3,13 +3,19 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { FaEye, FaTrash } from "react-icons/fa";
+import { getEmployee } from "../../../../../utils/employee";
+import { FaEye } from "react-icons/fa";
 import React from "react";
+// import { api } from "@/lib/axios";
+// import axios from "axios";
+// import { DataTable } from "@/components/Datatable";
+// import DataTableHeader from "@/components/DatatableHeader";
 import api from "@/lib/axios";
 import { toast, ToastContainer } from "react-toastify";
-
+import "react-toastify/dist/ReactToastify.css";
+import { parseISO, intervalToDuration } from "date-fns";
 type Dokumen = {
-  id: string;
+  id: number;
   name: string;
   file: string;
   uploaded_at?: string;
@@ -17,21 +23,22 @@ type Dokumen = {
 
 type Karyawan = {
   id: string;
-  id_user: string;
-  id_position: string;
   name: string;
   avatar: string;
   first_name: string;
   last_name: string;
   jabatan: string;
   nik: string;
+  id_position: string;
+  id_department: string;
+  department: string;
   address: string;
   tempat_lahir: string;
   tanggal_lahir: string;
   jenis_kelamin: string;
   pendidikan: string;
   email: string;
-  no_telp: string;
+
   dokumen: Dokumen[];
   start_date: string;
   tenure: string;
@@ -47,15 +54,11 @@ type Karyawan = {
   uang_lembur: string;
   denda_terlambat: string;
   total_gaji: string;
-  position?: {
-    id: string;
-    name: string;
-    gaji: number;
-  };
-  user?: {
-    id: string;
-    email: string;
-  };
+
+  // tambahan
+  user?: { email: string; phone_number: string };
+  position?: { name: string; gaji?: string };
+  phone_number: string;
 };
 
 export default function DetailKaryawan() {
@@ -64,7 +67,32 @@ export default function DetailKaryawan() {
   const [karyawan, setKaryawan] = useState<Karyawan | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [dokumen, setDokumen] = React.useState<File[]>([]);
+  // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  function calculateTenure(start: string, end?: string): string {
+    if (!start || start === "-") return "-";
+
+    try {
+      const startDate = parseISO(start);
+      const endDate = end && end !== "-" ? parseISO(end) : new Date();
+
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.log("Tanggal tidak valid:", start, end);
+        return "-";
+      }
+
+      const duration = intervalToDuration({ start: startDate, end: endDate });
+
+      const parts: string[] = [];
+      if (duration.years) parts.push(`${duration.years} tahun`);
+      if (duration.months) parts.push(`${duration.months} bulan`);
+      if (duration.days) parts.push(`${duration.days} hari`);
+
+      return parts.length > 0 ? parts.join(" ") : "0 hari";
+    } catch (error) {
+      console.log("Error menghitung tenure:", error);
+      return "-";
+    }
+  }
 
   function parseRupiahToNumber(rupiahStr: string | null | undefined): number {
     if (!rupiahStr) return 0;
@@ -81,9 +109,10 @@ export default function DetailKaryawan() {
       ? "-"
       : `Rp ${numericValue.toLocaleString("id-ID")}`;
   };
+  console.log("ID dari params:", params?.id);
 
   useEffect(() => {
-    const id = params?.id as string;
+    const id = params?.id;
     if (!id) {
       setError("ID karyawan tidak tersedia");
       return;
@@ -92,60 +121,112 @@ export default function DetailKaryawan() {
     const fetchEmployee = async () => {
       setLoading(true);
       setError(null);
+
       try {
         const response = await api.get(`/admin/employees/${id}`);
         const rawData = response.data.data;
+        console.log("RAW DATA:", rawData);
 
+        // Cek apakah data yang dibutuhkan tersedia
         if (!rawData) {
-          throw new Error("Data karyawan tidak ditemukan");
+          throw new Error("Data karyawan tidak ditemukan.");
         }
+        // Ambil nama posisi berdasarkan id_position
+        let positionName = rawData.jabatan || "-";
+        if (rawData.id_position) {
+          try {
+            const positionRes = await api.get(
+              `/admin/positions/get/${rawData.id_position}`
+            );
+            if (
+              positionRes.data?.meta?.success &&
+              positionRes.data?.data?.name
+            ) {
+              positionName = positionRes.data.data.name;
+            }
+          } catch (err) {
+            console.error("Gagal mengambil data posisi:", err);
+            // Biarkan positionName tetap "-"
+          }
+        }
+       
+    // Ambil nama departemen berdasarkan id_department
+let departemenName = rawData.department || "-";
 
-        const gajiNum = parseRupiahToNumber(rawData.gaji);
-        const lemburNum = parseRupiahToNumber(rawData.uang_lembur);
-        const dendaNum = parseRupiahToNumber(rawData.denda_terlambat);
+if (rawData.id_department && !rawData.department) {
+  try {
+    const departmentRes = await api.get(
+      `/admin/departments/get/${rawData.id_department}`
+    );
+    if (
+      departmentRes.data?.meta?.success &&
+      departmentRes.data?.data?.name
+    ) {
+      departemenName = departmentRes.data.data.name;
+    }
+  } catch (err) {
+    console.error("Gagal mengambil data department:", err);
+  }
+}
+
+// Simpan hasil ke objek
+const karyawan = {
+  ...rawData,
+  id_department: rawData.id_department || "-",
+  department: departemenName,
+};
+
+
+        // Pastikan parseRupiahToNumber tidak error
+        const gajiNum = parseRupiahToNumber(rawData.gaji || "Rp 0");
+        const lemburNum = parseRupiahToNumber(rawData.uang_lembur || "Rp 0");
+        const dendaNum = parseRupiahToNumber(rawData.denda_terlambat || "Rp 0");
         const totalNum = gajiNum + lemburNum - dendaNum;
 
         const mappedData: Karyawan = {
-          id: rawData.id,
-          id_user: rawData.id_user,
-          id_position: rawData.id_position,
-          name: `${rawData.first_name} ${rawData.last_name}`,
+          id: rawData.id_user,
+          name: `${rawData.first_name || ""} ${rawData.last_name || ""}`,
           avatar: rawData.avatar || "/default.jpg",
-          first_name: rawData.first_name,
-          last_name: rawData.last_name,
-          jabatan: rawData.position?.name || "-",
+          jabatan: positionName,
+          id_position: rawData.id_position || "-",
+          id_department: rawData.id_department || "-",
+          department: departemenName,
           nik: rawData.nik || "-",
-          address: rawData.address,
-          tempat_lahir: rawData.tempat_lahir,
-          tanggal_lahir: rawData.tanggal_lahir,
-          jenis_kelamin: rawData.jenis_kelamin,
-          pendidikan: rawData.pendidikan,
+          address: rawData.address || "-",
+          tempat_lahir: rawData.tempat_lahir || "-",
+          tanggal_lahir: rawData.tanggal_lahir || "-",
+          jenis_kelamin: rawData.jenis_kelamin || "-",
+          pendidikan: rawData.pendidikan || "-",
+          phone_number: rawData.user?.phone_number || "-",
           email: rawData.user?.email || "-",
-          no_telp: rawData.no_telp,
-          dokumen: rawData.documents || [],
+          dokumen: rawData.dokumen || [],
           start_date: rawData.start_date || "-",
-          tenure: rawData.tenure || "-",
+          tenure: calculateTenure(rawData.start_date, rawData.end_date),
+
           end_date: rawData.end_date || "-",
-          jadwal: rawData.jadwal,
-          tipe_kontrak: rawData.tipe_kontrak,
-          cabang: rawData.cabang,
+          jadwal: rawData.jadwal || "-",
+          tipe_kontrak: rawData.tipe_kontrak || "-",
+          cabang: rawData.cabang || "-",
           employment_status: rawData.employment_status || "-",
           tanggal_efektif: rawData.tanggal_efektif || "-",
-          bank: rawData.bank,
-          no_rek: rawData.no_rek,
+          bank: rawData.bank || "-",
+          no_rek: rawData.no_rek || "-",
           gaji: gajiNum.toString(),
+         
           uang_lembur: lemburNum.toString(),
           denda_terlambat: dendaNum.toString(),
           total_gaji: totalNum.toString(),
-          position: rawData.position,
-          user: rawData.user
+          first_name: rawData.first_name || "-",
+          last_name: rawData.last_name || "-",
         };
 
         setKaryawan(mappedData);
-      } catch (err: any) {
-        const errorMessage = err.response?.data?.message || err.message || "Gagal mengambil data karyawan";
-        setError(errorMessage);
-        toast.error(errorMessage);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Terjadi kesalahan saat mengambil data karyawan.");
+        }
       } finally {
         setLoading(false);
       }
@@ -154,15 +235,23 @@ export default function DetailKaryawan() {
     fetchEmployee();
   }, [params?.id]);
 
+  const [dokumen, setDokumen] = React.useState<File[]>([]);
+  const handleDokumenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setDokumen(Array.from(e.target.files));
+    }
+  };
+
+  const employeeId = params?.id as string | undefined;
+
   const handleUpload = async () => {
-    const employeeId = params?.id as string;
     if (!employeeId) {
-      toast.error("Employee ID tidak tersedia");
+      alert("Employee ID tidak tersedia");
       return;
     }
 
     if (!dokumen || dokumen.length === 0) {
-      toast.error("Pilih file terlebih dahulu");
+      alert("Pilih file terlebih dahulu");
       return;
     }
 
@@ -171,7 +260,7 @@ export default function DetailKaryawan() {
 
     try {
       const response = await api.post(
-        `/admin/employees/${employeeId}/documents`,
+        `/admin/employees/${employeeId}/upload-document`,
         formData,
         {
           headers: {
@@ -180,18 +269,31 @@ export default function DetailKaryawan() {
         }
       );
 
-      if (response.data.success) {
+      if (response.status === 200) {
         toast.success("Berhasil Menggunggah Dokumen.");
-        setDokumen([]);
 
-        // Refresh employee data to get updated documents
-        const updatedResponse = await api.get(`/admin/employees/${employeeId}`);
-        const updatedData = updatedResponse.data.data;
-        
-        setKaryawan(prev => prev ? {
-          ...prev,
-          dokumen: updatedData.documents || []
-        } : null);
+        const uploadedFiles = response.data.dokumen || [];
+
+        // ✅ Tambahkan dokumen ke state karyawan tanpa reload
+        setKaryawan((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            dokumen: [
+              ...(prev.dokumen || []),
+              ...uploadedFiles.map((doc: any) => ({
+                id: doc.id,
+                dokumen: response.data.dokumen || [],
+                name: doc.name,
+                file: doc.file, // pastikan ini adalah full URL dari backend
+                uploaded_at: new Date().toISOString(), // opsional
+              })),
+            ],
+          };
+        });
+
+        // Kosongkan file input setelah upload
+        setDokumen([]);
       }
     } catch (err: any) {
       if (err.response?.status === 422) {
@@ -200,64 +302,49 @@ export default function DetailKaryawan() {
           .map(([key, val]) => `${key}: ${(val as string[]).join(", ")}`)
           .join("\n");
         toast.error(`Validasi gagal:\n${messages}`);
-      } else if (err.response) {
-        toast.error(
-          `Upload gagal: ${err.response.data.message || err.response.statusText}`
-        );
-      } else if (err.request) {
-        toast.error("Tidak ada respon dari server.");
       } else {
-        toast.error(`Terjadi error: ${err.message}`);
+        toast.error(
+          `Upload gagal: ${err.response?.data?.message || err.message}`
+        );
       }
-    }
-  };
-
-  const handleDeleteDocument = async (docId: string) => {
-    const employeeId = params?.id as string;
-    if (!employeeId) {
-      toast.error("Employee ID tidak tersedia");
-      return;
-    }
-
-    const confirmDelete = window.confirm("Yakin ingin menghapus dokumen ini?");
-    if (!confirmDelete) return;
-
-    try {
-      await api.delete(`/admin/employees/${employeeId}/documents/${docId}`);
-      toast.success("Dokumen berhasil dihapus");
-
-      // Refresh employee data
-      const updatedResponse = await api.get(`/admin/employees/${employeeId}`);
-      const updatedData = updatedResponse.data.data;
-      
-      setKaryawan(prev => prev ? {
-        ...prev,
-        dokumen: updatedData.documents || []
-      } : null);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal menghapus dokumen");
     }
   };
 
   const handleViewDocument = (url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-6 space-x-2">
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0s" }}
+        ></span>
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0.2s" }}
+        ></span>
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0.4s" }}
+        ></span>
+      </div>
+    );
+  }
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
-  if (!karyawan)
-  return <div className="p-6">Data karyawan tidak ditemukan.</div>;
+  if (error) {
+    return <div className="p-6 text-red-600">Error: {error}</div>;
+  }
 
-  const formatTanggal = (tanggal: string): string => {
-    if (!tanggal) return '-';
-    
-    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-    return new Date(tanggal).toLocaleDateString('id-ID', options);
-  };
+  if (!karyawan) {
+    return <div className="p-6">Data karyawan tidak ditemukan.</div>;
+  }
 
   return (
-    <div className="px-6 py-4 bg-white rounded shadow w-full mt-2 min-h-screen font-sans">
-      <div className="flex items-center justify-between mb-6">
+     <div className="min-h-screen bg-gray-100 p-5">
+       <ToastContainer />
+       <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
+         <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#141414]">Detail Karyawan</h1>
         <button
           onClick={() => router.push("/employee")}
@@ -281,97 +368,81 @@ export default function DetailKaryawan() {
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-start">
+      <div className="flex flex-col md:flex-row gap-20 items-start">
         {/* Foto dan Identitas */}
-        <div className="flex flex-col items-start justify-center">
+        <div className="flex flex-col items-start mb-6">
           <div className="w-40 h-50 overflow-hidden mb-3 bg-gray-200 rectangle">
             <img
-              src={karyawan.avatar || '\public\default.jpg'}
+              src={karyawan.avatar || "/default.jpg"}
               alt={karyawan.name}
               width={160}
               height={160}
               className="w-full h-full object-cover"
             />
           </div>
-          <p className="text-center font-bold text-lg">{karyawan.name}</p>
+          <p className="font-bold text-lg">{karyawan.name}</p>
           <p className="text-sm text-gray-500">{karyawan.jabatan}</p>
+          <p className="text-sm text-gray-500">{karyawan.department}</p>
         </div>
 
         {/* Detail Info */}
-        <div className="flex-1 flex flex-col gap-y-4">
-            <div className="flex-1 flex flex-col gap-y-6">
-              {/* Informasi Pribadi */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <Section title="Informasi Pribadi">
-                  <FieldRow label="NIK" value={karyawan.nik || '-'} />
-                  <FieldRow label="Alamat" value={karyawan.address || '-'} />
-                  <FieldRow
-                    label="Tempat, Tgl Lahir"
-                    value={
-                      karyawan.tempat_lahir && karyawan.tanggal_lahir
-                        ? `${karyawan.tempat_lahir}, ${formatTanggal(karyawan.tanggal_lahir)}`
-                        : '-'
-                    }
-                  />
-                  <FieldRow label="Jenis Kelamin" value={karyawan.jenis_kelamin || '-'} />
-                  <FieldRow label="Pendidikan Terakhir" value={karyawan.pendidikan || '-'} />
-                  <FieldRow label="Email" value={karyawan.email || '-'} />
-                  <FieldRow label="No Telp" value={karyawan.no_telp || '-'} />
-                </Section>
-              </div>
+        <div className="flex-1 flex flex-col gap-y-10">
+          <Section title="Informasi Pribadi">
+            <FieldRow label="NIK" value={karyawan.nik} />
+            <FieldRow label="Alamat" value={karyawan.address} />
+            <FieldRow
+              label="Tempat, Tgl Lahir"
+              value={`${karyawan.tempat_lahir}, ${karyawan.tanggal_lahir}`}
+            />
+            <FieldRow label="Jenis Kelamin" value={karyawan.jenis_kelamin} />
+            <FieldRow label="Pendidikan Terakhir" value={karyawan.pendidikan} />
+            <FieldRow label="Email" value={karyawan.email} />
+            <FieldRow label="No Telp" value={karyawan.phone_number} />
+          </Section>
 
-              {/* Informasi Kepegawaian */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <Section title="Informasi Kepegawaian">
-                  <FieldRow
-                    label="Mulai Kerja"
-                    value={karyawan.start_date ? formatTanggal(karyawan.start_date) : '-'}
-                  />
-                  <FieldRow label="Masa Kerja" value={karyawan.tenure || '-'} />
-                  <FieldRow
-                    label="Akhir Kerja"
-                    value={karyawan.end_date ? formatTanggal(karyawan.end_date) : '-'}
-                  />
-                  <FieldRow label="Jadwal Kerja" value={karyawan.jadwal || '-'} />
-                  <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak || '-'} />
-                  <FieldRow label="Jabatan" value={karyawan.jabatan || '-'} />
-                  <FieldRow label="Cabang" value={karyawan.cabang || '-'} />
-                  <FieldRow
-                    label="Status Kerja"
-                    value={karyawan.employment_status || '-'}
-                  />
-                </Section>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-13">
+            <Section title="Informasi Kepegawaian">
+              <FieldRow label="Mulai Kerja" value={karyawan.start_date} />
+              <FieldRow label="Masa Kerja" value={karyawan.tenure} />
+              <FieldRow label="Akhir Kerja" value={karyawan.end_date} />
+              <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} />
+              <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
+              <FieldRow label="Jabatan" value={karyawan.jabatan} />
+              <FieldRow label="Departemen" value={karyawan.department} />
+            
+            
+              <FieldRow label="Cabang" value={karyawan.cabang} />
+              <FieldRow
+                label="Status Kerja"
+                value={karyawan.employment_status}
+              />
+            </Section>
 
-              {/* Payroll */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <Section title="Payroll">
-                  <FieldRow
-                    label="Tanggal Efektif"
-                    value={karyawan.tanggal_efektif ? formatTanggal(karyawan.tanggal_efektif) : '-'}
-                  />
-                  <FieldRow label="Bank" value={karyawan.bank || '-'} />
-                  <FieldRow label="Nomor Rekening" value={karyawan.no_rek || '-'} />
-                  <FieldRow
-                    label="Gaji Pokok"
-                    value={formatRupiah(karyawan.gaji)}
-                  />
-                  <FieldRow
-                    label="Uang Lembur"
-                    value={formatRupiah(karyawan.uang_lembur)}
-                  />
-                  <FieldRow
-                    label="Denda Terlambat"
-                    value={formatRupiah(karyawan.denda_terlambat)}
-                  />
-                  <FieldRow
-                    label="Total Gaji"
-                    value={formatRupiah(karyawan.total_gaji)}
-                  />
-                </Section>
-              </div>
-            </div>
-
+            <Section title="Payroll">
+              <FieldRow
+                label="Tanggal Efektif"
+                value={karyawan.tanggal_efektif}
+              />
+              <FieldRow label="Bank" value={karyawan.bank} />
+              <FieldRow label="Nomer Rekening" value={karyawan.no_rek} />
+              <FieldRow
+                label="Gaji Pokok"
+                value={formatRupiah(karyawan.gaji)}
+              />
+              {/* <FieldRow
+                label="Uang Lembur"
+                value={formatRupiah(karyawan.uang_lembur)}
+              /> */}
+              {/* <FieldRow
+                label="Denda Terlambat"
+                value={formatRupiah(karyawan.denda_terlambat)}
+              />
+              <FieldRow
+                label="Total Gaji"
+                value={formatRupiah(karyawan.total_gaji)}
+              /> */}
+            </Section>
+          </div>
           <div className="w-full mt-10">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -442,7 +513,6 @@ export default function DetailKaryawan() {
                 >
                   Upload Dokumen
                 </button>
-                <ToastContainer />
               </div>
             )}
 
@@ -460,7 +530,7 @@ export default function DetailKaryawan() {
                   <tbody>
                     {karyawan.dokumen.map((doc, index) => (
                       <tr
-                        key={doc.id}
+                        key={doc.id ?? index}
                         className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
                           index % 2 === 0 ? "bg-white" : "bg-gray-50"
                         }`}
@@ -468,7 +538,7 @@ export default function DetailKaryawan() {
                         <td className="px-6 py-4 border-r border-gray-200 font-medium whitespace-nowrap">
                           {doc.name}
                         </td>
-                        <td className="px-6 py-4 text-center space-x-2">
+                        <td className="px-6 py-4 text-center">
                           <button
                             onClick={() => handleViewDocument(doc.file)}
                             title="Lihat Dokumen"
@@ -476,14 +546,6 @@ export default function DetailKaryawan() {
                             type="button"
                           >
                             <FaEye />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteDocument(doc.id)}
-                            title="Hapus Dokumen"
-                            className="text-red-600 border border-red-600 rounded-md px-3 py-1 hover:bg-red-100 transition"
-                            type="button"
-                          >
-                            <FaTrash />
                           </button>
                         </td>
                       </tr>
@@ -497,6 +559,7 @@ export default function DetailKaryawan() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

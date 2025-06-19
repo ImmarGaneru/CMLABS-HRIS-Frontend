@@ -33,7 +33,7 @@ type DataTableHeaderProps = {
   onImport?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAdd?: () => void;
   onHistoryToggle?: () => void;
-
+  
   // State values
   searchValue?: string;
   filterValue?: string;
@@ -47,6 +47,8 @@ type DataTableHeaderProps = {
 
   // File input ref
   importInputRef?: React.RefObject<HTMLInputElement | null>;
+  emptyContent?: React.ReactNode;
+
 };
 
 const DataTableHeader: React.FC<DataTableHeaderProps> = ({
@@ -75,6 +77,7 @@ const DataTableHeader: React.FC<DataTableHeaderProps> = ({
   filterOptions,
   secondFilterOptions,
   importInputRef,
+
 }) => {
   return (
     <div className="flex flex-row gap-4 w-full">
