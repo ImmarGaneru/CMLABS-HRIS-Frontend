@@ -29,17 +29,14 @@ import api from "@/lib/axios";
 interface SubscriptionData {
     id: string;
     id_company: string;
-    package_type: string;
-    seats: number;
-    price_per_seat: number;
+    packageType?: PackageType;
     is_trial: boolean;
-    trial_ends_at: string;
-    starts_at: string | null;
-    ends_at: string | null;
     status: string;
-    created_at: string;
-    updated_at: string;
-    deleted_at: string | null;
+}
+
+interface PackageType {
+    id: string;
+    name: string;
 }
 
 interface EmployeeData {
@@ -72,9 +69,6 @@ export function Navbar3() {
     const [profileImage, setProfileImage] = useState<string>('/avatar.png');
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-
-    // Hardcoded token sementara
-    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -113,8 +107,8 @@ export function Navbar3() {
 
                 // Cek subscription jika punya company
                 if (userData.workplace?.id) {
-                    if (userData.workplace.subscription?.package_type) {
-                        setPackageType(userData.workplace.subscription.package_type);
+                    if (userData.workplace.subscription?.packageType) {
+                        setPackageType(userData.workplace.subscription.packageType?.name);
                     } else {
                         console.log('No subscription data found in workplace');
                     }
@@ -129,7 +123,7 @@ export function Navbar3() {
         };
 
         fetchUserData();
-    }, [token]);
+    }, []);
 
     const handleNavigation = (path: string) => {
         router.push(path);
