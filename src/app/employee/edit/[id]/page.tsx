@@ -890,11 +890,9 @@ export default function EditKaryawan() {
           </div>
 
           <div>
-           <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
-            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+            <h2 className="text-xl font-semibold text-[#141414] mb-4">
               Payroll
-            </h1>
-          </div>
+            </h2>
             <div className="space-y-4">
               <EditableField
                 label="Tanggal Efektif"
@@ -959,12 +957,9 @@ export default function EditKaryawan() {
 
         <div className="relative mb-24">
           <div className="w-full mt-10">
-   
-             <div className="col-span-2 border-b border-gray-300 pb-2">
-            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
-               📂 Dokumen Karyawan
-            </h1>
-          </div>
+            <h2 className="text-2xl font-semibold text-[#1e293b] mb-4 border-b pb-2">
+              📂 Dokumen Karyawan
+            </h2>
 
             {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
               <div className="w-full overflow-x-auto rounded-lg shadow-md mb-6">
