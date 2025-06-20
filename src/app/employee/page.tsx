@@ -1,10 +1,5 @@
 import {redirect} from "next/navigation";
 
-<<<<<<< HEAD
-export default function EmployeePage() {
-    redirect("/employee/dashboard");
-    return null; // This line is never reached, but it's good practice to return something
-=======
 import { useRouter } from "next/navigation";
 import { FEEmployee } from "@/types/employee";
 import * as XLSX from "xlsx";
@@ -546,5 +541,4 @@ export default function EmployeeTablePage() {
       </div>
     </div>
   );
->>>>>>> 4d17ffc352e48f13b560c35ee2a83b791b7080a5
 }
