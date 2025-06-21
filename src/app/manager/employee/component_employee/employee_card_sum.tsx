@@ -7,41 +7,54 @@ type Props = {
 };
 
 export default function EmployeeCardSum({ employeesCard }: Props) {
-  // Periode bulan dan tahun saat ini
-  const periode = new Date().toLocaleDateString("en-US", {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
+
+  const periode = today.toLocaleDateString("id-ID", {
     month: "long",
     year: "numeric",
   });
 
-  // Total karyawan
   const totalEmployee = employeesCard.length;
 
-  // Hitung karyawan baru (misal dalam 30 hari terakhir)
-  const newHires = employeesCard.filter((emp) => {
-    const hireDate = new Date(emp.hire_date);
-    const today = new Date();
-    const diffDays = Math.floor(
-      (today.getTime() - hireDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    return diffDays <= 30;
+
+  // Pegawai Tetap: tipe_kontrak === "Tetap" && status === "Active"
+  const permanentEmployees = employeesCard.filter((emp) => {
+    const tipe = emp.tipe_kontrak?.toLowerCase().trim();
+    const status = emp.status?.toLowerCase().trim();
+    return tipe === "tetap" && status === "active";
   }).length;
 
-  // Pegawai tetap (status "Aktif")
-  const permanentEmployees = employeesCard.filter(
-    (emp) => emp.status === "Aktif"
-  ).length;
+  // Karyawan Kontrak: tipe_kontrak === "Kontrak" && status === "Active"
+  const contractEmployees = employeesCard.filter((emp) => {
+    const tipe = emp.tipe_kontrak?.toLowerCase().trim();
+    const status = emp.status?.toLowerCase().trim();
+    return tipe === "kontrak" && status === "active";
+  }).length;
 
-  // Data untuk card
+  const internEmployees = employeesCard.filter((emp) => {
+    const tipe = emp.tipe_kontrak?.toLowerCase().trim();
+    const status = emp.status?.toLowerCase().trim();
+    return tipe === "magang" && status === "active";
+  }).length;
+
+  // Karyawan Resign: status === "Resign"
+  const resignedEmployees = employeesCard.filter((emp) => {
+    return emp.status?.toLowerCase().trim() === "resign";
+  }).length;
+
   const infoData = [
     { label: "Periode", value: periode },
     { label: "Total Karyawan", value: `${totalEmployee} Orang` },
-    { label: "Karyawan Baru", value: `${newHires} Orang` },
     { label: "Pegawai Tetap", value: `${permanentEmployees} Orang` },
+    { label: "Karyawan Kontrak", value: `${contractEmployees} Orang` },
+    { label: "Karyawan Magang", value: `${internEmployees} Orang` },
+    { label: "Karyawan Resign", value: `${resignedEmployees} Orang` },
   ];
 
   return (
     <div className="bg-[#f8f8f8] p-6 rounded-xl shadow-md mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {infoData.map((info, idx) => (
           <div key={idx} className="text-center p-4 bg-white rounded-lg shadow-sm">
             <strong className="text-2xl">{info.value}</strong>

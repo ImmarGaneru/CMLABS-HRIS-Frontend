@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Card } from "./ui/card";
 
 const sidebarNavItems = [
     {
@@ -53,10 +54,10 @@ const sidebarNavItems = [
         icon: ClipboardCheck,
     },
     {
-        title: "Overtime",
-        url: "/manager/overtime",
-        icon: AlarmClock,
-    }
+        title: "Lettering",
+        url: "/lettering",
+        icon: ClipboardCheck,
+    },
 ];
 
 export function SidebarApp() {
