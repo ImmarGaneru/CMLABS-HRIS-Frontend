@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Switch } from "@headlessui/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
@@ -12,6 +12,9 @@ function JadwalBody() {
 
     const id = searchParams.get('id') || "";
 
+function JadwalContent() {
+    const searchParams = useSearchParams();
+    const id = searchParams.get('id') || "";
     const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting } = useAttendance();
     const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
     const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
@@ -166,15 +169,13 @@ function JadwalBody() {
 
                                 updatedCKSetting.check_clock_setting_time = check_clock_setting_time;
 
-
                                 completeUpdateCheckClockSetting(checkClockSetting?.id, updatedCKSetting)
                                     .then(() => router.push("/jadwal"))
                                     .catch((error) => {
                                         console.error("Error saving schedule:", error);
                                     });
                             }
-                        }
-                        }
+                        }}
                         className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer">
                         Simpan
                     </button>
