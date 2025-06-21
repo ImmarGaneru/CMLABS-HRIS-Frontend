@@ -19,7 +19,9 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
         return pathname.startsWith("/manager") ||
             pathname.startsWith("/payment") ||
             pathname.startsWith("/subscription") ||
-            pathname.startsWith("/profile")
+            pathname.startsWith("/profile")||
+            pathname.startsWith("/lettering") 
+
     }
 
     const usesEmployeeSidebar = () => {

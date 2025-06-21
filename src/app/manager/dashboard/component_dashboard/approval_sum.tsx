@@ -26,7 +26,7 @@ export default function ApprovalSum(){
             try {
                 setLoading(true);
                 const res = await api.get('/admin/employees/dashboard/recent-approvals');
-                
+
                 if (Array.isArray(res.data.data?.data)) {
                     setApprovals(res.data.data.data);
                 } else {
@@ -179,7 +179,7 @@ export default function ApprovalSum(){
                             </div>
                         )}
                     </div>
-                    <button 
+                    <button
                         onClick={handleViewAll}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
@@ -191,35 +191,35 @@ export default function ApprovalSum(){
             <div className="flex-1 overflow-auto">
                 <table className="w-full border-collapse">
                     <thead>
-                        <tr className="bg-[#D9D9D9] text-center">
-                            <th className="px-4 py-3 font-semibold">Karyawan</th>
-                            <th className="px-4 py-3 font-semibold">Jenis</th>
-                            <th className="px-4 py-3 font-semibold">Status</th>
-                            <th className="px-4 py-3 font-semibold">Detail</th>
-                        </tr>
+                    <tr className="bg-[#D9D9D9] text-center">
+                        <th className="px-4 py-3 font-semibold">Karyawan</th>
+                        <th className="px-4 py-3 font-semibold">Jenis</th>
+                        <th className="px-4 py-3 font-semibold">Status</th>
+                        <th className="px-4 py-3 font-semibold">Detail</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {approvals.map((approval, index) => (
-                            <tr key={approval.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                                <td className="px-4 py-3">{approval.employee_name}</td>
-                                <td className="px-4 py-3">
-                                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex justify-center">{approval.type}</span>
-                                </td>
-                                <td className="px-4 py-3">
+                    {approvals.map((approval, index) => (
+                        <tr key={approval.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3">{approval.employee_name}</td>
+                            <td className="px-4 py-3">
+                                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex justify-center">{approval.type}</span>
+                            </td>
+                            <td className="px-4 py-3">
                                     <span className={`px-3 py-1 rounded-full text-sm flex justify-center ${getStatusColor(approval.status)}`}>
                                         {getStatusLabel(approval.status)}
                                     </span>
-                                </td>
-                                <td className="px-4 py-3 flex justify-center">
-                                    <button 
-                                        onClick={() => handleViewDetail(approval.id)}
-                                        className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
-                                    >
-                                        <FaEye size={20} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                            </td>
+                            <td className="px-4 py-3 flex justify-center">
+                                <button
+                                    onClick={() => handleViewDetail(approval.id)}
+                                    className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+                                >
+                                    <FaEye size={20} />
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
             </div>

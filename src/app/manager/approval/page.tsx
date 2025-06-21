@@ -13,21 +13,15 @@ import { useApproval, Approval } from "@/contexts/ApprovalContext";
 
 
 export default function ApprovalPage() {
-    const { approvals, approveRequest, rejectRequest, isAdmin } = useApproval();
+    const { approvals, approveRequest, rejectRequest } = useApproval();
     const router = useRouter();
     const [filterText, setFilterText] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
     const [filterType, setFilterType] = useState("");
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedApproval, setSelectedApproval] = useState<Approval | null>(null);
-    const [adminStatus, setAdminStatus] = useState(false);
 
     useEffect(() => {
-        const fetchAdminStatus = async () => {
-            const status = await isAdmin();
-            setAdminStatus(status);
-        };
-        fetchAdminStatus();
     }, []);
 
     const statusFilters = [
@@ -67,21 +61,19 @@ export default function ApprovalPage() {
                 ),
                 size: 60,
             },
-            ...(adminStatus ? [
-                {
-                    accessorKey: "id_user",
-                    header: "Nama Karyawan",
-                    cell: (info: CellContext<Approval, unknown>) => {
-                        const row = info.row.original;
-                        const fullName = `${row.employee?.first_name ?? ""} ${row.employee?.last_name ?? ""}`.trim();
-                        return (
-                            <div className="truncate w-[180px]">
-                                {fullName || "N/A"}
-                            </div>
-                        );
-                    },
+            {
+                accessorKey: "id_user",
+                header: "Nama Karyawan",
+                cell: (info: CellContext<Approval, unknown>) => {
+                    const row = info.row.original;
+                    const fullName = `${row.employee?.first_name ?? ""} ${row.employee?.last_name ?? ""}`.trim();
+                    return (
+                        <div className="truncate w-[180px]">
+                            {fullName || "N/A"}
+                        </div>
+                    );
                 },
-            ] : []),
+            },
             {
                 accessorKey: "request_type",
                 header: "Jenis Pengajuan",
@@ -149,7 +141,7 @@ export default function ApprovalPage() {
                 },
             },
         ],
-        [adminStatus]
+        []
     );
 
 //FUNGSI-FUNGSI FILTER==
@@ -235,7 +227,7 @@ export default function ApprovalPage() {
                                             {selectedApproval.employee?.first_name}{" "}
                                             {selectedApproval.employee?.last_name}
                                         </p>
-                                        <p className="text-sm text-gray-600">{selectedApproval.employee.position.name}</p>
+                                        <p className="text-sm text-gray-600">{selectedApproval.employee?.position?.name || "Tidak memiliki posisi"}</p>
                                     </div>
                                 </div>
                                 <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
@@ -318,7 +310,7 @@ export default function ApprovalPage() {
                         </div>
 
                         {/* Actions */}
-                        {(selectedApproval.status === "pending" && adminStatus) && (
+                        {(selectedApproval.status === "pending") && (
                             <div className="flex justify-end gap-4">
                                 <button
                                     className="bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700"

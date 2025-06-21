@@ -1,17 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { FaEnvelopeOpenText } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
     Settings,
-    UserCircle,
     LogOut,
     Clock,
     CalendarDays,
     ClipboardCheck,
-    AlarmClock
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -29,28 +28,33 @@ import { useRouter } from "next/navigation";
 const sidebarNavItems = [
     {
         title: "Dashboard",
-        url: "/manager/dashboard",
+        url: "/employee/dashboard",
         icon: LayoutDashboard,
     },
     {
         title: "Kehadiran",
-        url: "/manager/attendance",
+        url: "/employee/attendance",
         icon: Clock,
     },
     {
         title: "Jadwal",
-        url: "/manager/jadwal",
+        url: "/employee/jadwal",
         icon: CalendarDays,
     },
     {
         title: "Approval",
-        url: "/manager/approval",
+        url: "/employee/approval",
         icon: ClipboardCheck,
     },
     {
         title: "Overtime",
-        url: "/manager/overtime",
+        url: "/employee/overtime",
         icon: AlarmClock,
+    },
+    {
+        title: "Lettering",
+        url: "/employee/lettering",
+        icon: FaEnvelopeOpenText,
     }
 ];
 
