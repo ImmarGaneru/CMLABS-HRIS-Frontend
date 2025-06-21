@@ -1,822 +1,453 @@
 "use client";
+
 import { useRouter } from "next/navigation";
-import React, { useState, ChangeEvent, useRef, useEffect } from "react";
-import { FaCamera, FaFileUpload } from "react-icons/fa";
-import { createEmployee } from "../../../../../utils/employee";
-import { getPositions } from "../../../../../utils/position";
+import { FEEmployee } from "@/types/employee";
+import * as XLSX from "xlsx";
+import React, { useMemo, useState, useEffect, useRef } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/Datatable";
+import { RxAvatar } from "react-icons/rx";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import EmployeeCardSum from "../component_employee/employee_card_sum";
+import DataTableHeader from "@/components/DatatableHeader";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import api from "@/lib/axios";
+// import { Email } from "@mui/icons-material";
 
-export default function TambahKaryawan() {
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+type Employee = {
+  id_user: string;
+  jenis_kelamin: string;
+  id: string;
+  first_name: string;
+  last_name: string;
+  employment_status: "active" | "inactive" | "resign";
+  created_at: string;
+  address: string;
+  id_position: string | null;
+  tipe_kontrak: string | null;
 
-  const [positions, setPositions] = useState<
-    { id: string; name: string; gaji: number }[]
-  >([]);
-
-  const [formData, setFormData] = useState({
-    id_user: "",
-    avatar: null as File | null,
-    first_name: "",
-    last_name: "",
-    nik: "",
-    address: "",
-    notelp: "",
-    email: "",
-    tempatLahir: "",
-    tanggalLahir: "",
-    jenisKelamin: "",
-    pendidikan: "",
-    jadwal: "",
-    tipeKontrak: "Tetap",
-    grade: "",
-    jabatan: "",
-    id_position: "", // id dari posisi yang dipilih
-    cabang: "",
-    bank: "",
-    norek: "",
-    startDate: "",
-    endDate: "",
-    tenure: "",
-    tanggalEfektif: "",
-    gaji: 0,
-    uangLembur: 0,
-    dendaTerlambat: 0,
-    TotalGaji: 0,
-   dokumen: [] as File[],
-  });
-
-  interface PositionResponse {
-    id: string | number;
-    name: string;
-    gaji?: number | null;
-  }
-
-  useEffect(() => {
-    async function fetchPositions() {
-      try {
-        const response = await getPositions();
-        const mapped = response.data.map((pos: PositionResponse) => ({
-          id: pos.id.toString(),
-          name: pos.name,
-          gaji: pos.gaji ?? 0,
-        }));
-        setPositions(mapped);
-      } catch (error) {
-        console.error("Failed to fetch positions:", error);
-      }
-    }
-
-    fetchPositions();
-  }, []);
-
-  const handleBack = () => router.push("/employee");
-
-  const handleUploadClick = () => fileInputRef.current?.click();
-
-  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData((prev) => ({ ...prev, avatar: file }));
-
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const [dokumen, setDokumen] = useState<File[]>([]);
-
-const handleDokumenChange = (e: ChangeEvent<HTMLInputElement>) => {
-  if (e.target.files) {
-    const files = Array.from(e.target.files);
-    setDokumen((prev) => [...prev, ...files]);
-    setFormData((prev) => ({
-      ...prev,
-      dokumen: [...prev.dokumen, ...files],
-    }));
-  }
+  // tambahan
+  user?: { email: string };
+  position?: { name: string };
+  no_telp: string;
+  cabang: string;
+  jabatan: string;
 };
 
+export default function EmployeeTablePage() {
+  const router = useRouter();
 
+  const [employees, setEmployees] = useState<FEEmployee[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleJabatanChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const selectedPosition = positions.find((pos) => pos.id === selectedId);
+  const [filterText, setFilterText] = useState("");
+  const [filterGender, setFilterGender] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
-    setFormData((prev) => ({
-      ...prev,
-      id_position: selectedId,
-      jabatan: selectedPosition?.name ?? "",
-      gaji: selectedPosition?.gaji ?? 0,
-      TotalGaji:
-        (selectedPosition?.gaji ?? 0) + prev.uangLembur - prev.dendaTerlambat,
-    }));
-  };
+  const employeeFilters = [
+    { label: "Laki-laki", value: "Laki-laki" },
+    { label: "Perempuan", value: "Perempuan" },
+  ];
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const statusFilters = [
+    { label: "active", value: "active" },
+    { label: "inactive", value: "inactive" },
+  ];
+  const handleSoftDelete = async (id: number | string) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
+        method: "DELETE",
+      });
 
-    setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
-
-      if (updated.startDate) {
-        const start = new Date(updated.startDate);
-        const end = updated.endDate ? new Date(updated.endDate) : new Date();
-
-        let years = end.getFullYear() - start.getFullYear();
-        let months = end.getMonth() - start.getMonth();
-        let days = end.getDate() - start.getDate();
-
-        if (days < 0) {
-          months--;
-          days += new Date(end.getFullYear(), end.getMonth(), 0).getDate();
-        }
-
-        if (months < 0) {
-          years--;
-          months += 12;
-        }
-
-        updated.tenure = `${years} tahun ${months} bulan ${days} hari`;
-      } else {
-        updated.tenure = "";
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Gagal menghapus data");
       }
 
-      return updated;
-    });
-  };
+      // Update state untuk menghapus employee yang sudah dihapus
+      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+    } catch (error) {
+      let errorMessage = "Gagal menghapus data";
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => {
-      let updatedValue: string | number = value;
-
-      if (["gaji", "uangLembur", "dendaTerlambat"].includes(name)) {
-        updatedValue = parseFloat(value) || 0;
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error
+      ) {
+        errorMessage += `: ${(error as { message: string }).message}`;
       }
 
-      const updated = {
-        ...prev,
-        [name]: updatedValue,
-      };
-
-      updated.TotalGaji =
-        (typeof updated.gaji === "number"
-          ? updated.gaji
-          : parseFloat(updated.gaji)) +
-        (typeof updated.uangLembur === "number"
-          ? updated.uangLembur
-          : parseFloat(updated.uangLembur)) -
-        (typeof updated.dendaTerlambat === "number"
-          ? updated.dendaTerlambat
-          : parseFloat(updated.dendaTerlambat));
-
-      return updated;
-    });
-  };
-  function isUUID(str: string) {
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(str);
-  }
-
- const handleSubmit = async (event: React.FormEvent) => {
-  event.preventDefault();
-
-  if (!isUUID(formData.id_position)) {
-    alert("ID posisi harus dalam format UUID yang benar!");
-    return;
-  }
-
-  try {
-    const data = new FormData();
-
-    // Tambahkan properti biasa (kecuali dokumen)
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === "dokumen") return; // abaikan dokumen di sini
-
-      if (value instanceof File) {
-        data.append(key, value);
-      } else if (value !== null && value !== undefined) {
-        data.append(key, value.toString());
-      }
-    });
-
-    // Tambahkan dokumen satu per satu
- formData.dokumen.forEach((file) => {
-   data.append("dokumen[]", file); 
-   // ✅ kirim sebagai array of file, Laravel akan mengenali
-  });
-
-
-    await createEmployee(data);
-
-    alert("Data berhasil ditambahkan");
-    router.push("/employee");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    if (error.response?.data) {
-      alert(
-        "Gagal menambahkan data karyawan:\n" +
-          JSON.stringify(error.response.data, null, 2)
-      );
-      console.error("Detail error:", error.response.data);
-    } else {
-      alert("Gagal menambahkan data karyawan.");
+      alert(errorMessage);
       console.error(error);
     }
-  }
-};
+  };
 
+  // Fetch data dari backend
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.get("/admin/employees/comp-employees");
+        
+        const feData = res.data.data.map((emp: Employee) => ({
+          id: emp.id,
+          id_user: emp.id_user,
+          nama: `${emp.first_name} ${emp.last_name}`,
+          jenis_kelamin: emp.jenis_kelamin,
+          no_telp: emp.no_telp || "-",
+          cabang: emp.cabang || "-",
+          jabatan: emp.jabatan || "-",
+          status: emp.employment_status,
+          Email: emp.user?.email || "-",
+
+          // hireDate: emp.created_at,
+          // employmentType: emp.tipe_kontrak || "-",
+        }));
+
+        setEmployees(feData);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+
+  // Style status untuk reuse
+  const getStatusStyle = (status: string) => {
+    const styles: Record<string, string> = {
+      Aktif: "bg-green-100 text-green-800",
+      "Non-Aktif": "bg-red-100 text-red-800",
+      Resign: "bg-gray-100 text-gray-800",
+    };
+    return styles[status] ?? "bg-gray-100 text-gray-800";
+  };
+
+  const employeeColumns = useMemo<ColumnDef<FEEmployee>[]>(
+    () => [
+      {
+        id: "No",
+        header: "No",
+        cell: ({ row }) => (
+          <div className="flex justify-center">{row.index + 1}</div>
+        ),
+        size: 20,
+      },
+      {
+        id: "Avatar",
+        header: "Avatar",
+        cell: () => (
+          <div className="flex items-center justify-center text-lg">
+            <RxAvatar size={24} />
+          </div>
+        ),
+        size: 40,
+      },
+      {
+        accessorKey: "nama",
+        header: "Nama",
+        cell: (info) => (
+          <div className="truncate max-w-[120px]">
+            {info.getValue() as string}
+          </div>
+        ),
+        size: 120,
+      },
+      {
+        accessorKey: "jenis_kelamin",
+        header: "Jenis Kelamin",
+        cell: (info) => (
+          <div className="truncate max-w-[100px]">
+            {info.getValue() as string}
+          </div>
+        ),
+        size: 100,
+      },
+      {
+        accessorKey: "no_telp",
+        header: "Nomor Telepon",
+        cell: (info) => (
+          <div className="truncate max-w-[120px]">
+            {info.getValue() as string}
+          </div>
+        ),
+        size: 120,
+      },
+      {
+        accessorKey: "cabang",
+        header: "Cabang",
+        cell: (info) => (
+          <div className="truncate max-w-[100px]">
+            {info.getValue() as string}
+          </div>
+        ),
+        size: 100,
+      },
+      {
+        accessorKey: "jabatan",
+        header: "Jabatan",
+        cell: (info) => (
+          <div className="truncate max-w-[120px]">
+            {info.getValue() as string}
+          </div>
+        ),
+        size: 120,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: (info) => {
+          const status = info.getValue() as "active" | "inactive";
+
+          let displayStatus = "Unknown";
+          if (status === "active") displayStatus = "Aktif";
+          else if (status === "inactive") displayStatus = "inactive";
+
+          return (
+            <div className="flex justify-center w-[100px]">
+              <span
+                className={`px-2 py-1 text-xs rounded ${getStatusStyle(
+                  displayStatus
+                )}`}
+              >
+                {displayStatus}
+              </span>
+            </div>
+          );
+        },
+        size: 100,
+      },
+      {
+        id: "actions",
+        header: "Aksi",
+        cell: ({ row }) => {
+          const data = row.original;
+          return (
+            <div className="flex gap-2 justify-center w-[120px]">
+              <button
+                title="Detail"
+                onClick={() => router.push(`/employee/detail/${data.id}`)}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+              >
+                <FaEye />
+              </button>
+              <button
+                title="Edit"
+                onClick={() => router.push(`/employee/edit/${data.id}`)}
+                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+              >
+                <FaEdit />
+              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    title="Hapus"
+                    className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
+                  >
+                    <FaTrash />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Yakin menghapus data ini?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Data yang sudah dihapus tidak dapat dikembalikan
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleSoftDelete(data.id)}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          );
+        },
+        size: 120,
+      },
+    ],
+    [router]
+  );
+
+  // Export CSV
+  const handleExportCSV = (dataToExport: FEEmployee[]) => {
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+    XLSX.writeFile(workbook, "employees_data.xlsx");
+  };
+
+  // Ref input file untuk reset
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Import handler
+
+  const handleImportCSV = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = e.target?.result;
+        if (!data) throw new Error("File kosong atau tidak terbaca");
+
+        const fileName = file.name.toLowerCase();
+
+        let workbook;
+        if (fileName.endsWith(".csv")) {
+          workbook = XLSX.read(data, { type: "string" });
+        } else {
+          workbook = XLSX.read(data, { type: "array" });
+        }
+
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rawJsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+          worksheet,
+          {
+            defval: "",
+          }
+        );
+
+        // Konversi semua field jadi string (kecuali null/empty)
+        const jsonData: FEEmployee[] = rawJsonData.map((row) => {
+          const newRow: Record<string, unknown> = {};
+          for (const key in row) {
+            const val = row[key];
+            newRow[key] = val === null || val === "" ? "" : String(val);
+          }
+          return newRow as FEEmployee;
+        });
+
+        if (jsonData.length === 0)
+          throw new Error("Tidak ada data yang terbaca");
+
+        // Kirim data ke backend dengan axios instance api
+        const response = await api.post("/employee/import", {
+          employee: jsonData,
+        });
+
+        if (response.status !== 200 && response.status !== 201) {
+          throw new Error("Gagal menyimpan data ke server");
+        }
+
+        // const savedEmployees = response.data;
+
+        if (Array.isArray(response.data)) {
+          setEmployees(response.data);
+        } else {
+          alert("Backend tidak mengembalikan array data karyawan");
+          setEmployees([]); // reset supaya tidak error filter
+        }
+
+        alert("Import dan simpan berhasil!");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        console.error("Gagal impor:", error);
+
+        const message =
+          error?.response?.data?.message || // Jika Laravel kirim { message: "..."}
+          error?.response?.data?.error || // Jika Laravel kirim { error: "..." }
+          error?.message || // Jika error JS
+          JSON.stringify(error); // fallback, tampilkan objek sebagai string
+
+        alert("Terjadi kesalahan saat mengimpor file: " + message);
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+
+    if (file.name.toLowerCase().endsWith(".csv")) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
+  };
+
+  // Filter data sesuai filter user
+  const filteredData = useMemo(() => {
+    return employees.filter((item) => {
+      const nama = item.nama ?? "";
+      const cabang = item.cabang ?? "";
+      const jabatan = item.jabatan ?? "";
+
+      const matchesSearch =
+        nama.toLowerCase().includes(filterText.toLowerCase()) ||
+        cabang.toLowerCase().includes(filterText.toLowerCase()) ||
+        jabatan.toLowerCase().includes(filterText.toLowerCase());
+
+      const matchesGender = !filterGender || item.jenis_kelamin === filterGender;
+      const matchesStatus = !filterStatus || item.status === filterStatus;
+
+      return matchesSearch && matchesGender && matchesStatus;
+    });
+  }, [employees, filterText, filterGender, filterStatus]);
 
   return (
-    <div className="mt-3 p-6 bg-white rounded shadow w-full ml-0 mr-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-[#1E3A5F]">
-          Tambah Karyawan Baru
-        </h1>
+    <div className="px-4 py-6 min-h-screen flex flex-col gap-4">
+      <EmployeeCardSum employeesCard={employees} />
 
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md cursor-pointer hover:bg-[#155A8A] transition duration-200 ease-in-out"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Kembali
-        </button>
+      <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
+        <div className="flex flex-col gap-4 min-w-0">
+          {loading && <p>Loading data...</p>}
+          {error && <p className="text-red-600">Error: {error}</p>}
+
+          <DataTableHeader
+            title="Data Karyawan"
+            hasSearch={true}
+            hasFilter={true}
+            hasSecondFilter={true}
+            hasExport={true}
+            hasImport={true}
+            hasAdd={true}
+            searchValue={filterText}
+            onSearch={setFilterText}
+            filterValue={filterGender}
+            onFilterChange={setFilterGender}
+            secondFilterValue={filterStatus}
+            onSecondFilterChange={setFilterStatus}
+            filterOptions={employeeFilters}
+            secondFilterOptions={statusFilters}
+            onAdd={() => router.push("/employee/tambah")}
+            importInputRef={fileInputRef}
+            onExport={() => handleExportCSV(employees)}
+            onImport={handleImportCSV}
+          />
+
+          <div className="w-full overflow-x-auto">
+            <DataTable columns={employeeColumns} data={filteredData} />
+          </div>
+        </div>
       </div>
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
-        <div className="col-span-2 flex items-center gap-4">
-          <div className="w-40 h-52 rounded bg-gray-300 overflow-hidden">
-            {" "}
-            {/* Menyesuaikan ukuran */}
-            {preview && (
-              <img
-                src={preview}
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
-            )}
-          </div>
-          <label
-            onClick={handleUploadClick}
-            htmlFor="avatarUpload"
-            className="cursor-pointer flex flex-col items-center justify-center px-4 py-3 bg-[#1E3A5F]  text-white rounded-md shadow-md hover:bg-[#155A8A]  transition-colors duration-300"
-            title="Upload Foto Avatar"
-          >
-            <FaCamera className="mb-2 text-lg" />
-            <span className="text-sm font-semibold">Upload Foto</span>
-          </label>
-
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={handleAvatarChange}
-            style={{ display: "none" }}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="id_user"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            ID User
-          </label>
-          <input
-            id="id_user"
-            name="id_user"
-            placeholder="Enter ID User"
-            onChange={handleChange}
-            className="input"
-            value={formData.id_user}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="id_user"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Nama Depan
-          </label>
-          <input
-            id="first_name"
-            name="first_name"
-            placeholder="Enter first name"
-            onChange={handleChange}
-            className="input"
-            value={formData.first_name}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="last_name"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Nama Belakang
-          </label>
-          <input
-            id="last_name"
-            name="last_name"
-            placeholder="Enter last name"
-            onChange={handleChange}
-            className="input"
-            value={formData.last_name}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="nik"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            NIK
-          </label>
-          <input
-            id="nik"
-            name="nik"
-            type="number"
-            placeholder="Enter NIK"
-            onChange={handleChange}
-            className="input"
-            value={formData.nik}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="address"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Alamat
-          </label>
-          <input
-            id="address"
-            name="address"
-            placeholder="Enter address"
-            onChange={handleChange}
-            className="input"
-            value={formData.address}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="notelp"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Nomor Telepon
-          </label>
-          <input
-            id="notelp"
-            name="notelp"
-            type="number"
-            placeholder="Enter phone number"
-            onChange={handleChange}
-            className="input"
-            value={formData.notelp}
-          />
-        </div>
-
-        {/* <div>
-          <label
-            htmlFor="email"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            placeholder="Enter email"
-            onChange={handleChange}
-            className="input"
-            value={formData.email}
-          />
-        </div> */}
-
-        <div>
-          <label
-            htmlFor="tempatLahir"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Tempat Lahir
-          </label>
-          <input
-            id="tempatLahir"
-            name="tempatLahir"
-            placeholder="Enter birthplace"
-            onChange={handleChange}
-            className="input"
-            value={formData.tempatLahir}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="tanggalLahir"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Tanggal Lahir
-          </label>
-          <input
-            id="tanggalLahir"
-            name="tanggalLahir"
-            type="date"
-            onChange={handleChange}
-            className="input"
-            value={formData.tanggalLahir}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="jenisKelamin"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Jenis Kelamin
-          </label>
-          <select
-            id="jenisKelamin"
-            name="jenisKelamin"
-            onChange={handleChange}
-            className="input"
-            value={formData.jenisKelamin}
-          >
-            <option value="">-Select Gender-</option>
-            <option value="Laki-laki">Laki-laki</option>
-            <option value="Perempuan">Perempuan</option>
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="pendidikan"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Pendidikan Terakhir
-          </label>
-          <select
-            id="pendidikan"
-            name="pendidikan"
-            onChange={handleChange}
-            className="input"
-            value={formData.pendidikan}
-          >
-            <option value="">-Pilih Pendidikan-</option>
-            <option value="SMA/SMK">SMA/SMK</option>
-            <option value="D3">D3</option>
-            <option value="S1">S1</option>
-            <option value="S2">S2</option>
-            <option value="S3">S3</option>
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="jadwal"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Jadwal Kerja
-          </label>
-          <select
-            id="jadwal"
-            name="jadwal"
-            onChange={handleChange}
-            className="input"
-            value={formData.jadwal}
-          >
-            <option value="">Select work schedule</option>
-            <option value="Shift">Shift</option>
-            <option value="Non-Shift">Non-Shift</option>
-          </select>
-        </div>
-        <div>
-          <label
-            htmlFor="startDate"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Mulai Kerja
-          </label>
-          <input
-            type="date"
-            id="startDate"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleDateChange}
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="endDate"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Akhir Kerja
-          </label>
-          <input
-            type="date"
-            id="endDate"
-            name="endDate"
-            value={formData.endDate}
-            onChange={handleDateChange}
-            className="input"
-          />
-        </div>
-        <div>
-          <label htmlFor="tanggalEfektif"
-          className="block text-[20px] font-bold text-[#141414]">
-            Tanggal Efektif
-          </label>
-          <input type="date"
-          id="tanggalEfektif"
-          name="tanggalEfektif"
-          value={formData.tanggalEfektif}
-          onChange={handleDateChange}
-          className="input" />
-        </div>
-
-        <div>
-          <label
-            htmlFor="tenure"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Masa Kerja
-          </label>
-          <input
-            type="text"
-            id="tenure"
-            name="tenure"
-            value={formData.tenure}
-            readOnly
-            className="input"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="tipeKontrak"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Tipe Kontrak
-          </label>
-          <div className="flex items-center gap-4 col-span-2">
-            {["Tetap", "Kontrak", "Resign"].map((val) => (
-              <label
-                key={val}
-                className="flex items-center cursor-pointer hover:text-blue-500"
-              >
-                <input
-                  type="radio"
-                  name="tipeKontrak"
-                  value={val}
-                  checked={formData.tipeKontrak === val}
-                  onChange={handleChange}
-                />
-                {" " + val}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* <div>
-          <label
-            htmlFor="grade"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Grade
-          </label>
-          <input
-            id="grade"
-            name="grade"
-            placeholder="Enter grade"
-            onChange={handleChange}
-            className="input"
-            value={formData.grade}
-          />
-        </div> */}
-
-        <div>
-          <label
-            htmlFor="id_position"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Jabatan
-          </label>
-          <select
-            id="id_position"
-            name="id_position"
-            onChange={handleJabatanChange}
-            className="input"
-            value={formData.id_position || ""}
-            required
-          >
-            <option value="">- Pilih Jabatan -</option>
-            {positions.map((pos) => (
-              <option key={pos.id} value={pos.id}>
-                {pos.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="gaji"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Gaji
-          </label>
-          <input
-            id="gaji"
-            name="gaji"
-            type="number"
-            className="input"
-            value={formData.gaji}
-            readOnly
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="cabang"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Cabang
-          </label>
-          <input
-            id="cabang"
-            name="cabang"
-            placeholder="Enter branch"
-            onChange={handleChange}
-            className="input"
-            value={formData.cabang}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="bank"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Bank
-          </label>
-          <input
-            id="bank"
-            name="bank"
-            placeholder="Enter bank name"
-            onChange={handleChange}
-            className="input"
-            value={formData.bank}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="norek"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Nomor Rekening
-          </label>
-          <input
-            id="norek"
-            name="norek"
-            type="number"
-            placeholder="Enter bank account number"
-            onChange={handleChange}
-            className="input"
-            value={formData.norek}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="uangLembur"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Uang Lembur
-          </label>
-          <input
-            id="uangLembur"
-            name="uangLembur"
-            type="number"
-            placeholder="Enter overtime pay"
-            onChange={handleChange}
-            className="input"
-            value={formData.uangLembur}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="dendaTerlambat"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Denda Terlambat
-          </label>
-          <input
-            id="dendaTerlambat"
-            name="dendaTerlambat"
-            type="number"
-            placeholder="Enter late fine"
-            onChange={handleChange}
-            className="input"
-            value={formData.dendaTerlambat}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="TotalGaji"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Total Gaji
-          </label>
-          <input
-            id="TotalGaji"
-            name="TotalGaji"
-            type="number"
-            placeholder="Enter total salary"
-            onChange={handleChange}
-            className="input"
-            value={formData.TotalGaji}
-          />
-        </div>
-
-        <div className="col-span-2">
-          <label className="block text-[20px] font-bold text-[#141414]">
-            Upload Dokumen
-          </label>
-          <div className="relative">
-            <input
-              name="dokumen[]"
-              type="file"
-              accept=".pdf,.docx"
-              multiple
-              onChange={handleDokumenChange}
-              className="input-file w-full border p-3 rounded-md cursor-pointer hover:border-blue-500 pl-12"
-            />
-            <FaFileUpload className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl text-gray-600" />
-          </div>
-
-          {/* Contoh tampil nama file yang sudah dipilih */}
-          {dokumen.length > 0 && (
-            <ul className="mt-2 list-disc list-inside">
-              {dokumen.map((file, idx) => (
-                <li key={idx}>{file.name}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="col-span-2 flex justify-end gap-4">
-          <button
-            type="button"
-            className="text-blue-500 cursor-pointer hover:text-blue-700"
-            onClick={() => (window.location.href = "/employee")}
-          >
-            Batal
-          </button>
-          {/* Submit Button */}
-          <div className="col-span-2 text-right">
-            <button
-              type="submit"
-              className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
-            >
-              Simpan
-            </button>
-          </div>
-        </div>
-      </form>
-
-      <style jsx>{`
-        .input {
-          border: 1px solid #ccc;
-          padding: 0.5rem;
-          border-radius: 0.25rem;
-          width: 100%;
-        }
-        .input-file {
-          cursor: pointer;
-        }
-      `}</style>
     </div>
   );
 }

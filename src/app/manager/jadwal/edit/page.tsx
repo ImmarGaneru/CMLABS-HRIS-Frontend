@@ -4,21 +4,19 @@ import { useState } from "react";
 import { Switch } from "@headlessui/react";
 import { useRouter } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function Jadwal({
-    params,
-}: {
-    params: Promise<{ id: string }>;
-}) {
-    let id: string;
-    params.then((p) => {
-        id = p.id;
-    });
+function JadwalBody() {
+    const searchParams = useSearchParams();
+
+    const id = searchParams.get('id') || "";
+
     const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting } = useAttendance();
     const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
     const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
-    const router = useRouter();
     const [checkClockSetting, setCheckClockSetting] = useState<CheckClockSetting | null>(null);
+    const router = useRouter();
 
     // Fetch checkClockSetting when component mounts
     useState(() => {
@@ -37,7 +35,7 @@ export default function Jadwal({
             {/* Form Tambah Jadwal */}
             <div className="bg-white p-6 rounded-xl shadow">
                 <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-                    <h1 className="text-xl font-bold text-[#1E3A5F]">Tambah Jadwal</h1>
+                    <h1 className="text-xl font-bold text-[#1E3A5F]">Update Jadwal</h1>
                     <button
                         onClick={() => router.push("/jadwal")}
                         className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
@@ -124,7 +122,7 @@ export default function Jadwal({
                 {/* Tombol Aksi */}
                 <div className="flex justify-end gap-2">
                     <button
-                        onClick={() => router.push("/jadwal")}
+                        onClick={() => router.push("/manager/jadwal")}
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200 ease-in-out shadow-md cursor-pointer">
                         Batal
                     </button>
@@ -184,4 +182,10 @@ export default function Jadwal({
             </div>
         </div>
     );
+}
+
+export default function Jadwal() {
+    <Suspense>
+        <JadwalBody />
+    </Suspense>
 }

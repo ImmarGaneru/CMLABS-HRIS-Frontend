@@ -59,7 +59,7 @@ const EmployeeAttendancePie: React.FC = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // const response = await fetch(`http://localhost:8000/api/`)
+        // const response = await fetch(`http://api.hriscmlabs.my.id/api/`)
         // TODO: Implement actual API call
         setLoading(false);
       } catch (error) {
@@ -123,7 +123,7 @@ const EmployeeAttendancePie: React.FC = () => {
             customInput={
               <div>
                 <span className='text-gray-700 text-[16px]'>
-                  {selectedDate.toLocaleDateString('id-ID', { 
+                  {selectedDate.toLocaleDateString('id-ID', {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric'
@@ -135,7 +135,7 @@ const EmployeeAttendancePie: React.FC = () => {
           />
         </div>
       </div>
-      
+
       {/* Chart container */}
       <div className='flex flex-row gap-4 items-center justify-between'>
         <div className='w-[300px] h-[300px] text-sm'>
@@ -161,8 +161,8 @@ const EmployeeAttendancePie: React.FC = () => {
         <ul className='flex flex-col gap-4 w-fit'>
           {data.map((item, index) => (
             <li key={item.name} className='flex items-center gap-3'>
-              <div 
-                className='w-3 h-3 rounded-full' 
+              <div
+                className='w-3 h-3 rounded-full'
                 style={{ backgroundColor: COLORS[index] }}
               />
               <span className='text-gray-700'>{item.name}</span>

@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig} from 'axios';
 
 const api: AxiosInstance = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://api.hriscmlabs.my.id/api',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -11,12 +11,13 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem("token") || '4|ZJrIgRl7tu7ewPOvExRjZmOnCbUDY4nxBPextfZA148d6b91';
+        // if (typeof window !== 'undefined') {
+            const token = localStorage.getItem("token");
+            console.log(localStorage);
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
-        }
+        // }
         console.log("Request sent:", config);
         return config;
     },

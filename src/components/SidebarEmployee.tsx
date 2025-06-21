@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FaEnvelopeOpenText } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -45,11 +46,16 @@ const sidebarNavItems = [
         url: "/employee/approval",
         icon: ClipboardCheck,
     },
-    // {
-    //     title: "Overtime",
-    //     url: "/employee/overtime",
-    //     icon: AlarmClock,
-    // }
+    {
+        title: "Overtime",
+        url: "/employee/overtime",
+        icon: AlarmClock,
+    },
+    {
+        title: "Lettering",
+        url: "/employee/lettering",
+        icon: FaEnvelopeOpenText,
+    }
 ];
 
 export function SidebarEmployee() {

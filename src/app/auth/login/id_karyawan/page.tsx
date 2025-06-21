@@ -45,7 +45,7 @@ export default function LoginIdKaryawanPage() {
           }
 
           alert("Login berhasil!");
-          router.push("/dashboard");
+          router.push("/employee/dashboard");
         } else {
           throw new Error("Token tidak ditemukan.");
         }
@@ -233,17 +233,17 @@ export default function LoginIdKaryawanPage() {
             </Link>
 
             <Link
-              href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect`}
-              passHref
-            >
-              <button
-                type="button"
-                className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm cursor-pointer"
-              >
-                <span>Masuk dengan akun Google</span>
-                <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
-              </button>
-            </Link>
+  href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect?login_method=id_karyawan`}
+  passHref
+>
+  <button
+    type="button"
+    className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm cursor-pointer"
+  >
+    <span>Masuk dengan akun Google</span>
+    <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
+  </button>
+</Link>
           </form>
 
           <p className="text-sm text-center mt-4 text-gray-600">

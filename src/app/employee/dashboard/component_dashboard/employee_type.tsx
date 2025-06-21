@@ -10,7 +10,7 @@ export default function EmployeeType() {
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
-      
+
   const handleMonthChange = (date: Date | null) => {
     if (date) {
       setSelectedMonth(date);
@@ -23,7 +23,7 @@ export default function EmployeeType() {
       'Kontrak': '#7CA5BF',
       'Lepas': '#BA3C54'
     };
-  
+
     return colorMap[label as keyof typeof colorMap] || '#ccc';
   };
 
@@ -34,7 +34,7 @@ export default function EmployeeType() {
       const month = String(selectedMonth.getMonth() + 1).padStart(2, '0');
 
       try {
-        const res = await fetch(`http://localhost:8000/api/admin/employees/dashboard/contract-stats?month=${month}&year=${year}`, {
+        const res = await fetch(`http://api.hriscmlabs.my.id/api/admin/employees/dashboard/contract-stats?month=${month}&year=${year}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -106,7 +106,7 @@ export default function EmployeeType() {
             customInput={
               <div className="flex items-center justify-between w-full">
                 <span className='text-gray-700 text-[16px]'>
-                  {selectedMonth.toLocaleDateString('id-ID', { 
+                  {selectedMonth.toLocaleDateString('id-ID', {
                     month: 'long',
                     year: 'numeric'
                   })}
@@ -123,7 +123,7 @@ export default function EmployeeType() {
         {/* Contract Type Chart */}
         <div>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart 
+            <BarChart
               data={chartData}
               layout="vertical"
               margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
@@ -133,9 +133,9 @@ export default function EmployeeType() {
               <Tooltip />
               <Bar dataKey="total">
                 {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={getColor(entry.label)} 
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={getColor(entry.label)}
                   />
                 ))}
               </Bar>

@@ -101,9 +101,15 @@ export interface Workplace {
 
 
 interface AttendanceContext {
+    selfCheckClockSetting: CheckClockSetting | null;
     employeeCheckClocks: CheckClock[];
     selfCheckClocks: CheckClock[];
     checkClockSettings: CheckClockSetting[];
+    fetchSelfCheckClockSetting: () => Promise<CheckClockSetting | null>;
+    handleClockIn: () => Promise<void>;
+    handleClockOut: () => Promise<void>;
+    handleBreakStart: () => Promise<void>;
+    handleBreakEnd: () => Promise<void>;
     fetchEmployeeCheckClocks: () => Promise<void>;
     fetchSelfCheckClocks: () => Promise<void>;
     fetchCheckClockSettings: () => Promise<void>;
@@ -118,11 +124,64 @@ interface AttendanceContext {
 const AttendanceContext = createContext<AttendanceContext | undefined>(undefined);
 
 export function AttendanceProvider({ children }: { children: React.ReactNode }) {
+    const [selfCheckClockSetting, setSelfCheckClockSetting] = useState<CheckClockSetting | null>(null);
     const [employeeCheckClocks, setEmployeeCheckClocks] = useState<CheckClock[]>([]);
     const [selfCheckClocks, setSelfCheckClocks] = useState<CheckClock[]>([]);
     const [checkClockSettings, setAttendance] = useState<CheckClockSetting[]>([]);
     const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    const fetchSelfCheckClockSetting = async () => {
+        try {
+            const data = await request<CheckClockSetting>(api.get("/attendance/check-clock/self-ck-setting"));
+            setSelfCheckClockSetting(data);
+            return data;
+        } catch (error) {
+            toast.error("Failed to fetch self check clock setting.");
+            return null;
+        }
+    };
+
+    const handleClockIn = async () => {
+        try {
+            const response = await request<CheckClock>(api.get("/attendance/check-clock/clock-in"));
+            toast.success("Clock-in successful.");
+            fetchSelfCheckClocks();
+        } catch (error) {
+            toast.error("Failed to clock-in. Please try again.");
+        }
+    }
+
+    const handleBreakStart = async () => {
+        try {
+            const response = await request<CheckClock>(api.get("/attendance/check-clock/break-start"));
+            toast.success("Break started successfully.");
+            fetchSelfCheckClocks();
+        } catch (error) {
+            toast.error("Failed to start break. Please try again.");
+        }
+    }
+
+    const handleBreakEnd = async () => {
+        try {
+            const response = await request<CheckClock>(api.get("/attendance/check-clock/break-end"));
+            toast.success("Break ended successfully.");
+            fetchSelfCheckClocks();
+        } catch (error) {
+            toast.error("Failed to end break. Please try again.");
+        }
+    }
+
+
+    const handleClockOut = async () => {
+        try {
+            const response = await request<CheckClock>(api.get("/attendance/check-clock/clock-out"));
+            toast.success("Clock-out successful.");
+            fetchSelfCheckClocks();
+        } catch (error) {
+            toast.error("Failed to clock-out. Please try again.");
+        }
+    }
 
     const fetchCheckClockSettings = async () => {
         try {
@@ -193,6 +252,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     }
 
     useEffect(() => {
+        fetchSelfCheckClockSetting();
         fetchCheckClockSettings();
         fetchEmployeeCheckClocks();
         fetchSelfCheckClocks();
@@ -201,9 +261,15 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     return (
         <AttendanceContext.Provider
             value={{
+                selfCheckClockSetting,
                 checkClockSettings,
                 employeeCheckClocks,
                 selfCheckClocks,
+                fetchSelfCheckClockSetting,
+                handleClockIn,
+                handleClockOut,
+                handleBreakStart,
+                handleBreakEnd,
                 fetchEmployeeCheckClocks,
                 fetchSelfCheckClocks,
                 fetchCheckClockSettings,

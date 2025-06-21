@@ -25,6 +25,8 @@ export type EmployeeFromAPI = {
   
 // Untuk UI
 export type FEEmployee = {
+    created_at: any;
+    avatar: any;
     id: string;
     nama: string;
     jenis_kelamin: string;
@@ -32,6 +34,8 @@ export type FEEmployee = {
     cabang: string;
     jabatan: string;
     status: string;
-    hire_date: string;
-    employment_type: string;
+    // hireDate: string;
+    start_date: string;
+    // employmentType: string;
+    tipe_kontrak: string;
 };
