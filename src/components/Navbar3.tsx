@@ -1,11 +1,12 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Input } from '@/components/ui/input';
 import { RiNotification4Fill } from 'react-icons/ri';
 import {
     Popover,
@@ -22,7 +23,7 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command";
-import api from '@/lib/axios';
+import api from "@/lib/axios";
 
 // Interfaces
 interface SubscriptionData {
@@ -72,33 +73,47 @@ export function Navbar3() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Hardcoded token sementara
+    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const userResponse = await api.get('/auth/me');
-                
-                const userData = userResponse.data.data as UserData;
+
+                if (!userResponse.status) throw new Error('Failed to fetch user');
+
+                // const responseJson = await userResponse.data
+                // console.log('Full API Response:', responseJson); // Debug log
+
+                const userData: UserData = userResponse.data.data;
+
+                // Debug logs
+                console.log('User Data:', userData);
+                console.log('Employee Data:', userData.employee);
+                console.log('Workplace Data:', userData.workplace);
 
                 // Ambil nama dari employee
                 let nameToShow = 'User';
                 if (userData.employee) {
                     const { first_name, last_name } = userData.employee;
                     nameToShow = `${first_name}${last_name ? ` ${last_name}` : ''}`;
+                } else {
+                    console.log('No employee data found in response');
                 }
-                setUserName(nameToShow)
 
-                // Ambil avatar
+                setUserName(nameToShow);
+
                 if (userData.employee?.avatar) {
-                    setProfileImage(userData.employee.avatar);
-                  } else {
+                    setProfileImage(userData.employee?.avatar);
+                } else {
                     setProfileImage('/avatar.png');
-                  }
-                  
+                }
+
 
                 // Cek subscription jika punya company
                 if (userData.workplace?.id) {
-                    if(userData.workplace.subscription?.package_type){
+                    if (userData.workplace.subscription?.package_type) {
                         setPackageType(userData.workplace.subscription.package_type);
                     } else {
                         console.log('No subscription data found in workplace');
@@ -114,7 +129,7 @@ export function Navbar3() {
         };
 
         fetchUserData();
-    }, []);
+    }, [token]);
 
     const handleNavigation = (path: string) => {
         router.push(path);
@@ -146,15 +161,6 @@ export function Navbar3() {
         );
     });
 
-    // if (isLoading) {
-    //     return (
-    //         <div className="flex items-center gap-4">
-    //             <div className="w-8 h-8 rounded-full bg-gray-300 animate-pulse"></div>
-    //             <div className="h-4 w-24 bg-gray-300 rounded animate-pulse"></div>
-    //         </div>
-    //     );
-    // }
-
     return (
         <div className="flex items-center justify-between border-b h-16 px-6 bg-white">
             {/* Left: Sidebar trigger + page title */}
@@ -170,8 +176,8 @@ export function Navbar3() {
             <div className="flex w-120 min-w-3xs sm:flex-row items-center sm:items-center justify-center">
                 <div className="relative w-full max-w-lg min-w-3xs">
                     <Command className="rounded-lg border shadow-xs">
-                        <CommandInput 
-                            placeholder="Search anything..." 
+                        <CommandInput
+                            placeholder="Search anything..."
                             value={searchQuery}
                             onValueChange={handleSearch}
                             className="py-2 px-4 "

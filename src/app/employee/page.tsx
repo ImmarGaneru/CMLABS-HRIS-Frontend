@@ -1,4 +1,4 @@
-"use client";
+import {redirect} from "next/navigation";
 
 import { useRouter } from "next/navigation";
 import { FEEmployee } from "@/types/employee";
@@ -37,9 +37,9 @@ type Employee = {
   tipe_kontrak: string | null;
 
   // tambahan
-  user?: { email: string };
+  user?: { email: string , phone_number: string };
   position?: { name: string };
-  no_telp: string;
+  // phone_number: string;
   cabang: string;
   jabatan: string;
 };
@@ -48,7 +48,7 @@ export default function EmployeeTablePage() {
   const router = useRouter();
 
   const [employees, setEmployees] = useState<FEEmployee[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [filterText, setFilterText] = useState("");
@@ -64,36 +64,29 @@ export default function EmployeeTablePage() {
     { label: "active", value: "active" },
     { label: "inactive", value: "inactive" },
   ];
-  const handleSoftDelete = async (id: number | string) => {
-    try {
-      const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
-        method: "DELETE",
-      });
+ const handleSoftDelete = async (id: number | string) => {
+  try {
+    const res = await api.delete(`/admin/employees/${id}`);
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Gagal menghapus data");
-      }
-
-      // Update state untuk menghapus employee yang sudah dihapus
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-    } catch (error) {
-      let errorMessage = "Gagal menghapus data";
-
-      if (error instanceof Error) {
-        errorMessage += `: ${error.message}`;
-      } else if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error
-      ) {
-        errorMessage += `: ${(error as { message: string }).message}`;
-      }
-
-      alert(errorMessage);
-      console.error(error);
+    // Jika responsenya punya struktur `data.success` atau semacam itu, kamu bisa cek di sini
+    if (res.status !== 200) {
+      throw new Error(res.data?.message || "Gagal menghapus data");
     }
-  };
+
+    // Hapus data dari state
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+  } catch (error) {
+    let errorMessage = "Gagal menghapus data";
+
+    if (error instanceof Error) {
+      errorMessage += `: ${error.message}`;
+    }
+
+    alert(errorMessage);
+    console.error(error);
+  }
+};
+
 
   // Fetch data dari backend
   useEffect(() => {
@@ -122,8 +115,58 @@ export default function EmployeeTablePage() {
             id_user: emp.id_user,
             nama: `${emp.first_name} ${emp.last_name}`,
             jenis_kelamin: emp.jenis_kelamin,
-            no_telp: emp.no_telp || "-",
+            phone_number: emp.user?.phone_number || "-",
             cabang: emp.cabang || "-",
+            jabatan: positionName,
+            tipe_kontrak: emp.tipe_kontrak,
+            status: emp.employment_status,
+            Email: emp.user?.email || "-",
+          };
+        }));
+
+        setEmployees(feData);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.get("/admin/employees/comp-employees");
+        
+        // Fetch position details for each employee
+        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
+          let positionName = "-";
+          if (emp.id_position) {
+            try {
+              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
+              if (positionRes.data.meta.success) {
+                positionName = positionRes.data.data.name;
+              }
+            } catch (err) {
+              console.error(`Error fetching position for employee ${emp.id}:`, err);
+            }
+          }
+
+          return {
+            id: emp.id,
+            id_user: emp.id_user,
+            nama: `${emp.first_name} ${emp.last_name}`,
+            jenis_kelamin: emp.jenis_kelamin,
+            phone_number: emp.user?.phone_number || "-",
+            cabang: emp.cabang || "-",
+            tipe_kontrak: emp.tipe_kontrak,
             jabatan: positionName,
             status: emp.employment_status,
             Email: emp.user?.email || "-",
@@ -166,14 +209,23 @@ export default function EmployeeTablePage() {
         size: 20,
       },
       {
-        id: "Avatar",
-        header: "Avatar",
-        cell: () => (
-          <div className="flex items-center justify-center text-lg">
-            <RxAvatar size={24} />
-          </div>
-        ),
-        size: 40,
+      id: "Avatar",
+  header: "Avatar",
+  cell: ({ row }) => (
+    <div className="flex items-center justify-center">
+      {row.original.avatar ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`/storage/${row.original.avatar}`} // atau URL lengkap jika disimpan sebagai path lengkap
+          alt="Avatar"
+          className="w-8 h-8 rounded-full object-cover"
+        />
+      ) : (
+        <RxAvatar size={24} className="text-gray-400" />
+      )}
+    </div>
+  ),
+  size: 60,
       },
       {
         accessorKey: "nama",
@@ -196,7 +248,7 @@ export default function EmployeeTablePage() {
         size: 100,
       },
       {
-        accessorKey: "no_telp",
+        accessorKey: "phone_number",
         header: "Nomor Telepon",
         cell: (info) => (
           <div className="truncate max-w-[120px]">
@@ -225,30 +277,49 @@ export default function EmployeeTablePage() {
         ),
         size: 120,
       },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: (info) => {
-          const status = info.getValue() as "active" | "inactive";
+   {
+  accessorKey: "tipe_kontrak",
+  header: "Tipe Kontrak",
+  cell: (info) => (
+    <div className="flex justify-center">
+      <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+        {(info.getValue() as string) || "-"}
+      </span>
+    </div>
+  ),
+  size: 100,
+},
+{
+  accessorKey: "status",
+  header: "Status",
+  cell: (info) => {
+    const status = (info.getValue() as string)?.toLowerCase();
 
-          let displayStatus = "Unknown";
-          if (status === "active") displayStatus = "Aktif";
-          else if (status === "inactive") displayStatus = "inactive";
+    let displayLabel = "Tidak Diketahui";
+    let color = "bg-gray-200 text-gray-600";
 
-          return (
-            <div className="flex justify-center w-[100px]">
-              <span
-                className={`px-2 py-1 text-xs rounded ${getStatusStyle(
-                  displayStatus
-                )}`}
-              >
-                {displayStatus}
-              </span>
-            </div>
-          );
-        },
-        size: 100,
-      },
+    if (status === "active") {
+      displayLabel = "active";
+      color = "bg-green-100 text-green-700";
+    } else if (status === "resign") {
+      displayLabel = "resign";
+      color = "bg-red-100 text-red-700";
+    } else if (status === "inactive") {
+      displayLabel = "inactive";
+      color = "bg-yellow-100 text-yellow-700";
+    }
+
+    return (
+      <div className="flex justify-center">
+        <span className={`px-2 py-1 text-xs rounded ${color}`}>
+          {displayLabel}
+        </span>
+      </div>
+    );
+  },
+  size: 100,
+},
+
       {
         id: "actions",
         header: "Aksi",
@@ -382,7 +453,7 @@ export default function EmployeeTablePage() {
         }
 
         alert("Import dan simpan berhasil!");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error("Gagal impor:", error);
 
@@ -430,7 +501,7 @@ export default function EmployeeTablePage() {
 
       <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">
-          {loading && <p>Loading data...</p>}
+       
           {error && <p className="text-red-600">Error: {error}</p>}
 
           <DataTableHeader
@@ -453,10 +524,18 @@ export default function EmployeeTablePage() {
             importInputRef={fileInputRef}
             onExport={() => handleExportCSV(employees)}
             onImport={handleImportCSV}
+            emptyContent={
+              loading ? (
+                <div className="text-center py-4">Loading...</div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  Employee not found
+                </div>
+              )
+            }
           />
-
           <div className="w-full overflow-x-auto">
-            <DataTable columns={employeeColumns} data={filteredData} />
+             <DataTable columns={employeeColumns} data={filteredData} loading={loading} />
           </div>
         </div>
       </div>

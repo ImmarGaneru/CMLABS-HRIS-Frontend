@@ -97,7 +97,7 @@ export default function PricingPage() {
                 </div>
                 <p className="text-[#1E3A5F] mb-6">{plan.description}</p>
                 <button
-                  onClick={() => router.push('/register')}
+                  onClick={() => router.push('/auth/register')}
                   className={`w-full py-3 px-6 rounded-full font-medium ${
                     plan.popular
                       ? 'bg-white text-[#1E3A5F] hover:bg-gray-100'
