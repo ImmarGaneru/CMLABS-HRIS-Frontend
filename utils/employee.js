@@ -18,7 +18,7 @@ export async function getEmployee(id) {
   
 // }
 export const createEmployee = (formData) => {
-  return api.post('/employee', formData, {
+  return api.post('admin/employees', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

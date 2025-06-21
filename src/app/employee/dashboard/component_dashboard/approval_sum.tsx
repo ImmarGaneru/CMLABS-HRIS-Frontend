@@ -13,7 +13,7 @@ interface Approval {
     created_at: string;
 }
 
-export default function ApprovalSum(){
+export default function ApprovalSum() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [approvals, setApprovals] = useState<Approval[]>([]);
@@ -25,7 +25,7 @@ export default function ApprovalSum(){
         const fetchApprovals = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:8000/api/admin/employees/dashboard/recent-approvals', {
+                const response = await fetch('http://api.hriscmlabs.my.id/api/admin/employees/dashboard/recent-approvals', {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -177,11 +177,11 @@ export default function ApprovalSum(){
                             </div>
                         )}
                     </div>
-                    <button 
+                    <button
                         onClick={handleViewAll}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
-                        <MdOpenInNew size={24} className="text-[#1E3A5F] hover:text-[#2D8EFF] transition-colors"/>
+                        <MdOpenInNew size={24} className="text-[#1E3A5F] hover:text-[#2D8EFF] transition-colors" />
                     </button>
                 </div>
             </div>
@@ -209,7 +209,7 @@ export default function ApprovalSum(){
                                     </span>
                                 </td>
                                 <td className="px-4 py-3 flex justify-center">
-                                    <button 
+                                    <button
                                         onClick={() => handleViewDetail(approval.id)}
                                         className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
                                     >

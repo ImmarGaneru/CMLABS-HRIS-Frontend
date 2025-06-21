@@ -12,10 +12,14 @@ import { useMemo, useState } from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { FaEdit, FaEye } from "react-icons/fa";
 import { useAttendance, CheckClockSetting, CheckClock, CheckClockSettingTime } from "@/contexts/AttendanceContext";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 
 export default function AttendacePage() {
-    const { employeeCheckClocks } = useAttendance();
+    const { selfCheckClockSetting, selfCheckClocks, handleClockIn, handleClockOut, handleBreakStart, handleBreakEnd } = useAttendance();
     const router = useRouter();
     const [filterText, setFilterText] = useState("");
     const [filterTipeKehadiran, setFilterTipeKehadiran] = useState("");
@@ -39,7 +43,7 @@ export default function AttendacePage() {
                 accessorKey: "user.employee.first_name",
                 header: "Nama",
                 cell: info => (
-                    <div className="truncate w-[120px]">
+                    <div className="truncate w-[120px] justify-center">
                         {info.getValue() as string}
                     </div>
                 ),
@@ -72,6 +76,24 @@ export default function AttendacePage() {
                 )
             },
             {
+                accessorKey: "break_start",
+                header: "Break Start",
+                cell: info => (
+                    <div className="flex justify-center">
+                        {info.getValue() as string}
+                    </div>
+                )
+            },
+            {
+                accessorKey: "break_end",
+                header: "Break End",
+                cell: info => (
+                    <div className="flex justify-center">
+                        {info.getValue() as string}
+                    </div>
+                )
+            },
+            {
                 accessorKey: "clock_out",
                 header: "Clock-Out",
                 cell: info => (
@@ -80,52 +102,75 @@ export default function AttendacePage() {
                     </div>
                 )
             },
-            {
-                id: "actions",
-                header: "Aksi",
-                cell: ({ row }) => {
-                    const data = row.original
-                    return (
-                        <div className="flex gap-2 justify-center">
-                            <button
-                                title="Detail"
-                                onClick={() => router.push(`/attendance`)}
-                                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
-                            >
-                                <FaEye />
-                            </button>
-                            <button
-                                title="Edit"
-                                onClick={() => router.push(`/attendance`)}
-                                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
-                            >
-                                <FaEdit />
-                            </button>
-                        </div>
-                    )
-                },
-            },
         ], []
     )
 
     // Filter data based on search text, status and type
     const filteredData = useMemo(() => {
         if (!filterText) {
-            return employeeCheckClocks;
+            return selfCheckClocks;
         }
-        return employeeCheckClocks.filter((item) => {
-            const matchesText = item.check_clock_setting.name.includes(filterText.toLowerCase());
+        return selfCheckClocks.filter((item) => {
+            const matchesText = item.user.employee.first_name.includes(filterText.toLowerCase());
             return matchesText;
         });
-    }, [employeeCheckClocks, filterText]);
+    }, [selfCheckClocks, filterText]);
 
     //END FUNGSI-FUNGSI FILTER==
 
-    //RETURN CLASS MAIN FUNCTION==
+    const actions = [
+        {
+            'name': "Clock In",
+            'action': () => {
+                handleClockIn();
+            }
+        },
+        {
+            'name': "Break Start",
+            'action': () => {
+                handleBreakStart();
+            }
+        },
+        {
+            'name': "Break End",
+            'action': () => {
+                handleBreakEnd();
+            }
+        },
+        {
+            'name': "Clock Out",
+            'action': () => {
+                handleClockOut();
+            }
+        }
+    ]
     return (
         <main className="px-2 py-4 min-h-screen flex flex-col gap-4">
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
-                <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+                <Select
+                    defaultValue="${selfCheckClockSetting?.id}">
+                    <SelectTrigger className="w-full border border-black rounded-2xl">
+                        <SelectValue placeholder="Select Employee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="${selfCheckClockSetting?.id}">
+                            {selfCheckClockSetting?.name || ""}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                    {actions.map((action) => (
+                        <Button
+                            key={action.name}
+                            className="text-center py-4 rounded-2xl text-base font-semibold border border-black"
+                            variant="ghost"
+                            onClick={action.action}
+                        >
+                            {action.name}
+                        </Button>
+                    ))}
+                </div>
+                <div className="flex justify-between items-center mb-4 gap-4 flex-wrap mt-6">
                     {/* Data Table Header */}
                     <DataTableHeader
                         title="Informasi Kehadiran"
