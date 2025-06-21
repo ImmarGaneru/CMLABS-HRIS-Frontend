@@ -6,14 +6,13 @@ import { Menu } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Input } from '@/components/ui/input';
 import { RiNotification4Fill } from 'react-icons/ri';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { User, CreditCard, LogOut, Search } from 'lucide-react';
+import { User, CreditCard, LogOut } from 'lucide-react';
 import { searchableItems } from '@/config/searchConfig';
 import {
     Command,
@@ -75,7 +74,10 @@ export function Navbar3() {
             try {
                 const userResponse = await api.get('/auth/me');
 
-                if (!userResponse.status) throw new Error('Failed to fetch user');
+                if (!userResponse.status) {
+                    console.warn('Failed to fetch user', userResponse.status);
+                    return;
+                }
 
                 // const responseJson = await userResponse.data
                 // console.log('Full API Response:', responseJson); // Debug log
@@ -236,7 +238,7 @@ export function Navbar3() {
                             <Button
                                 variant="ghost"
                                 className="justify-start"
-                                onClick={() => handleNavigation('/profile')}
+                                onClick={() => handleNavigation('/manager/profile')}
                             >
                                 <User className="mr-2 h-4 w-4" />
                                 Profile

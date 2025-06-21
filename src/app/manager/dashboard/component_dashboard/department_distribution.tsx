@@ -41,7 +41,6 @@ export default function DepartmentDistribution() {
       try {
         setLoading(true);
         const response = await api.get('/admin/departments');
-        
         if (response.data.meta.success) {
           // Transform the data to include position counts
           const departmentsData = await Promise.all(
@@ -59,7 +58,6 @@ export default function DepartmentDistribution() {
               };
             })
           );
-          
           setDepartments(departmentsData);
         }
       } catch (error) {
@@ -108,40 +106,40 @@ export default function DepartmentDistribution() {
   };
 
   return (
-    <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
-      {/* Top bar */}
-      <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
-        <div className='flex flex-col gap-2'>
-          <p className='text-[16px]'>Departemen</p>
-          <p className='text-[24px] font-bold'>Distribusi Departemen</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Building2 size={32} className="text-[#1E3A5F]" />
-          <DatePicker
-            selected={selectedMonth}
-            onChange={handleMonthChange}
-            dateFormat="MMMM yyyy"
-            showMonthYearPicker
-            showFullMonthYearPicker
-            className="flex flex-row items-center justify-between h-[56px] gap-2 border border-[#141414]/30 rounded-lg px-4 py-2 hover:bg-gray-200 transition-colors cursor-pointer w-[200px]"
-            wrapperClassName="w-fit"
-            popperClassName="z-50"
-            popperPlacement="bottom-end"
-            customInput={
-              <div>
+      <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
+        {/* Top bar */}
+        <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
+          <div className='flex flex-col gap-2'>
+            <p className='text-[16px]'>Departemen</p>
+            <p className='text-[24px] font-bold'>Distribusi Departemen</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Building2 size={32} className="text-[#1E3A5F]" />
+            <DatePicker
+                selected={selectedMonth}
+                onChange={handleMonthChange}
+                dateFormat="MMMM yyyy"
+                showMonthYearPicker
+                showFullMonthYearPicker
+                className="flex flex-row items-center justify-between h-[56px] gap-2 border border-[#141414]/30 rounded-lg px-4 py-2 hover:bg-gray-200 transition-colors cursor-pointer w-[200px]"
+                wrapperClassName="w-fit"
+                popperClassName="z-50"
+                popperPlacement="bottom-end"
+                customInput={
+                  <div>
                 <span className='text-gray-700 text-[16px]'>
-                  {selectedMonth.toLocaleDateString('id-ID', { 
+                  {selectedMonth.toLocaleDateString('id-ID', {
                     month: 'long',
                     year: 'numeric'
                   })}
                 </span>
-                <IoMdArrowDropdown size={24} className="text-gray-500" />
-              </div>
-            }
-          />
+                    <IoMdArrowDropdown size={24} className="text-gray-500" />
+                  </div>
+                }
+            />
+          </div>
         </div>
-      </div>
-
+      
       {/* Chart */}
       <div className="h-[300px] mt-4">
         {loading ? (
@@ -180,6 +178,5 @@ export default function DepartmentDistribution() {
           </div>
         )}
       </div>
-    </div>
   );
 }
