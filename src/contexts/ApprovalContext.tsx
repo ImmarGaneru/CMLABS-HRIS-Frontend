@@ -51,6 +51,7 @@ interface ApprovalContext {
     isLoading: boolean;
     getCurrentUser: () => Promise<ApprovalUser>;
     updateApproval: (id: string, data: { start_date?: string; end_date?: string; request_type?: string; reason?: string }) => Promise<void>;
+    fetchApproval: (id: string) => Promise<Approval | null>;
 }
 
 const ApprovalContext = createContext<ApprovalContext | undefined>(undefined);
@@ -151,29 +152,23 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateApproval = async (id: string, data: { start_date?: string; end_date?: string; request_type?: string; reason?: string }) => {
-        const formData = new FormData();
-
-        if (data.start_date) {
-            formData.append("start_date", format(new Date(data.start_date), "yyyy-MM-dd HH:mm"));
-        }
-        if (data.end_date) {
-            formData.append("end_date", format(new Date(data.end_date), "yyyy-MM-dd HH:mm"));
-        }
-        if (data.request_type) {
-            formData.append("request_type", data.request_type);
-        }
-        if (data.reason) {
-            formData.append("reason", data.reason);
-        }
+        const payload = {
+            ...data,
+            ...(data.start_date && { start_date: format(new Date(data.start_date), "yyyy-MM-dd HH:mm") }),
+            ...(data.end_date && { end_date: format(new Date(data.end_date), "yyyy-MM-dd HH:mm") }),
+        };
 
         try {
-            await api.patch(`/approvals/${id}`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+            const response = await api.patch(`/approvals/${id}`, payload);
+            const updatedApproval  = response.data.data as Approval;
+
+            setApprovals(currentApprovals =>
+                currentApprovals.map(approval =>
+                    approval.id === id ? updatedApproval : approval
+                )
+            );
+
             toast.success("Approval updated successfully!");
-            await fetchApprovals();
         } catch (error) {
             console.error("Error updating approval:", error);
             toast.error("Failed to update approval.");
@@ -187,6 +182,16 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error('Error fetching current user:', error);
             throw error;
+        }
+    }
+
+    const fetchApproval = async (id: string): Promise<Approval | null> => {
+        try {
+            const response = await api.get(`/approvals/${id}`);
+            return response.data.data as Approval;
+        } catch (error) {
+            console.error("Failed to fetch approval:", error);
+            return null;
         }
     }
 
@@ -206,7 +211,8 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
                 options,
                 isLoading,
                 getCurrentUser,
-                updateApproval
+                updateApproval,
+                fetchApproval
             }}
         >
             {children}
