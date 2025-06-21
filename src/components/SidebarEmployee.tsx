@@ -7,12 +7,10 @@ import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
     Settings,
-    UserCircle,
     LogOut,
     Clock,
     CalendarDays,
     ClipboardCheck,
-    AlarmClock
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {

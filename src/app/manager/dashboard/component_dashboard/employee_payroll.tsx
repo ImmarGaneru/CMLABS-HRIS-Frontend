@@ -1,44 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { IoMdArrowDropdown } from "react-icons/io";
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import api from '@/lib/axios';
 
-interface PayrollData {
-    total_salary: number;
-    average_salary: number;
-    percentage_change: number;
-}
+type ChartDataItem = {
+    label: string;
+    total: number;
+};
 
-export default function EmployeePayrollSummary() {
+export default function EmployeeStat() {
     const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<PayrollData | null>(null);
-
-    useEffect(() => {
-        const fetchPayrollData = async () => {
-            try {
-                setLoading(true);
-                // TODO: Replace with actual API call
-                // const response = await fetch('/api/payroll/summary');
-                // const result = await response.json();
-                // setData(result);
-                
-                // Temporary mock data
-                setData({
-                    total_salary: 12480000,
-                    average_salary: 4620000,
-                    percentage_change: 0
-                });
-            } catch (error) {
-                console.error('Error fetching payroll data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPayrollData();
-    }, [selectedMonth]);
+    const [chartData, setChartData] = useState<ChartDataItem[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const handleMonthChange = (date: Date | null) => {
         if (date) {
@@ -46,63 +22,80 @@ export default function EmployeePayrollSummary() {
         }
     };
 
+    const getColor = (label: string): string => {
+        const colorMap = {
+            'Aktif': '#1E3A5F',
+            'Baru': '#7CA5BF',
+            'Tidak Aktif': '#BA3C54'
+        };
+
+        return colorMap[label as keyof typeof colorMap] || '#ccc';
+    }
+
+    useEffect(() => {
+        const fetchChartData = async () => {
+            const year = selectedMonth.getFullYear();
+            const month = String(selectedMonth.getMonth() + 1).padStart(2, '0');
+
+            try {
+                const res = await api.get(`/admin/employees/dashboard/status-stats?month=${month}&year=${year}`);
+
+                if (Array.isArray(res.data.data?.data)) {
+                    setChartData(res.data.data.data);
+                } else {
+                    setChartData([]);
+                }
+
+            } catch (error) {
+                console.error('Gagal mengambil data:', error);
+                setChartData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchChartData();
+    }, [selectedMonth]);
+
     if (loading) {
         return (
-            <div className="bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md">
+            <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
                 <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
                     <div className='flex flex-col gap-2'>
-                        <p className='text-[16px]'>Statistik Gaji</p>
-                        <p className='text-[24px] font-bold'>Rangkuman Data Gaji</p>
+                        <p className='text-[16px]'>Statistik Karyawan</p>
+                        <p className='text-[24px] font-bold'>Jumlah Karyawan</p>
                     </div>
                 </div>
-                <div className='flex flex-row w-full h-full justify-center'>
-                    {[1, 2].map((_, index) => (
-                        <div key={index} className='flex flex-col gap-4 w-full h-full text-xl font-bold text-[#141414] border border-[#141414]/30 text-center justify-center'>
-                            <p>Loading...</p>
-                            <p>-</p>
-                            <div className='flex flex-col text-[#1E3A5F] text-[16px] items-center'>
-                                <p>-</p>
-                                <p>Loading...</p>
-                            </div>
-                        </div>
-                    ))}
+                <div className="flex items-center justify-center h-full">
+                    <div className="text-[16px] text-gray-700">Loading data...</div>
                 </div>
             </div>
         );
     }
 
-    if (!data) {
+    if (!chartData || chartData.length === 0) {
         return (
-            <div className="bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md">
+            <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
                 <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
                     <div className='flex flex-col gap-2'>
-                        <p className='text-[16px]'>Statistik Gaji</p>
-                        <p className='text-[24px] font-bold'>Rangkuman Data Gaji</p>
+                        <p className='text-[16px]'>Statistik Karyawan</p>
+                        <p className='text-[24px] font-bold'>Jumlah Karyawan</p>
                     </div>
                 </div>
-                <div className='flex flex-row w-full h-full justify-center'>
-                    {[1, 2].map((_, index) => (
-                        <div key={index} className='flex flex-col gap-4 w-full h-full text-xl font-bold text-[#141414] border border-[#141414]/30 text-center justify-center'>
-                            <p>No Data</p>
-                            <p>0</p>
-                            <div className='flex flex-col text-[#1E3A5F] text-[16px] items-center'>
-                                <p>0%</p>
-                                <p>No data available</p>
-                            </div>
-                        </div>
-                    ))}
+                <div className="flex items-center justify-center h-full">
+                    <div className="text-[16px] text-gray-700 text-center py-8">No data available for the selected period</div>
                 </div>
             </div>
         );
     }
 
-    return(
-        <div className="bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md">
+    return (
+        <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
             {/* Top bar */}
             <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
                 <div className='flex flex-col gap-2'>
-                    <p className='text-[16px]'>Statistik Gaji</p>
-                    <p className='text-[24px] font-bold'>Rangkuman Data Gaji</p>
+                    <p className='text-[16px]'>Statistik Karyawan</p>
+                    <p className='text-[24px] font-bold'>Jumlah Karyawan</p>
                 </div>
                 <div className="relative">
                     <DatePicker
@@ -116,40 +109,36 @@ export default function EmployeePayrollSummary() {
                         popperClassName="z-50"
                         popperPlacement="bottom-end"
                         customInput={
-                        <div>
-                            <span className='text-gray-700 text-[16px]'>
-                            {selectedMonth.toLocaleDateString('id-ID', { 
-                                month: 'long',
-                                year: 'numeric'
-                            })}
-                            </span>
-                            <IoMdArrowDropdown size={24} className="text-gray-500" />
-                        </div>
+                            <div className="flex items-center justify-between w-full">
+                <span className='text-gray-700 text-[16px]'>
+                  {selectedMonth.toLocaleDateString('id-ID', {
+                      month: 'long',
+                      year: 'numeric'
+                  })}
+                </span>
+                                <IoMdArrowDropdown size={24} className="text-gray-500" />
+                            </div>
                         }
                     />
                 </div>
             </div>
-            {/* Isi */}
-            <div className='flex flex-row w-full h-full justify-center'>
-                {/* Card Gaji */}
-                <div className='flex flex-col gap-4 w-full h-full text-xl font-bold text-[#141414] border border-[#141414]/30 text-center justify-center'>
-                    <p>Total Gaji Bulan Ini</p>
-                    <p>Rp {data.total_salary.toLocaleString('id-ID')}</p>
-                    <div className='flex flex-col text-[#1E3A5F] text-[16px] items-center'>
-                        <p>{data.percentage_change}%</p>
-                        <p>dari bulan sebelumnya</p>
-                    </div>
-                </div>
-                {/* Card Rata-rata Gaji */}
-                <div className='flex flex-col gap-4 w-full h-full text-xl font-bold text-[#141414] border border-[#141414]/30 text-center justify-center'>
-                    <p>Rerata Gaji Bulan Ini</p>
-                    <p>Rp {data.average_salary.toLocaleString('id-ID')}</p>
-                    <div className='flex flex-col text-[#1E3A5F] text-[16px] items-center'>
-                        <p>{data.percentage_change}%</p>
-                        <p>dari bulan sebelumnya</p>
-                    </div>
-                </div>
-            </div>
+
+            {/* Chart Container */}
+            <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData}>
+                    <XAxis dataKey="label" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="total">
+                        {chartData.map((entry, index) => (
+                            <Cell
+                                key={`cell-${index}`}
+                                fill={getColor(entry.label)}
+                            />
+                        ))}
+                    </Bar>
+                </BarChart>
+            </ResponsiveContainer>
         </div>
     );
 }
