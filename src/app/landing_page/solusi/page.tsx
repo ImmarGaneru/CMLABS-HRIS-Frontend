@@ -1,64 +1,67 @@
 "use client";
 
 import React from "react";
+import { CheckCircle } from "lucide-react"; // Optional icon
 
 export default function SolusiHR() {
   const solusi = [
     {
-      title: 'Dashboard',
-      desc: 'Menyediakan ringkasan informasi penting seperti jumlah karyawan, absensi hari ini, jadwal aktif, dan pengajuan terbaru yang mempermudah pemantauan HR secara menyeluruh.',
+      title: "Dashboard",
+      desc: "Ringkasan informasi penting seperti jumlah karyawan, absensi, dan pengajuan terbaru untuk pemantauan HR yang efektif.",
     },
     {
-      title: 'Karyawan',
-      desc: 'Menyimpan data karyawan seperti biodata, posisi, status kerja, dan riwayat kerja. Mempermudah pencarian dan manajemen karyawan dalam satu tempat.',
+      title: "Karyawan",
+      desc: "Manajemen data karyawan seperti biodata, posisi, dan riwayat kerja dalam satu tempat.",
     },
     {
-      title: 'Kehadiran',
-      desc: 'Mencatat absensi harian karyawan, termasuk keterlambatan, izin, dan cuti. HR dapat melacak kehadiran dengan mudah dan akurat.',
+      title: "Kehadiran",
+      desc: "Mencatat absensi harian, izin, keterlambatan, dan cuti secara akurat dan real-time.",
     },
     {
-      title: 'Jadwal',
-      desc: 'Menyusun dan menampilkan jadwal kerja harian atau mingguan untuk tiap divisi atau karyawan, serta memudahkan penyesuaian jika ada perubahan shift.',
+      title: "Jadwal",
+      desc: "Mengatur jadwal kerja divisi atau karyawan, mendukung perubahan shift dengan mudah.",
     },
     {
-      title: 'Approval',
-      desc: 'Tempat untuk menyetujui atau menolak pengajuan dari karyawan seperti cuti, izin, atau lembur. Semua proses dapat dilacak dengan jelas oleh HR maupun atasan.',
+      title: "Approval",
+      desc: "Menyetujui atau menolak pengajuan karyawan seperti cuti atau lembur secara transparan.",
     },
     {
-      title: 'Settings & App Payment',
-      desc: 'Konfigurasi sistem seperti role, preferensi akun, hingga informasi langganan aplikasi HRIS berbasis SaaS.',
+      title: "Settings & App Payment",
+      desc: "Konfigurasi sistem, role, dan langganan SaaS untuk HRIS sesuai kebutuhan perusahaan.",
     },
   ];
 
   return (
-    <>
-
-      <section className="px-8 py-16 bg-[#f8f8f8] text-center">
-        <h2 className="text-[48px] font-bold text-[#1E3A5F] leading-snug mb-2">
-          <span className="block">Solusi HRIS</span>
-          <span className="block">Untuk Website CMLABS</span>
+    <section className="px-6 sm:px-8 py-16 bg-[#f8f8f8]">
+      <div className="text-center mb-14">
+        <h2 className="text-4xl sm:text-5xl font-extrabold text-[#1E3A5F] leading-tight">
+          Solusi HRIS
+          <br />
+          <span className="text-[#7CA5BF] font-bold">Untuk Website CMLABS</span>
         </h2>
-
-        <p className="text-gray-600 mt-4 mb-12 max-w-xl mx-auto text-lg leading-relaxed">
-          Fitur-fitur utama HRIS yang dirancang untuk membantu manajemen sumber daya manusia secara efisien dan efektif melalui sistem digital.
+        <p className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg">
+          Fitur utama HRIS yang dirancang untuk membantu manajemen sumber daya manusia secara efisien dan digital.
         </p>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto">
-          {solusi.map((item, index) => (
-            <div
-              key={index}
-              className="rounded-[44px] p-[2px] bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500"
-            >
-              <div className="bg-white p-6 rounded-[40px] shadow-lg flex flex-col items-center text-center min-h-[200px]">
-                <h3 className="text-xl font-semibold text-[#1E3A5F] mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-gray-600 text-base">{item.desc}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        {solusi.map((item, index) => (
+          <div
+            key={index}
+            className="group bg-gradient-to-br from-[#1E3A5F] via-[#7CA5BF]/40 to-[#7CA5BF] p-[2px] rounded-3xl transition-transform hover:scale-[1.02]"
+          >
+            <div className="bg-white rounded-3xl p-6 h-full shadow-md flex flex-col text-center items-center justify-start">
+              <div className="mb-3 bg-[#1E3A5F]/10 text-[#1E3A5F] p-3 rounded-full">
+                <CheckCircle className="w-6 h-6" />
               </div>
+              <h3 className="text-lg font-semibold text-[#1E3A5F] mb-2">
+                {item.title}
+              </h3>
+              <p className="text-gray-600 text-sm">{item.desc}</p>
             </div>
-          ))}
-        </div>
-      </section>
-    </>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
