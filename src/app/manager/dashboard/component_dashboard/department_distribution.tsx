@@ -106,7 +106,7 @@ export default function DepartmentDistribution() {
   };
 
   return (
-      <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
+    <div className='bg-[#F8F8F8] text-gray-900 flex flex-col w-full min-w-[480px] h-[440px] px-8 py-8 gap-2 rounded-2xl shadow-md'>
         {/* Top bar */}
         <div className='flex flex-row w-full justify-between border-b-4 border-[#141414] gap-4'>
           <div className='flex flex-col gap-2'>
@@ -140,43 +140,44 @@ export default function DepartmentDistribution() {
           </div>
         </div>
       
-      {/* Chart */}
-      <div className="h-[300px] mt-4">
-        {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-[16px] text-gray-700">Loading distribution...</div>
-          </div>
-        ) : departments.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={departments}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                onClick={(data) => handleDepartmentClick(data)}
-              >
-                {departments.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color}
-                    className="cursor-pointer"
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-[16px] text-gray-700 text-center py-8">No department data available for the selected period</div>
-          </div>
-        )}
+        {/* Chart */}
+        <div className="h-[300px] mt-4">
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-[16px] text-gray-700">Loading distribution...</div>
+            </div>
+          ) : departments.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={departments}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  onClick={(data) => handleDepartmentClick(data)}
+                >
+                  {departments.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      className="cursor-pointer"
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-[16px] text-gray-700 text-center py-8">No department data available for the selected period</div>
+            </div>
+          )}
+        </div>
       </div>
   );
 }

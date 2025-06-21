@@ -133,7 +133,7 @@ export function Navbar3() {
 
     const handleLogout = () => {
         localStorage.removeItem('token'); // atau Cookies.remove('token')
-        router.push('/');
+        router.replace('/');
     };
 
     // Search functionality

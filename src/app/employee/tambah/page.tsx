@@ -475,7 +475,7 @@ export default function TambahKaryawan() {
             htmlFor="email"
             className="block text-[20px] font-bold text-[#141414]"
           >
-            email
+            Email
           </label>
           <input
             id="email"
@@ -487,23 +487,6 @@ export default function TambahKaryawan() {
             value={formData.email}
           />
         </div>
-
-        {/* <div>
-          <label
-            htmlFor="email"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            placeholder="Enter email"
-            onChange={handleChange}
-            className="input"
-            value={formData.email}
-          />
-        </div> */}
 
         <div>
           <label
@@ -693,23 +676,6 @@ export default function TambahKaryawan() {
             ))}
           </div>
         </div>
-
-        {/* <div>
-          <label
-            htmlFor="grade"
-            className="block text-[20px] font-bold text-[#141414]"
-          >
-            Grade
-          </label>
-          <input
-            id="grade"
-            name="grade"
-            placeholder="Enter grade"
-            onChange={handleChange}
-            className="input"
-            value={formData.grade}
-          />
-        </div> */}
         <div>
           <label className="block text-[20px] font-bold text-[#141414]">
             Departemen

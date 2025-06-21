@@ -2,20 +2,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
-import { toast } from 'react-hot-toast';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Check } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 interface PackageType {
   id: string;
@@ -78,6 +68,25 @@ export default function ChangeSubscriptionPage() {
       toast.error('Please select a package and seat count');
       return;
     }
+
+    // Add a frontend validation check for immediate and clear feedback
+    const selectedPackageInfo = packages.find(p => p.id === selectedPackage);
+    if (selectedPackageInfo && seats > selectedPackageInfo.max_seats) {
+        toast.error(`Jumlah seat tidak boleh melebihi batas paket (maksimal: ${selectedPackageInfo.max_seats})`, {
+            // autoClose: 5000,
+            // position: "top-right",
+            // Custom style to make it more prominent
+            // style: {
+            //   border: '1px solid #D8000C',
+            //   padding: '16px',
+            //   color: '#D8000C',
+            //   fontWeight: 'bold',
+            //   backgroundColor: '#F8F8F8',
+            // },
+        });
+        return; // Stop the submission if seats exceed max
+    }
+
     setSubmitting(true);
     try {
       const res = await api.post('/admin/subscription/request-change', {
@@ -85,7 +94,7 @@ export default function ChangeSubscriptionPage() {
         new_seats: seats,
       });
       if (res.data.meta?.success) {
-        toast.success('Request submitted!');
+        toast.success('Perubahan Subscription berhasil dilakukan!');
         router.push('/subscription');
       } else {
         toast.error(res.data.meta?.message || 'Failed to request change');
@@ -119,6 +128,7 @@ export default function ChangeSubscriptionPage() {
 
   return (
     <section className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-8 mt-8">
+      <ToastContainer />
       <h2 className="text-2xl font-bold mb-6 text-[#1E3A5F]">Change Subscription</h2>
       {current && (
         <div className="mb-6 bg-gray-100 p-4 rounded-lg">

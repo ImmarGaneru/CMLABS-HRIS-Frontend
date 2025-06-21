@@ -75,23 +75,22 @@ export function SidebarApp() {
                     <SidebarGroupContent>
                         <SidebarMenu className="flex flex-col items-start gap-2">
                             {sidebarNavItems.map((item) => (
-                                <SidebarMenuItem key={item.title} className="w-full rounded-full">
-                                    <SidebarMenuButton asChild>
-                                        <Link
-                                            href={item.url}
-                                            id={`${item.title.toLowerCase()}-tutorial`}
-                                            className={cn(
-                                                "flex items-center rounded-full px-4 py-2 w-full text-4xl font-medium text-[#1E3A5F] hover:bg-accent hover:text-accent-foreground",
-                                                pathname === item.url ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
-                                            )}
-                                            replace
-                                        >
-                                            <item.icon className="mr-2 h-4 w-4"/>
-                                            <span>{item.title}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
+                                <SidebarMenuItem key={item.title} className="w-full">
+                                    <Link
+                                    href={item.url}
+                                    id={`${item.title.toLowerCase()}-tutorial`}
+                                    className={cn(
+                                        "flex items-center rounded-full px-4 py-2 w-full text-sm font-medium text-[#1E3A5F]",
+                                        pathname === item.url
+                                        ? "bg-[#1E3A5F] text-white"
+                                        : "hover:bg-accent hover:text-accent-foreground"
+                                    )}
+                                    >
+                                    <item.icon className="mr-3 h-4 w-4"/>
+                                    <span>{item.title}</span>
+                                    </Link>
                                 </SidebarMenuItem>
-                            ))}
+                                ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
