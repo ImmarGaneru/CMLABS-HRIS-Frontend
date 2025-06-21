@@ -66,16 +66,13 @@ export default function EmployeeTablePage() {
   ];
   const handleSoftDelete = async (id: number | string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
-        method: "DELETE",
-      });
+      const res = await api.delete(`/admin/employees/${id}`);
 
-      if (!res.ok) {
-        const errorData = await res.json();
+      if (res.status !== 200) {
+        const errorData = res.data;
         throw new Error(errorData.message || "Gagal menghapus data");
       }
 
-      // Update state untuk menghapus employee yang sudah dihapus
       setEmployees((prev) => prev.filter((emp) => emp.id !== id));
     } catch (error) {
       let errorMessage = "Gagal menghapus data";
@@ -246,14 +243,14 @@ export default function EmployeeTablePage() {
             <div className="flex gap-2 justify-center w-[120px]">
               <button
                 title="Detail"
-                onClick={() => router.push(`/employee/detail/${data.id}`)}
+                onClick={() => router.push(`/manager/employee/detail/${data.id}`)}
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEye />
               </button>
               <button
                 title="Edit"
-                onClick={() => router.push(`/employee/edit/${data.id}`)}
+                onClick={() => router.push(`/manager/employee/edit/${data.id}`)}
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEdit />
@@ -437,7 +434,7 @@ export default function EmployeeTablePage() {
             onSecondFilterChange={setFilterStatus}
             filterOptions={employeeFilters}
             secondFilterOptions={statusFilters}
-            onAdd={() => router.push("/employee/tambah")}
+            onAdd={() => router.push("/manager/employee/tambah")}
             importInputRef={fileInputRef}
             onExport={() => handleExportCSV(employees)}
             onImport={handleImportCSV}

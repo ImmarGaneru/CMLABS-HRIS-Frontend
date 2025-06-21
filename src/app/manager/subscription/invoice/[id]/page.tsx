@@ -1,6 +1,6 @@
 'use client';
 import { Suspense } from 'react';
-import Invoice from '@/app/subscription/payment/component_payment/invoice';
+import Invoice from '@/app/manager/subscription/component_payment/invoice';
 import { useParams } from 'next/navigation';
 
 export default function InvoicePage() {

@@ -4,10 +4,9 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
 import { ColumnDef } from "@tanstack/react-table";
-import { FaEye, FaArrowUp } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
 import api from '@/lib/axios';
 import { toast } from 'react-hot-toast';
-import { Check } from "lucide-react";
 
 interface CompanySubscription {
 id: string;
@@ -332,7 +331,7 @@ export default function BillList({ invoices }: BillListProps) {
                     <div className="flex gap-2 justify-center">
                         <button
                             title="Lihat Faktur"
-                            onClick={() => router.push(`/subscription/payment/invoice/${data.id}`)}
+                            onClick={() => router.push(`/manager/subscription/invoice/${data.id}`)}
                             className={"border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"}
                         >
                             <FaEye />

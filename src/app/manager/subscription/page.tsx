@@ -1,5 +1,5 @@
 'use client';
-import BillList from "./payment/component_payment/billing";
+import BillList from "./component_payment/billing";
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
@@ -265,7 +265,7 @@ export default function SubscriptionPage() {
           {/* Action Buttons */}
           <div className="flex gap-4 mt-4">
             <button
-              onClick={() => router.push('/subscription/change')}
+              onClick={() => router.push('/manager/subscription/change')}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               Change Subscription

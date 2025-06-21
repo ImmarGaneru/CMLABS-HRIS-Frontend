@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { IoArrowBackOutline } from "react-icons/io5";
 import { InvoiceStatus, SubscriptionStatus } from '@/lib/enums';
-import { getStatusClass } from '@/lib/utils';
 import Button from '@/components/Button';
 import api from '@/lib/axios';
 import { FaArrowUp } from 'react-icons/fa';
@@ -228,7 +227,7 @@ export default function Invoice({ id: propId }: { id?: string }) {
           <div className="flex gap-2">
             {subscription?.status === 'active' && !subscription.is_cancelled && (
               <button
-                onClick={() => router.push('/subscription')}
+                onClick={() => router.push('/manager/subscription')}
                 className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center gap-2"
               >
                 <FaArrowUp />

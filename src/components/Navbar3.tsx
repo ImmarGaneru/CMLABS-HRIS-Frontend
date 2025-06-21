@@ -246,7 +246,7 @@ export function Navbar3() {
                             <Button
                                 variant="ghost"
                                 className="justify-start"
-                                onClick={() => handleNavigation('/subscription')}
+                                onClick={() => handleNavigation('/manager/subscription')}
                             >
                                 <CreditCard className="mr-2 h-auto w-4" />
                                 <div className='flex flex-col items-start'>

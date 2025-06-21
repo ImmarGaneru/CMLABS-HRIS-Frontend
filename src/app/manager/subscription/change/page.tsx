@@ -95,7 +95,7 @@ export default function ChangeSubscriptionPage() {
       });
       if (res.data.meta?.success) {
         toast.success('Perubahan Subscription berhasil dilakukan!');
-        router.push('/subscription');
+        router.push('/manager/subscription');
       } else {
         toast.error(res.data.meta?.message || 'Failed to request change');
       }
@@ -129,7 +129,29 @@ export default function ChangeSubscriptionPage() {
   return (
     <section className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-8 mt-8">
       <ToastContainer />
-      <h2 className="text-2xl font-bold mb-6 text-[#1E3A5F]">Change Subscription</h2>
+      <div className='flex justify-between mb-6'>
+        <h2 className="text-2xl font-bold text-[#1E3A5F]">Change Subscription</h2>
+        <button
+            onClick={() => router.push("/manager/subscription")}
+            className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Kembali
+        </button>
+      </div>
       {current && (
         <div className="mb-6 bg-gray-100 p-4 rounded-lg">
           <div className="mb-2"><span className="font-semibold">Current Package:</span> {current.package_type?.name}</div>

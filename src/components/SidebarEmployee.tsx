@@ -12,6 +12,7 @@ import {
     CalendarDays,
     ClipboardCheck,
     AlarmClock,
+    Mails,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -55,7 +56,7 @@ const sidebarNavItems = [
     {
         title: "Lettering",
         url: "/employee/lettering",
-        icon: FaEnvelopeOpenText,
+        icon: Mails,
     }
 ];
 
