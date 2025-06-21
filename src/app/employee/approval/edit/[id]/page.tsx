@@ -17,28 +17,64 @@ const FormSchema = z.object({
         .string({
             required_error: "Tipe pengajuan harus dipilih",
         })
-        .min(1, "Tipe pengajuan harus dipilih"),
-    start_date: z.string().optional(),
-    end_date: z.string().optional(),
+        .min(1),
+    start_date: z
+        .string({
+            required_error: "Tanggal mulai harus diisi",
+        })
+        .min(1),
+    end_date: z
+        .string({
+            required_error: "Tanggal akhir harus diisi",
+        })
+        .min(1),
     reason: z
         .string({
             required_error: "Alasan harus diisi",
         })
-        .min(1, "Alasan harus diisi"),
+        .min(1),
 })
 
-export default function ApprovalEdit({ params }: { params: Promise<{ id: string }> }) {
-    const [id, setId] = useState<string | null>(null);
+export default function ApprovalEdit({ params }: { params: { id: string } }) {
     const router = useRouter();
-    const { updateApproval } = useApproval();
-
-    useEffect(() => {
-        params.then((p) => setId(p.id));
-    }, [params]);
+    const { updateApproval, fetchApproval } = useApproval();
+    const [isLoading, setIsLoading] = useState(true);
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
-    })
+
+        defaultValues: {
+            request_type: "",
+            start_date: "",
+            end_date: "",
+            reason: "",
+        },
+    });
+
+    useEffect(() => {
+        const loadApprovalData = async () => {
+            if (params.id) {
+                try {
+                    const approval = await fetchApproval(params.id);
+                    if (approval) {
+                        form.reset({
+                            request_type: approval.request_type,
+                            start_date: approval.start_date.split(" ")[0],
+                            end_date: approval.end_date.split(" ")[0],
+                            reason: approval.reason,
+                        });
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch approval data:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+        };
+        loadApprovalData();
+    }, [params.id, fetchApproval, form]);
+
+
 
     const typeOptions: OptionType[] = [
         { value: "permit", label: "Izin" },
@@ -47,14 +83,18 @@ export default function ApprovalEdit({ params }: { params: Promise<{ id: string 
     ];
 
     const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-        if (!id) return;
+        if (!params.id) return;
         try {
-            await updateApproval(id, data);
+            await updateApproval(params.id, data);
             router.back();
         } catch (error) {
             console.error("Error updating approval:", error);
         }
     };
+
+    if (isLoading) {
+        return <div className="px-2 py-4 min-h-screen flex justify-center items-center">Loading...</div>;
+    }
 
     return (
         <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
@@ -85,7 +125,7 @@ export default function ApprovalEdit({ params }: { params: Promise<{ id: string 
                                             placeholder="Pilih tipe pengajuan"
                                             onChange={(selectedOption) => {
                                                 if (!Array.isArray(selectedOption)) {
-                                                    field.onChange((selectedOption as OptionType)?.value);
+                                                    field.onChange((selectedOption as OptionType)?.value || "");
                                                 }
                                             }}
                                             value={typeOptions.find((option) => option.value === field.value)}
@@ -104,8 +144,7 @@ export default function ApprovalEdit({ params }: { params: Promise<{ id: string 
                                         <FormControl>
                                             <Input
                                                 type="date"
-                                                value={field.value || ""}
-                                                onChange={(e) => field.onChange(e.target.value)}
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormDescription>Pilih tanggal mulai pengajuan.</FormDescription>
@@ -122,8 +161,7 @@ export default function ApprovalEdit({ params }: { params: Promise<{ id: string 
                                         <FormControl>
                                             <Input
                                                 type="date"
-                                                value={field.value || ""}
-                                                onChange={(e) => field.onChange(e.target.value)}
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormDescription>Pilih tanggal akhir pengajuan.</FormDescription>
