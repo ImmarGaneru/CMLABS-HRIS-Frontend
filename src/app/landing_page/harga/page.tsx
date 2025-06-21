@@ -39,10 +39,10 @@ const pricingPlans = [
   },
   {
     name: 'Premium',
-    price: '25000',
+    price: '15000',
     description: 'For large organizations with specific needs',
     features: [
-      'Up to 1000 employees',
+      'Up to 200 employees',
       'Custom attendance solutions',
       'Advanced analytics & insights',
       '24/7 priority support',

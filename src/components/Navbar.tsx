@@ -32,8 +32,8 @@ export default function Navbar() {
   const pathname = usePathname();
   const navLinks = [
     { title: "Beranda", url: "/" },
-    { title: "Solusi", url: "/solusi" },
-    { title: "Harga", url: "/harga" },
+    { title: "Solusi", url: "/landing_page/solusi" },
+    { title: "Harga", url: "/landing_page/harga" },
   ];
 
   return (
