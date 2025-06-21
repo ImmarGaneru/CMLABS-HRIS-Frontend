@@ -5,6 +5,17 @@ import api from '@/lib/axios';
 import { toast } from 'react-hot-toast';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Check } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface PackageType {
   id: string;
@@ -32,6 +43,8 @@ export default function ChangeSubscriptionPage() {
   const [packages, setPackages] = useState<PackageType[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [seats, setSeats] = useState<number>(1);
+  const [inputSeats, setInputSeats] = useState('1');
+  const [showSeatsWarning, setShowSeatsWarning] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,6 +58,7 @@ export default function ChangeSubscriptionPage() {
           setCurrent(subRes.data.data);
           setSelectedPackage(subRes.data.data.package_type?.id || null);
           setSeats(subRes.data.data.seats || 1);
+          setInputSeats(String(subRes.data.data.seats || 1));
         }
         if (pkgRes.data.meta?.success) {
           setPackages(pkgRes.data.data.data || []);
@@ -83,6 +97,18 @@ export default function ChangeSubscriptionPage() {
     }
   };
 
+  const handleSeatsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputSeats(value);
+    
+    const numValue = parseInt(value) || 1;
+    const maxSeats = packages.find(p => p.id === selectedPackage)?.max_seats || 1000;
+    
+    setSeats(numValue);
+    
+    setShowSeatsWarning(numValue > maxSeats);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center w-full h-screen">
@@ -93,7 +119,7 @@ export default function ChangeSubscriptionPage() {
 
   return (
     <section className="max-w-2xl mx-auto bg-white rounded-xl shadow-md p-8 mt-8">
-      <h2 className="text-2xl font-bold mb-6 text-[#1E3A5F]">Change/Upgrade/Downgrade Subscription</h2>
+      <h2 className="text-2xl font-bold mb-6 text-[#1E3A5F]">Change Subscription</h2>
       {current && (
         <div className="mb-6 bg-gray-100 p-4 rounded-lg">
           <div className="mb-2"><span className="font-semibold">Current Package:</span> {current.package_type?.name}</div>
@@ -109,7 +135,12 @@ export default function ChangeSubscriptionPage() {
               <div
                 key={pkg.id}
                 className={`bg-white border rounded-lg p-4 cursor-pointer transition-all shadow-sm relative ${selectedPackage === pkg.id ? 'border-blue-500 shadow-lg scale-105' : 'border-gray-200 hover:border-blue-300'}`}
-                onClick={() => setSelectedPackage(pkg.id)}
+                onClick={() => {
+                  setSelectedPackage(pkg.id);
+                  setSeats(1);
+                  setInputSeats('1');
+                  setShowSeatsWarning(false);
+                }}
               >
                 {selectedPackage === pkg.id && (
                   <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full p-1">
@@ -132,12 +163,16 @@ export default function ChangeSubscriptionPage() {
           <input
             type="number"
             min={1}
-            max={packages.find(p => p.id === selectedPackage)?.max_seats || 1000}
-            value={seats}
-            onChange={e => setSeats(Math.min(Math.max(1, parseInt(e.target.value) || 1), packages.find(p => p.id === selectedPackage)?.max_seats || 1000))}
+            value={inputSeats}
+            onChange={handleSeatsChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={submitting}
           />
+          {showSeatsWarning && (
+            <p className="text-sm text-orange-600 mt-1 font-medium">
+              ⚠️ Warning: This number exceeds the maximum capacity of {packages.find(p => p.id === selectedPackage)?.max_seats || 1000} seats
+            </p>
+          )}
           <p className="text-xs text-gray-500 mt-1">Seats maksimal: {packages.find(p => p.id === selectedPackage)?.max_seats || 1000}</p>
         </div>
         <button

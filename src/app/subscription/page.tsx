@@ -7,6 +7,17 @@ import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import api from "@/lib/axios";
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Company {
   id: string;
@@ -60,6 +71,8 @@ export default function SubscriptionPage() {
   const [packageTypes, setPackageTypes] = useState<PackageType[]>([]);
   const { handleSubmit } = useForm<SubscriptionForm>();
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [inputSeats, setInputSeats] = useState('1');
+  const [showSeatsWarning, setShowSeatsWarning] = useState(false);
 
   // Fetch package types when component mounts
   useEffect(() => {
@@ -173,6 +186,38 @@ export default function SubscriptionPage() {
     }
   };
 
+  const handleSeatsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputSeats(value);
+    
+    const numValue = parseInt(value) || 1;
+    const maxSeats = packageTypes.find(p => p.id === selectedPackage)?.max_seats || 1000;
+    
+    // Update seats state
+    setSeats(numValue);
+    
+    // Show warning if exceeding max capacity
+    setShowSeatsWarning(numValue > maxSeats);
+  };
+
+  const handleCancelSubscription = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.post('/admin/subscription/cancel');
+      if (res.data.meta?.success) {
+        toast.success('Subscription cancelled.');
+        // Refresh state
+        window.location.reload();
+      } else {
+        toast.error(res.data.meta?.message || 'Failed to cancel subscription');
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.meta?.message || 'Failed to cancel subscription');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center w-full h-screen">
@@ -184,6 +229,8 @@ export default function SubscriptionPage() {
 
   if (hasSubscription || (lastSubscription && lastSubscription.is_cancelled)) {
     const pkg: any = lastSubscription?.package_type || {};
+    const isFreePlan = pkg?.name === 'Free Plan' || pkg?.is_free;
+    
     return (
       <section className="flex flex-col px-2 py-4 gap-6 w-full h-fit">
         {/* Current Subscription Card */}
@@ -221,32 +268,37 @@ export default function SubscriptionPage() {
               onClick={() => router.push('/subscription/change')}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              Change/Upgrade/Downgrade Subscription
+              Change Subscription
             </button>
-            <button
-              onClick={async () => {
-                if (!window.confirm('Are you sure you want to cancel your subscription?')) return;
-                setIsLoading(true);
-                try {
-                  const res = await api.post('/admin/subscription/cancel');
-                  if (res.data.meta?.success) {
-                    toast.success('Subscription cancelled.');
-                    // Refresh state
-                    window.location.reload();
-                  } else {
-                    toast.error(res.data.meta?.message || 'Failed to cancel subscription');
-                  }
-                } catch (err: any) {
-                  toast.error(err?.response?.data?.meta?.message || 'Failed to cancel subscription');
-                } finally {
-                  setIsLoading(false);
-                }
-              }}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              disabled={isLoading}
-            >
-              Cancel Subscription
-            </button>
+            {!isFreePlan && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
+                  >
+                    Cancel Subscription
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to cancel your subscription? This action cannot be undone and you will lose access to premium features at the end of your current billing period.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleCancelSubscription}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Yes, Cancel Subscription
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </div>
         <BillList invoices={invoices} />
@@ -272,7 +324,12 @@ export default function SubscriptionPage() {
                   ? 'border-blue-500 shadow-lg scale-105'
                   : 'border-gray-200 hover:border-blue-300'
               }`}
-              onClick={() => setSelectedPackage(pkg.id)}
+              onClick={() => {
+                setSelectedPackage(pkg.id);
+                setSeats(1);
+                setInputSeats('1');
+                setShowSeatsWarning(false);
+              }}
             >
               {selectedPackage === pkg.id && (
                 <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full p-1">
@@ -304,12 +361,15 @@ export default function SubscriptionPage() {
                   <input
                     type="number"
                     min={1}
-                    max={packageTypes.find(p => p.id === selectedPackage)?.max_seats || 1000}
-                    value={seats}
-                    onChange={(e) => setSeats(Math.min(Math.max(1, parseInt(e.target.value) || 1), 
-                      packageTypes.find(p => p.id === selectedPackage)?.max_seats || 1000))}
+                    value={inputSeats}
+                    onChange={handleSeatsChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  {showSeatsWarning && (
+                    <p className="text-sm text-orange-600 mt-1 font-medium">
+                      ⚠️ Warning: This number exceeds the maximum capacity of {packageTypes.find(p => p.id === selectedPackage)?.max_seats || 1000} seats
+                    </p>
+                  )}
                   <p className="text-sm text-gray-500 mt-1">
                     Seats maksimal: {packageTypes.find(p => p.id === selectedPackage)?.max_seats || 1000}
                   </p>
