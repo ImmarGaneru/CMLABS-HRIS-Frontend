@@ -6,16 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Mail, Phone, MapPin, Briefcase, Calendar, RectangleEllipsis } from 'lucide-react';
+import api from '@/lib/axios';
 
 interface EmployeeData {
     id: string;
-    sign_in_code: string; // ✅ tambahkan ini
+    sign_in_code: string;
     first_name: string;
     last_name: string;
     avatar: string;
     address?: string | null;
     employment_status: string;
-    tipeKontrak: string | null; // ✅ gunakan camelCase dan nullable
+    tipeKontrak: string | null;
     id_position: string | null;
     position?: {
         name: string | null;
@@ -41,39 +42,26 @@ export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [profileImage, setProfileImage] = useState<string>('/avatar.png');
 
-    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch('http://api.hriscmlabs.my.id/api/auth/me', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
+                const response = await api.get('/auth/me');
+                setUserData(response.data.data);
 
-                if (!response.ok) throw new Error('Failed to fetch user data');
-                const data = await response.json();
-                console.log('Response data:', data); // Debug log
-                setUserData(data.data);
-
-                const userData: UserData = data.data;
-
+                const userData: UserData = response.data.data;
                 if (userData.employee?.avatar) {
                     setProfileImage(userData.employee?.avatar);
                 } else {
                     setProfileImage('/avatar.png');
                 }
-
             } catch (error) {
                 console.error('Error fetching user data:', error);
             } finally {
                 setIsLoading(false);
             }
         };
-
         fetchUserData();
-    }, [token]);
+    }, []);
 
     if (isLoading) {
         return (
@@ -133,7 +121,6 @@ export default function ProfilePage() {
                                     <span className="text-sm">{userData.employee.address}</span>
                                 </div>
                             )}
-
                         </div>
                     </CardContent>
                 </Card>

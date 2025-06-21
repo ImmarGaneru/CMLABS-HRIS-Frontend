@@ -34,7 +34,7 @@ export default function Jadwal() {
         <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
           <h1 className="text-xl font-bold text-[#1E3A5F]">Tambah Jadwal</h1>
           <button
-            onClick={() => router.push("/jadwal")}
+            onClick={() => router.push("/employee/jadwal")}
             className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
           >
             Kembali
@@ -118,7 +118,7 @@ export default function Jadwal() {
         {/* Tombol Aksi */}
         <div className="flex justify-end gap-2">
           <button
-            onClick={() => router.push("/jadwal")}
+            onClick={() => router.push("/employee/adwal")}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition duration-200 ease-in-out shadow-md cursor-pointer">
             Batal
           </button>
@@ -164,7 +164,7 @@ export default function Jadwal() {
               newCKSetting.check_clock_setting_time = check_clock_setting_time;
 
               completeNewCheckClockSetting(newCKSetting)
-                .then(() => router.push("/jadwal"))
+                .then(() => router.push("/employee/jadwal"))
                 .catch((error) => {
                   console.error("Error saving schedule:", error);
                 });
