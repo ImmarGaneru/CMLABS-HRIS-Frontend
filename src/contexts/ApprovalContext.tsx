@@ -23,6 +23,8 @@ export interface Approval {
             name: string;
         }
     }
+    document: string;
+    document_url: string;
 }
 
 interface ApprovalUser {
@@ -47,8 +49,9 @@ interface ApprovalContext {
     submitApproval: (data: any) => Promise<void>;
     options: { value: string; label: string }[];
     isLoading: boolean;
-    isAdmin: () => Promise<boolean>;
     getCurrentUser: () => Promise<ApprovalUser>;
+    updateApproval: (id: string, data: { start_date?: string; end_date?: string; request_type?: string; reason?: string }) => Promise<void>;
+    fetchApproval: (id: string) => Promise<Approval | null>;
 }
 
 const ApprovalContext = createContext<ApprovalContext | undefined>(undefined);
@@ -69,7 +72,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
 
     const approveRequest = async (id: string) => {
         try {
-            await request(api.post(`/approvals/${id}/approve`));
+            await request(api.patch(`/approvals/${id}/approve`));
             toast.success("Persetujuan berhasil diterima.");
             await fetchApprovals();
         } catch (error) {
@@ -80,7 +83,7 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
 
     const rejectRequest = async (id: string) => {
         try {
-            await request(api.post(`/approvals/${id}/reject`));
+            await request(api.patch(`/approvals/${id}/reject`));
             toast.success("Persetujuan berhasil ditolak.");
             await fetchApprovals();
         } catch (error) {
@@ -112,22 +115,21 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
     const submitApproval = async (data: any) => {
         const formData = new FormData();
 
-        if (data.request_type === "overtime") {
-            formData.append("start_date", format(new Date(`${data.overtime_dates} ${data.start_time}`), "yyyy-MM-dd HH:mm"));
-            formData.append("end_date", format(new Date(`${data.overtime_dates} ${data.end_time}`), "yyyy-MM-dd HH:mm"));
-        } else {
-            if (data.start_date) {
-                formData.append("start_date", format(new Date(data.start_date), "yyyy-MM-dd HH:mm"));
-            }
-            if (data.end_date) {
-                formData.append("end_date", format(new Date(data.end_date), "yyyy-MM-dd HH:mm"));
-            }
+        if (data.start_date) {
+            formData.append("start_date", format(new Date(data.start_date), "yyyy-MM-dd HH:mm"));
+        }
+        if (data.end_date) {
+            formData.append("end_date", format(new Date(data.end_date), "yyyy-MM-dd HH:mm"));
         }
 
+
         Object.entries(data).forEach(([key, value]) => {
-            if (key !== "overtime_dates" && key !== "start_time" && key !== "end_time" && key !== "document") {
+            if (key !== "document" && key !== "start_date" && key !== "end_date") {
+                console.log(`Appending ${key}: ${value}`);
                 formData.append(key, value as string);
+
             }
+
         });
 
 
@@ -149,13 +151,27 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const isAdmin = async (): Promise<boolean> => {
+    const updateApproval = async (id: string, data: { start_date?: string; end_date?: string; request_type?: string; reason?: string }) => {
+        const payload = {
+            ...data,
+            ...(data.start_date && { start_date: format(new Date(data.start_date), "yyyy-MM-dd HH:mm") }),
+            ...(data.end_date && { end_date: format(new Date(data.end_date), "yyyy-MM-dd HH:mm") }),
+        };
+
         try {
-            const response = await api.get('/approvals/isAdmin');
-            return response.data.data.isAdmin;
+            const response = await api.patch(`/approvals/${id}`, payload);
+            const updatedApproval  = response.data.data as Approval;
+
+            setApprovals(currentApprovals =>
+                currentApprovals.map(approval =>
+                    approval.id === id ? updatedApproval : approval
+                )
+            );
+
+            toast.success("Approval updated successfully!");
         } catch (error) {
-            console.error('Error checking admin status:', error);
-            return false;
+            console.error("Error updating approval:", error);
+            toast.error("Failed to update approval.");
         }
     };
 
@@ -166,6 +182,16 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error('Error fetching current user:', error);
             throw error;
+        }
+    }
+
+    const fetchApproval = async (id: string): Promise<Approval | null> => {
+        try {
+            const response = await api.get(`/approvals/${id}`);
+            return response.data.data as Approval;
+        } catch (error) {
+            console.error("Failed to fetch approval:", error);
+            return null;
         }
     }
 
@@ -184,8 +210,9 @@ export function ApprovalProvider({ children }: { children: React.ReactNode }) {
                 submitApproval,
                 options,
                 isLoading,
-                isAdmin,
-                getCurrentUser
+                getCurrentUser,
+                updateApproval,
+                fetchApproval
             }}
         >
             {children}

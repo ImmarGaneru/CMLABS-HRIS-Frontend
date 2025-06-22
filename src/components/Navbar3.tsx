@@ -6,14 +6,13 @@ import { Menu } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Input } from '@/components/ui/input';
 import { RiNotification4Fill } from 'react-icons/ri';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { User, CreditCard, LogOut, Search } from 'lucide-react';
+import { User, CreditCard, LogOut } from 'lucide-react';
 import { searchableItems } from '@/config/searchConfig';
 import {
     Command,
@@ -29,17 +28,14 @@ import api from "@/lib/axios";
 interface SubscriptionData {
     id: string;
     id_company: string;
-    package_type: string;
-    seats: number;
-    price_per_seat: number;
+    packageType?: PackageType;
     is_trial: boolean;
-    trial_ends_at: string;
-    starts_at: string | null;
-    ends_at: string | null;
     status: string;
-    created_at: string;
-    updated_at: string;
-    deleted_at: string | null;
+}
+
+interface PackageType {
+    id: string;
+    name: string;
 }
 
 interface EmployeeData {
@@ -73,15 +69,15 @@ export function Navbar3() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Hardcoded token sementara
-    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
-
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const userResponse = await api.get('/auth/me');
 
-                if (!userResponse.status) throw new Error('Failed to fetch user');
+                if (!userResponse.status) {
+                    console.warn('Failed to fetch user', userResponse.status);
+                    return;
+                }
 
                 // const responseJson = await userResponse.data
                 // console.log('Full API Response:', responseJson); // Debug log
@@ -113,8 +109,8 @@ export function Navbar3() {
 
                 // Cek subscription jika punya company
                 if (userData.workplace?.id) {
-                    if (userData.workplace.subscription?.package_type) {
-                        setPackageType(userData.workplace.subscription.package_type);
+                    if (userData.workplace.subscription?.packageType) {
+                        setPackageType(userData.workplace.subscription.packageType?.name);
                     } else {
                         console.log('No subscription data found in workplace');
                     }
@@ -129,7 +125,7 @@ export function Navbar3() {
         };
 
         fetchUserData();
-    }, [token]);
+    }, []);
 
     const handleNavigation = (path: string) => {
         router.push(path);
@@ -137,7 +133,7 @@ export function Navbar3() {
 
     const handleLogout = () => {
         localStorage.removeItem('token'); // atau Cookies.remove('token')
-        router.push('/');
+        router.replace('/');
     };
 
     // Search functionality
@@ -242,7 +238,7 @@ export function Navbar3() {
                             <Button
                                 variant="ghost"
                                 className="justify-start"
-                                onClick={() => handleNavigation('/profile')}
+                                onClick={() => handleNavigation('/manager/profile')}
                             >
                                 <User className="mr-2 h-4 w-4" />
                                 Profile
@@ -250,7 +246,7 @@ export function Navbar3() {
                             <Button
                                 variant="ghost"
                                 className="justify-start"
-                                onClick={() => handleNavigation('/subscription')}
+                                onClick={() => handleNavigation('/manager/subscription')}
                             >
                                 <CreditCard className="mr-2 h-auto w-4" />
                                 <div className='flex flex-col items-start'>

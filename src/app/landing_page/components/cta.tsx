@@ -60,7 +60,7 @@ export default function CTA() {
 
           {/* Tombol Demo Gratis */}
           <Link
-            href="/auth/register"
+            href="/landing_page/auth/register"
             className="bg-gradient-to-r from-[#7CA5BF] to-[#1E3A5F] rounded-[24px] p-1 text-white items-center"
           >
             <span className="inline-block bg-white text-[#1E3A5F] rounded-[20px] px-6 py-2 text-sm font-medium">

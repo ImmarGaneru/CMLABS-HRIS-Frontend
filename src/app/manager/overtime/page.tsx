@@ -133,14 +133,14 @@ export default function AttendacePage() {
                         <div className="flex gap-2 justify-center">
                             <button
                                 title="Detail"
-                                onClick={() => router.push(`/attendance`)}
+                                onClick={() => router.push(`/manager/attendance`)}
                                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
                             >
                                 <FaEye />
                             </button>
                             <button
                                 title="Edit"
-                                onClick={() => router.push(`/attendance`)}
+                                onClick={() => router.push(`/manager/attendance`)}
                                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
                             >
                                 <FaEdit />

@@ -1,24 +1,19 @@
 'use client';
-import ApprovalSum from './component_dashboard/approval_sum';
-import EmployeeAttendancePie from './component_dashboard/employee_attendance';
-import EmployeePayrollSummary from './component_dashboard/employee_payroll';
-import EmployeeStat from './component_dashboard/employee_stat';
-import EmployeeSumCard from './component_dashboard/employee_sum';
-import EmployeeType from './component_dashboard/employee_type';
-import Tutorial from '@/components/Tutorial';
 import { useEffect, useState } from 'react';
-import ClockStatus from './component_dashboard/clock_status';
-import DepartmentDistribution from './component_dashboard/department_distribution';
-import { dashboardTutorialSteps } from '../../tutorial/dashboard_tutorial';
+import EmployeeProfile from './components/employee_profile';
+import EmployeeAttendance from './components/employee_attendance';
+import EmployeePayroll from './components/employee_payroll';
+import api from '@/lib/axios';
 
-export default function DashboardPage() {
+export default function EmployeeDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<any>(null);
 
   useEffect(() => {
-    // Add loading state management
     const initializeDashboard = async () => {
       try {
-        // Add your data fetching logic here
+        const response = await api.get('/employee/dashboard');
+        setDashboardData(response.data.data);
         setIsLoading(false);
       } catch (error) {
         console.error('Error initializing dashboard:', error);
@@ -39,48 +34,22 @@ export default function DashboardPage() {
 
   return (
     <section className="flex flex-col px-4 py-6 gap-6 w-full h-fit">
-      <Tutorial 
-        steps={dashboardTutorialSteps}
-        storageKey="dashboardTutorialCompleted"
-        buttonPosition="bottom-right"
-        buttonVariant="floating"
-      />
-      
-      {/* Top Row - Summary Cards */}
+      {/* Profile Section */}
       <div className="grid grid-cols-1 gap-4">
-        <div className="employee-sum-card">
-          <EmployeeSumCard/>
+        <div className="employee-profile">
+          <EmployeeProfile data={dashboardData?.employee} />
         </div>
       </div>
 
-      {/* Middle Row - Statistics and Charts */}
+      {/* Attendance and Payroll Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="employee-stat">
-          <EmployeeStat/>
-        </div>
         <div className="employee-attendance">
-          <EmployeeAttendancePie/>
+          <EmployeeAttendance data={dashboardData?.attendance_today} />
         </div>
-      </div>
-
-      {/* Bottom Row - Additional Information */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="employee-type">
-          <EmployeeType/>
-        </div>
-        <div className="approval-sum">
-          <ApprovalSum/>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="clock-status">
-          <ClockStatus/>
-        </div>
-        <div className="department-distribution">
-          <DepartmentDistribution/>
+        <div className="employee-payroll">
+          <EmployeePayroll data={dashboardData?.payroll_summary} />
         </div>
       </div>
     </section>
   );
-}
+} 

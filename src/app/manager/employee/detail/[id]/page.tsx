@@ -1,18 +1,12 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getEmployee } from "../../../../../utils/employee";
 import { FaEye } from "react-icons/fa";
 import React from "react";
-// import { api } from "@/lib/axios";
-// import axios from "axios";
-// import { DataTable } from "@/components/Datatable";
-// import DataTableHeader from "@/components/DatatableHeader";
 import api from "@/lib/axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { parseISO, intervalToDuration } from "date-fns";
 type Dokumen = {
   id: number;
@@ -315,19 +309,8 @@ const karyawan = {
   };
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-6 space-x-2">
-        <span
-          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
-          style={{ animationDelay: "0s" }}
-        ></span>
-        <span
-          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
-          style={{ animationDelay: "0.2s" }}
-        ></span>
-        <span
-          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
-          style={{ animationDelay: "0.4s" }}
-        ></span>
+      <div className="flex justify-center items-center w-full h-screen">
+        <LoadingSpinner size={48} />
       </div>
     );
   }
@@ -347,7 +330,7 @@ const karyawan = {
          <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#141414]">Detail Karyawan</h1>
         <button
-          onClick={() => router.push("/employee")}
+          onClick={() => router.push("/manager/employee")}
           className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200"
         >
           <svg
@@ -398,75 +381,24 @@ const karyawan = {
             <FieldRow label="No Telp" value={karyawan.phone_number} />
           </Section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-13">
-            <Section title="Informasi Kepegawaian">
-              <FieldRow label="Mulai Kerja" value={karyawan.start_date} />
-              <FieldRow label="Masa Kerja" value={karyawan.tenure} />
-              <FieldRow label="Akhir Kerja" value={karyawan.end_date} />
-              <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} />
-              <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
-              <FieldRow label="Jabatan" value={karyawan.jabatan} />
-              <FieldRow label="Departemen" value={karyawan.department} />
-            
-            
-              <FieldRow label="Cabang" value={karyawan.cabang} />
-              <FieldRow
-                label="Status Kerja"
-                value={karyawan.employment_status}
-              />
-            </Section>
-
-            <Section title="Payroll">
-              <FieldRow
-                label="Tanggal Efektif"
-                value={karyawan.tanggal_efektif}
-              />
-              <FieldRow label="Bank" value={karyawan.bank} />
-              <FieldRow label="Nomer Rekening" value={karyawan.no_rek} />
-              <FieldRow
-                label="Gaji Pokok"
-                value={formatRupiah(karyawan.gaji)}
-              />
-              {/* <FieldRow
-                label="Uang Lembur"
-                value={formatRupiah(karyawan.uang_lembur)}
-              /> */}
-              {/* <FieldRow
-                label="Denda Terlambat"
-                value={formatRupiah(karyawan.denda_terlambat)}
-              />
-              <FieldRow
-                label="Total Gaji"
-                value={formatRupiah(karyawan.total_gaji)}
-              /> */}
-            </Section>
-          </div>
+          <Section title="Informasi Kepegawaian">
+            <FieldRow label="Mulai Kerja" value={karyawan.start_date} />
+            <FieldRow label="Masa Kerja" value={karyawan.tenure} />
+            <FieldRow label="Akhir Kerja" value={karyawan.end_date} />
+            <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} />
+            <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
+            <FieldRow label="Jabatan" value={karyawan.jabatan} />
+            <FieldRow label="Departemen" value={karyawan.department} />
+            <FieldRow label="Cabang" value={karyawan.cabang} />
+            <FieldRow label="Status Kerja" value={karyawan.employment_status} />
+            <FieldRow label="Gaji Pokok" value={formatRupiah(karyawan.gaji)} />
+          </Section>
           <div className="w-full mt-10">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl font-semibold text-[#1e293b]">
-                  📂 Dokumen Karyawan
+                  Dokumen Karyawan
                 </h2>
-                <label
-                  htmlFor="fileUpload"
-                  className="flex items-center gap-2 bg-[#1E3A5F] text-white px-2 py-2 rounded-md shadow-md hover:bg-[#155A8A] cursor-pointer transition duration-200 select-none"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Tambah Dokumen
-                </label>
               </div>
 
               <input

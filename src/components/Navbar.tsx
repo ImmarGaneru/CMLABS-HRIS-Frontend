@@ -32,13 +32,13 @@ export default function Navbar() {
   const pathname = usePathname();
   const navLinks = [
     { title: "Beranda", url: "/" },
-    { title: "Solusi", url: "/solusi" },
-    { title: "Harga", url: "/harga" },
+    { title: "Solusi", url: "/landing_page/solusi" },
+    { title: "Harga", url: "/landing_page/harga" },
   ];
 
   return (
     <nav className="bg-[#f8f8f8] shadow-xl border-b-2 border-[#1E3A5F]/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 ">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">

@@ -5,7 +5,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import { ColumnDef} from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
-import {FaArrowLeft, FaDownload, FaEye} from "react-icons/fa";
+import {FaArrowLeft, FaDownload, FaEdit, FaEye} from "react-icons/fa";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -109,8 +109,19 @@ export default function ApprovalPage() {
                                 }}
                                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
                             >
+
                                 <FaEye />
                             </button>
+                            {data.status === 'pending' && (
+                                <button
+                                    title="Edit"
+                                    onClick={() => router.push(`/employee/approval/edit/${data.id}`)}
+                                    className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
+                                >
+
+                                    <FaEdit />
+                                </button>
+                            )}
                         </div>
                     );
                 },
@@ -161,7 +172,7 @@ export default function ApprovalPage() {
                         secondFilterValue={filterStatus}
                         onSecondFilterChange={setFilterStatus}
                         secondFilterOptions={statusFilters}
-                        onAdd={() => router.push("/approval/tambah")}
+                        onAdd={() => router.push("/employee/approval/tambah")}
                     />
                     <DataTable columns={approvalColumns} data={filteredData}/>
                 </div>
@@ -271,17 +282,44 @@ export default function ApprovalPage() {
                         {/* Lampiran */}
                         <div className="border rounded-lg p-4 mb-6">
                             <h3 className="font-bold text-[#1E3A5F] mb-2">Lampiran</h3>
-                            <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
-                                <span>Proof of pengajuan.JPG</span>
-                                <div className="flex gap-2">
-                                    <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
-                                        <FaEye/>
-                                    </Button>
-                                    <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
-                                        <FaDownload/>
-                                    </Button>
+                            {selectedApproval.document_url ? (
+                                <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
+                                    <span>{selectedApproval.document_url.split('/').pop()}</span>
+                                    <div className="flex gap-2">
+                                        {/* Preview button */}
+                                        {selectedApproval.document_url.endsWith('.jpg') || selectedApproval.document_url.endsWith('.png') ? (
+                                            <img
+                                                src={selectedApproval.document_url}
+                                                alt="Lampiran"
+                                                className="max-w-full h-auto rounded-lg"
+                                            />
+                                        ) : (
+                                            <Button
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-gray-800"
+                                                onClick={() => window.open(selectedApproval.document_url, '_blank')}
+                                            >
+                                                <FaEye />
+                                            </Button>
+                                        )}
+                                        {/* Download button */}
+                                        <Button
+                                            variant="ghost"
+                                            className="text-gray-600 hover:text-gray-800"
+                                            onClick={() => {
+                                                const link = document.createElement('a');
+                                                link.href = selectedApproval.document_url;
+                                                link.download = selectedApproval.document_url.split('/').pop() ?? 'default-filename';
+                                                link.click();
+                                            }}
+                                        >
+                                            <FaDownload />
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <p className="text-sm text-gray-700">Tidak ada lampiran.</p>
+                            )}
                         </div>
                     </div>
                 </>
