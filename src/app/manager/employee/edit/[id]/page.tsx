@@ -194,14 +194,14 @@ export default function EditKaryawan() {
     async function fetchPositions() {
       try {
         const response = await api.get('/admin/positions');
-        const mapped = response.data.map((pos: PositionResponse) => ({
-          id: pos.id.toString(),
-          name: pos.name,
-          gaji: pos.gaji ?? 0,
-          uang_lembur: pos.uang_lembur ?? 0,
-          denda_terlambat: pos.denda_terlambat ?? 0,
-          total_gaji: pos.total_gaji ?? 0,
-        }));
+     const mapped = response.data.data.map((pos: any) => ({
+  id: pos.id.toString(),
+  name: pos.name,
+  gaji: Number(pos.gaji ?? 0),
+  uang_lembur: 0, // default atau sesuaikan jika ada
+  denda_terlambat: 0,
+  total_gaji: Number(pos.gaji ?? 0), // sementara disamakan dengan gaji
+}));
         setPositions(mapped);
       } catch (error) {
         console.error("Failed to fetch positions:", error);
@@ -331,7 +331,7 @@ export default function EditKaryawan() {
           tipe_kontrak: mappedData.tipe_kontrak,
           grade: "", // jika tidak ada di mappedData, bisa kosong
           jabatan: mappedData.jabatan,
-          id_position: mappedData.id_position,
+        id_position: mappedData.id_position.toString(),
           id_department: mappedData.id_department,
           department: mappedData.department,
           cabang: mappedData.cabang,
