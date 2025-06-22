@@ -296,17 +296,71 @@ export default function ApprovalPage() {
                         {/* Lampiran */}
                         <div className="border rounded-lg p-4 mb-6">
                             <h3 className="font-bold text-[#1E3A5F] mb-2">Lampiran</h3>
-                            <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
-                                <span>Proof of pengajuan.JPG</span>
-                                <div className="flex gap-2">
-                                    <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
-                                        <FaEye/>
-                                    </Button>
-                                    <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
-                                        <FaDownload/>
-                                    </Button>
+                            {selectedApproval.document_url ? (
+                                <div className="flex flex-col gap3">
+                                    <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
+                                        <span>{selectedApproval.document_url.split('/').pop()}</span>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-gray-800"
+                                                onClick={() => window.open(selectedApproval?.document_url, '_blank')}
+                                                title="Lihat Lampiran"
+                                            >
+                                                <FaEye />
+                                            </Button>
+                                            {/* Download button */}
+                                            <Button
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-gray-800"
+                                                onClick={() => {
+                                                    const link = document.createElement('a');
+                                                    link.href = selectedApproval.document_url;
+                                                    link.download = selectedApproval.document_url.split('/').pop() ?? 'default-filename';
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    document.body.removeChild(link);
+                                                }}
+                                                title="Unduh Lampiran"
+                                            >
+                                                <FaDownload />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {(() => {
+                                        const url = selectedApproval.document_url.toLowerCase();
+                                        if (url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.png') || url.endsWith('.gif')) {
+                                            return (
+                                                <div className="mt-2 border p-2 rounded-lg bg-gray-50">
+                                                    <img
+                                                        src={selectedApproval.document_url}
+                                                        alt="Pratinjau Lampiran"
+                                                        className="max-w-full h-auto rounded-lg mx-auto"
+                                                    />
+                                                </div>
+                                            );
+                                        }
+                                        // Check for PDF files
+                                        if (url.endsWith('.pdf')) {
+                                            return (
+                                                <div className="mt-2 border rounded-lg overflow-hidden">
+                                                    <iframe
+                                                        src={selectedApproval.document_url}
+                                                        title="Pratinjau PDF"
+                                                        className="w-full h-[500px]" // Set a fixed height for the PDF viewer
+                                                    ></iframe>
+                                                </div>
+                                            );
+                                        }
+                                        // Return null if no preview is available for the file type
+                                        return null;
+                                    })()}
                                 </div>
-                            </div>
+
+                            ) : (
+                                <p className="text-sm text-gray-700">Tidak ada lampiran.</p>
+                            )}
                         </div>
 
                         {/* Actions */}

@@ -287,6 +287,14 @@ export default function ApprovalPage() {
                                     <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
                                         <span>{selectedApproval.document_url.split('/').pop()}</span>
                                         <div className="flex gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-gray-800"
+                                                onClick={() => window.open(selectedApproval?.document_url, '_blank')}
+                                                title="Lihat Lampiran"
+                                            >
+                                                <FaEye />
+                                            </Button>
                                             {/* Download button */}
                                             <Button
                                                 variant="ghost"
@@ -305,6 +313,35 @@ export default function ApprovalPage() {
                                             </Button>
                                         </div>
                                     </div>
+
+                                    {(() => {
+                                        const url = selectedApproval.document_url.toLowerCase();
+                                        if (url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.png') || url.endsWith('.gif')) {
+                                            return (
+                                                <div className="mt-2 border p-2 rounded-lg bg-gray-50">
+                                                    <img
+                                                        src={selectedApproval.document_url}
+                                                        alt="Pratinjau Lampiran"
+                                                        className="max-w-full h-auto rounded-lg mx-auto"
+                                                    />
+                                                </div>
+                                            );
+                                        }
+                                        // Check for PDF files
+                                        if (url.endsWith('.pdf')) {
+                                            return (
+                                                <div className="mt-2 border rounded-lg overflow-hidden">
+                                                    <iframe
+                                                        src={selectedApproval.document_url}
+                                                        title="Pratinjau PDF"
+                                                        className="w-full h-[500px]" // Set a fixed height for the PDF viewer
+                                                    ></iframe>
+                                                </div>
+                                            );
+                                        }
+                                        // Return null if no preview is available for the file type
+                                        return null;
+                                    })()}
                                 </div>
 
                             ) : (
