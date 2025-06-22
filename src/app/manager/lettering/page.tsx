@@ -11,6 +11,14 @@ import { Bold, Underline as UnderlineIcon, Link2, Image, Smile } from "lucide-re
 import api from "@/lib/axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 type LetterFormat = {
   id: string;
   name: string;
@@ -93,11 +101,10 @@ export default function LetteringPage() {
         <h1 className="text-3xl font-bold mb-6 text-gray-700">Buat Surat</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Jenis Surat</label>
-            <select
+            <Select
               value={selectedFormat?.id || ""}
-              onChange={(e) => {
-                const format = letterFormats.find((f) => f.id === e.target.value);
+              onValueChange={(val) => {
+                const format = letterFormats.find((f) => f.id === val);
                 setSelectedFormat(format || null);
                 if (format?.template) {
                   editor?.commands.setContent(format.template);
@@ -105,33 +112,35 @@ export default function LetteringPage() {
                   editor?.commands.clearContent();
                 }
               }}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              required
             >
-              <option value="">Pilih Format Surat</option>
-              {letterFormats.map((format) => (
-                <option key={format.id} value={format.id}>
-                  {format.name}
-                </option>
-              ))}
-            </select>
+              <label className="block text-gray-700 font-medium mb-1">Jenis Surat</label>
+              <SelectTrigger className="w-full border border-gray-300 rounded-lg p-2">
+                <SelectValue placeholder="Pilih Format Surat" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto">
+                {letterFormats.map((format) => (
+                  <SelectItem key={format.id} value={format.id}>
+                    {format.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
             <label className="block text-gray-700 font-medium mb-1">Kepada</label>
-            <select
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg p-2"
-              required
-            >
-              <option value="">Pilih Pegawai</option>
-              {employees.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.first_name} {emp.last_name}
-                </option>
-              ))}
-            </select>
+            <Select onValueChange={(val) => setRecipient(val)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pilih Pegawai" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto">
+                {employees.map((emp) => (
+                  <SelectItem key={emp.id} value={emp.id}>
+                    {emp.first_name} {emp.last_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -161,7 +170,7 @@ export default function LetteringPage() {
           </div>
 
           <div className="flex justify-end">
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow">Kirim Surat</button>
+            <button type="submit" className="bg-[#1E3A5F] hover:bg-[#155A8A]  text-white px-6 py-2 rounded-lg shadow">Kirim Surat</button>
           </div>
         </form>
       </div>

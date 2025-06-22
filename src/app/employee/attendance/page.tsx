@@ -1,10 +1,4 @@
 "use client"
-
-// import { Badge } from "@/components/ui/badge"
-// import { Button } from "@/components/ui/button"
-// import { Input } from "@/components/ui/input"
-// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-// import {ChevronLeft, ChevronRight, Eye, SlidersHorizontal} from "lucide-react"
 import { useRouter } from "next/navigation";
 import DataTableHeader from "@/components/DatatableHeader"
 import { DataTable } from "@/components/Datatable"

@@ -11,6 +11,7 @@ import {
     Clock,
     CalendarDays,
     ClipboardCheck,
+    Mails
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -24,7 +25,6 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Card } from "./ui/card";
 
 const sidebarNavItems = [
     {
@@ -54,8 +54,8 @@ const sidebarNavItems = [
     },
     {
         title: "Lettering",
-        url: "/lettering",
-        icon: ClipboardCheck,
+        url: "/manager/lettering",
+        icon: Mails,
     },
 ];
 
@@ -75,46 +75,37 @@ export function SidebarApp() {
                     <SidebarGroupContent>
                         <SidebarMenu className="flex flex-col items-start gap-2">
                             {sidebarNavItems.map((item) => (
-                                <SidebarMenuItem key={item.title} className="w-full rounded-full">
-                                    <SidebarMenuButton asChild>
-                                        <Link
-                                            href={item.url}
-                                            id={`${item.title.toLowerCase()}-tutorial`}
-                                            className={cn(
-                                                "flex items-center rounded-full px-4 py-2 w-full text-4xl font-medium text-[#1E3A5F] hover:bg-accent hover:text-accent-foreground",
-                                                pathname === item.url ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
-                                            )}
-                                            replace
-                                        >
-                                            <item.icon className="mr-2 h-4 w-4"/>
-                                            <span>{item.title}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
+                                <SidebarMenuItem key={item.title} className="w-full">
+                                    <Link
+                                    href={item.url}
+                                    id={`${item.title.toLowerCase()}-tutorial`}
+                                    className={cn(
+                                        "flex items-center rounded-full px-4 py-2 w-full text-sm font-medium text-[#1E3A5F]",
+                                        pathname === item.url
+                                        ? "bg-[#1E3A5F] text-white"
+                                        : "hover:bg-accent hover:text-accent-foreground"
+                                    )}
+                                    >
+                                    <item.icon className="mr-3 h-4 w-4"/>
+                                    <span>{item.title}</span>
+                                    </Link>
                                 </SidebarMenuItem>
-                            ))}
+                                ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter className="flex flex-col gap-2">
+            <SidebarFooter className="flex flex-col gap-2 mb-12">
                 <Link
-                    href="/settings"
+                    href="/manager/settings"
                     className={cn(
-                        "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                        pathname === "/settings" ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
+                        "flex items-center rounded-full px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                        pathname.startsWith("/manager/settings")  ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
                     )}
                 >
                     <Settings className="mr-2 h-4 w-4"/>
-                    <span>Settings</span>
+                    <span>Company Settings</span>
                 </Link>
-                <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {router.push("/")}}
-                >
-                    <LogOut className="mr-2 h-4 w-4"/>
-                    Log out
-                </Button>
             </SidebarFooter>
         </Sidebar>
     );

@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { IoArrowBackOutline } from "react-icons/io5";
 import { InvoiceStatus, SubscriptionStatus } from '@/lib/enums';
-import { getStatusClass } from '@/lib/utils';
 import Button from '@/components/Button';
 import api from '@/lib/axios';
 import { FaArrowUp } from 'react-icons/fa';
@@ -19,6 +18,30 @@ import {
 } from "@/components/ui/dialog";
 import { AlertCircle } from "lucide-react";
 
+interface PackageType {
+  id: string;
+  name: string;
+  description: string;
+  max_seats: number;
+  price_per_seat: number;
+  is_free: boolean;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}
+
+interface Subscription {
+  id: string;
+  package_type: PackageType;
+  seats: number;
+  starts_at?: string;
+  ends_at?: string | null;
+  status: 'active' | 'trial' | 'expired';
+  is_trial?: boolean;
+  trial_ends_at?: string | null;
+  is_cancelled?: boolean;
+}
+
 interface Payment {
   id: string;
   payment_code: string;
@@ -27,18 +50,6 @@ interface Payment {
   status: string;
   payment_datetime: string;
   payment_method: string;
-}
-
-interface Subscription {
-  id: string;
-  package_type: string;
-  seats: number;
-  price_per_seat: number;
-  is_trial: boolean;
-  trial_ends_at: string | null;
-  ends_at: string | null;
-  status: 'active' | 'trial' | 'expired';
-  is_cancelled: boolean;
 }
 
 interface InvoiceData {
@@ -50,53 +61,56 @@ interface InvoiceData {
   xendit_invoice_id: string;
   invoice_url: string;
   subscription: Subscription;
-  payments: Payment[];
+  payment: Payment[];
 }
 
-export default function Invoice() {
-  const searchParams = useSearchParams();
+interface DailyUsage {
+  date: string;
+  daily_cost: number;
+}
+
+export default function Invoice({ id: propId }: { id?: string }) {
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [dailyUsage, setDailyUsage] = useState<DailyUsage[]>([]);
+  const [loadingUsage, setLoadingUsage] = useState(false);
   const router = useRouter();
 
   // Fetch invoice by ID from API
   useEffect(() => {
-    const fetchInvoice = async ()=>{
+    const fetchInvoice = async () => {
       setLoading(true);
-      try{
-        const invoiceId = searchParams.get('id');
+      try {
+        const invoiceId = propId;
         if (!invoiceId) {
           throw new Error("Invoice ID tidak ditemukan di URL");
         }
-
-        const response = await api.get(`/admin/invoices/${invoiceId}`);
-
+        const response = await api.get(`/admin/subscription/invoices/${invoiceId}`);
         if (response.status === 403) {
           window.location.href = '/unauthorized';
           return;
         }
-
         if (!response.data.meta?.success) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const item = response.data.data.data;
-
         const isOverdue = item.status === 'unpaid' && new Date(item.due_datetime) < new Date();
-
+        // Defensive fallback for missing fields
         const subscription = item.subscription || {
-          package_type: '-',
+          id: '',
+          package_type: {
+            id: '',
+            name: '-',
+            description: '',
+            max_seats: 0,
+            price_per_seat: 0,
+            is_free: false,
+          },
           seats: 0,
-          price_per_seat: 0,
-          is_trial: false,
-          trial_ends_at: null,
-          ends_at: null,
           status: 'expired',
-          is_cancelled: false,
         };
-
         const formattedData: InvoiceData = {
           id: item.id || 'N/A',
           total_amount: typeof item.total_amount === 'number' ? item.total_amount : 0,
@@ -107,20 +121,33 @@ export default function Invoice() {
           invoice_url: item.invoice_url || '#',
           subscription: {
             id: subscription.id || '',
-            package_type: subscription.package_type || '-',
+            package_type: subscription.package_type,
             seats: subscription.seats ?? 0,
-            price_per_seat: subscription.price_per_seat ?? 0,
-            is_trial: subscription.is_trial ?? false,
-            trial_ends_at: subscription.trial_ends_at,
+            starts_at: subscription.starts_at,
             ends_at: subscription.ends_at,
             status: subscription.status || 'expired',
-            is_cancelled: subscription.is_cancelled ?? false,
+            is_trial: subscription.is_trial,
+            trial_ends_at: subscription.trial_ends_at,
+            is_cancelled: subscription.is_cancelled,
           },
-          payments: Array.isArray(item.payments) ? item.payments : [],
+          payment: Array.isArray(item.payment) ? item.payment : [],
         };
-
         setInvoiceData(formattedData);
-      }catch (error) {
+        // Fetch daily usage if subscription exists
+        if (subscription.id) {
+          setLoadingUsage(true);
+          try {
+            const usageRes = await api.get(`/admin/subscription/${subscription.id}`);
+            if (usageRes.data.meta?.success) {
+              setDailyUsage(Array.isArray(usageRes.data.data.data) ? usageRes.data.data.data : []);
+            }
+          } catch (e) {
+            setDailyUsage([]);
+          } finally {
+            setLoadingUsage(false);
+          }
+        }
+      } catch (error) {
         console.error("Error fetching invoice:", error);
         setInvoiceData(null);
       } finally {
@@ -128,7 +155,7 @@ export default function Invoice() {
       }
     };
     fetchInvoice();
-  }, [searchParams]);
+  }, [propId]);
 
   if (loading) {
     return (
@@ -138,14 +165,18 @@ export default function Invoice() {
     );
   }
 
+  if (!propId) {
+    return <div>Invoice ID tidak ditemukan di URL.</div>;
+  }
+
   if (!invoiceData) {
     return <div>Data faktur tidak ditemukan.</div>;
   }
 
-  const { id, total_amount, due_datetime, status, display_status,invoice_url, subscription, payments } = invoiceData;
+  const { id, total_amount, due_datetime, status, display_status, invoice_url, subscription, payment } = invoiceData;
 
   const handlePaymentRedirect = () => {
-    if(invoice_url){
+    if (invoice_url) {
       window.open(invoice_url, '_blank');
     }
   };
@@ -153,19 +184,17 @@ export default function Invoice() {
   const handleCancelSubscription = async () => {
     setIsCancelling(true);
     try {
-        const response = await api.post(`/admin/subscription/${subscription.id}/cancel`);
-
-        if (response.status === 200) {
-            setIsCancelDialogOpen(false);
-            window.location.reload();
-        } else {
-            throw new Error('Failed to cancel subscription');
-        }
+      const response = await api.post(`/admin/subscription/${subscription.id}/cancel`);
+      if (response.status === 200) {
+        setIsCancelDialogOpen(false);
+        window.location.reload();
+      } else {
+        throw new Error('Failed to cancel subscription');
+      }
     } catch (error) {
-        console.error('Error cancelling subscription:', error);
-        // Tampilkan toast atau alert jika gagal
+      console.error('Error cancelling subscription:', error);
     } finally {
-        setIsCancelling(false);
+      setIsCancelling(false);
     }
   };
 
@@ -179,7 +208,7 @@ export default function Invoice() {
         return 'bg-yellow-100 text-yellow-800';
     }
   };
-  
+
   const getSubsClass = (status: string): string => {
     switch (status) {
       case 'active':
@@ -198,7 +227,7 @@ export default function Invoice() {
           <div className="flex gap-2">
             {subscription?.status === 'active' && !subscription.is_cancelled && (
               <button
-                onClick={() => router.push('/subscription')}
+                onClick={() => router.push('/manager/subscription')}
                 className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded flex items-center gap-2"
               >
                 <FaArrowUp />
@@ -220,103 +249,88 @@ export default function Invoice() {
               <h4 className="text-lg font-semibold mb-4">Rincian Tagihan</h4>
               <div className="space-y-2">
                 <p><span className="font-medium">Invoice ID:</span> {id}</p>
-                <p><span className="font-medium">Tanggal Jatuh Tempo:</span> {new Date(due_datetime).toLocaleDateString('id-ID',{
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
+                <p><span className="font-medium">Tanggal Jatuh Tempo:</span> {new Date(due_datetime).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
                 })}</p>
-                  {/* Status Faktur */}
-                  <div>
-                    <span className="font-medium">Status Faktur:</span>{' '}
-                    <span className={`inline-block px-2 py-1 text-xs rounded ${getStatusClass(status)}`}>
-                      {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
+                {/* Status Faktur */}
+                <div>
+                  <span className="font-medium">Status Faktur:</span>{' '}
+                  <span className={`inline-block px-2 py-1 text-xs rounded ${getStatusClass(status)}`}>
+                    {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
+                  </span>
+                  {display_status === 'overdue' && (
+                    <span className={`inline-block ml-2 px-2 py-1 text-xs rounded ${getStatusClass(display_status)}`}>
+                      {display_status.charAt(0).toUpperCase() + display_status.slice(1)}
                     </span>
-                    {display_status === 'overdue' && (
-                      <span className={`inline-block ml-2 px-2 py-1 text-xs rounded ${getStatusClass(display_status)}`}>
-                        {display_status.charAt(0).toUpperCase() + display_status.slice(1)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Status Langganan */}
-                  {subscription && (
-                    <div>
-                      <span className="font-medium">Status Langganan:</span>{' '}
-                      <span className={`inline-block px-2 py-1 text-xs rounded ${getSubsClass(subscription.status as SubscriptionStatus)}`}>
-                        {subscription.status?.charAt(0).toUpperCase() + subscription.status?.slice(1)}
-                      </span>
-                    </div>
                   )}
+                </div>
+                {/* Status Langganan */}
+                {subscription && (
+                  <div>
+                    <span className="font-medium">Status Langganan:</span>{' '}
+                    <span className={`inline-block px-2 py-1 text-xs rounded ${getSubsClass(subscription.status as SubscriptionStatus)}`}>
+                      {subscription.status?.charAt(0).toUpperCase() + subscription.status?.slice(1)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-
             {/* Bagian Kanan - Informasi Langganan */}
             <div>
               <h4 className="text-lg font-semibold mb-4">Rincian Langganan</h4>
               <div className="space-y-2">
-              {subscription && (
-                <>
-                  <p><span className="font-medium">Paket:</span> {subscription.package_type}</p>
-                  <p><span className="font-medium">Jumlah Seat:</span> {subscription.seats}</p>
-                  <p><span className="font-medium">Harga per Seat:</span> Rp {subscription.price_per_seat.toLocaleString()}</p>
-                </>
-              )}
-              <p className='font-bold'><span>Total:</span> Rp {total_amount.toLocaleString()}</p>
+                {subscription && (
+                  <>
+                    <p><span className="font-medium">Paket:</span> {subscription.package_type?.name}</p>
+                    <p><span className="font-medium">Deskripsi:</span> {subscription.package_type?.description}</p>
+                    <p><span className="font-medium">Jumlah Seat:</span> {subscription.seats}</p>
+                    <p><span className="font-medium">Harga per Seat:</span> Rp {subscription.package_type?.price_per_seat?.toLocaleString()}</p>
+                    <p><span className="font-medium">Durasi:</span> {subscription.starts_at ? `${new Date(subscription.starts_at).toLocaleDateString('id-ID')} - ${subscription.ends_at ? new Date(subscription.ends_at).toLocaleDateString('id-ID') : '-'}` : '-'}</p>
+                  </>
+                )}
+                <p className='font-bold'><span>Total:</span> Rp {total_amount.toLocaleString()}</p>
               </div>
               {subscription.status === 'active' && (
-                    <button
-                      onClick={() => setIsCancelDialogOpen(true)}
-                      className="mt-2 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
-                    >
-                      Cancel Subscription
-                    </button>
-                  )}
+                <button
+                  onClick={() => setIsCancelDialogOpen(true)}
+                  className="mt-2 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
+                >
+                  Cancel Subscription
+                </button>
+              )}
             </div>
           </div>
-
           {/* Pembayaran */}
           <div className="mt-8">
             <h4 className="text-lg font-semibold mb-4">Pembayaran</h4>
-            {payments.length > 0 ? (
+            {payment.length > 0 ? (
               <div className="space-y-4">
-                {payments.map((payment) => (
-                  <div key={payment.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                {payment.map((pay) => (
+                  <div key={pay.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <div className="flex justify-between">
-                      <p><span className="font-medium">Metode:</span> {payment.payment_method}</p>
-                      <p><span className="font-medium">Jumlah:</span> Rp {payment.amount_paid.toLocaleString()}</p>
+                      <p><span className="font-medium">Metode:</span> {pay.payment_method}</p>
+                      <p><span className="font-medium">Jumlah:</span> Rp {pay.amount_paid.toLocaleString()}</p>
                     </div>
-                    <p><span className="font-medium">Tanggal:</span> {new Date(payment.payment_datetime).toLocaleString()}</p>
-                    <p><span className="font-medium">Status:</span> {payment.status}</p>
+                    <p><span className="font-medium">Tanggal:</span> {new Date(pay.payment_datetime).toLocaleString()}</p>
+                    <p><span className="font-medium">Status:</span> {pay.status}</p>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <p className="text-yellow-700">Belum ada pembayaran untuk faktur ini.</p>
-                {!subscription.is_trial && (
-                  <button
-                    onClick={handlePaymentRedirect}
-                    className="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-                  >
-                    Bayar Sekarang
-                  </button>
-                )}
-                {subscription.is_trial && (
-                  <p className="mt-3 text-blue-600">Ini adalah langganan trial dan tidak memerlukan pembayaran.</p>
-                )}
-                {subscription.status === 'expired' && (
-                  <button
-                    onClick={() => window.location.href = '/subscription'}
-                    className="mt-3 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
-                  >
-                    Buat Langganan Baru
-                  </button>
-                )}
+                <button
+                  onClick={handlePaymentRedirect}
+                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+                >
+                  Bayar Sekarang
+                </button>
               </div>
             )}
-
             {/* Info overdue tambahan (opsional) */}
             {display_status === 'overdue' && (
               <div className="mt-4 text-sm text-red-600">
@@ -324,9 +338,36 @@ export default function Invoice() {
               </div>
             )}
           </div>
+          {/* Daily Usage Section */}
+          <div className="mt-8">
+            <h4 className="text-lg font-semibold mb-4">Rincian Penggunaan Harian</h4>
+            {loadingUsage ? (
+              <div>Loading daily usage...</div>
+            ) : dailyUsage.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm border">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="px-4 py-2 border">Tanggal</th>
+                      <th className="px-4 py-2 border">Biaya Harian</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailyUsage.map((usage, idx) => (
+                      <tr key={idx}>
+                        <td className="px-4 py-2 border">{new Date(usage.date).toLocaleDateString('id-ID')}</td>
+                        <td className="px-4 py-2 border">Rp {usage.daily_cost.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div>Tidak ada data penggunaan harian.</div>
+            )}
+          </div>
         </div>
       </div>
-
       <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
         <DialogContent>
           <DialogHeader>

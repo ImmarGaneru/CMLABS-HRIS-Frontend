@@ -1,15 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { getEmployee } from "../../../../../utils/employee";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { FaEye } from "react-icons/fa";
 import React from "react";
-// import { api } from "@/lib/axios";
-// import axios from "axios";
-// import { DataTable } from "@/components/Datatable";
-// import DataTableHeader from "@/components/DatatableHeader";
 import api from "@/lib/axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -315,19 +309,8 @@ const karyawan = {
   };
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-6 space-x-2">
-        <span
-          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
-          style={{ animationDelay: "0s" }}
-        ></span>
-        <span
-          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
-          style={{ animationDelay: "0.2s" }}
-        ></span>
-        <span
-          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
-          style={{ animationDelay: "0.4s" }}
-        ></span>
+      <div className="flex justify-center items-center w-full h-screen">
+        <LoadingSpinner size={48} />
       </div>
     );
   }
@@ -347,7 +330,7 @@ const karyawan = {
          <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#141414]">Detail Karyawan</h1>
         <button
-          onClick={() => router.push("/employee")}
+          onClick={() => router.push("/manager/employee")}
           className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200"
         >
           <svg
@@ -371,12 +354,10 @@ const karyawan = {
       <div className="flex flex-col md:flex-row gap-20 items-start">
         {/* Foto dan Identitas */}
         <div className="flex flex-col items-start mb-6">
-          <div className="w-40 h-50 overflow-hidden mb-3 bg-gray-200 rectangle">
+           <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
             <img
               src={karyawan.avatar || "/default.jpg"}
               alt={karyawan.name}
-              width={160}
-              height={160}
               className="w-full h-full object-cover"
             />
           </div>
@@ -566,16 +547,16 @@ const karyawan = {
 
 function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center mb-3">
-      <div className="sm:w-40 font-semibold text-gray-700">{label}</div>
-      <div className="flex justify-center items-center w-6 text-gray-400 select-none">
-        :
-      </div>
-      <div className="flex-1 text-gray-500 font-semibold">{value}</div>
-    </div>
+ <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 py-2">
+  <div className="sm:w-40 font-semibold text-gray-700">{label}</div>
+  <div className="w-4 flex justify-center items-start pt-[2px] text-gray-400 select-none">
+    :
+  </div>
+  <div className="flex-1 text-gray-500 font-semibold break-words">{value || '-'}</div>
+</div>
+
   );
 }
-
 function Section({
   title,
   children,
@@ -584,11 +565,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-[#141414] mb-4">{title}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-        {children}
-      </div>
+    <div className="mb-6">
+      <h2 className="text-xl md:text-2xl font-bold text-[#1E3A5F] mb-4 border-b border-blue-200 pb-2">
+        {title}
+      </h2>
+      <div>{children}</div>
     </div>
   );
 }

@@ -72,7 +72,7 @@ export default function JadwalTablePage() {
               </button>
               <button
                 title="Edit"
-                onClick={() => router.push(`/jadwal/edit/${data.id}`)}
+                onClick={() => router.push(`/employee/jadwal/edit/${data.id}`)}
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEdit />
@@ -199,7 +199,7 @@ export default function JadwalTablePage() {
             filterOptions={jadwalFilters}
             // onExport={handleExportCSV}
             // onImport={handleImportCSV}
-            onAdd={() => router.push("/jadwal/tambah")}
+            onAdd={() => router.push("/employee/jadwal/tambah")}
           />
 
           {/* Data Tabel Isi Jadwal */}

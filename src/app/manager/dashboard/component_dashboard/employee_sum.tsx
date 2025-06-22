@@ -20,24 +20,6 @@ export default function EmployeeSumCard() {
 
     useEffect(() => {
         const fetchEmployeeData = async () => {
-            // try {
-            //     setLoading(true);
-            //     const response = await fetch('http://api.hriscmlabs.my.id/api/admin/employees/dashboard/getEmployee', {
-            //         headers: {
-            //             'Authorization': `Bearer ${token}`
-            //         }
-            //     });
-
-            //     if(response.status === 403){
-            //         router.push('/unauthorized');
-            //     }
-            //     const result = await response.json();
-            //     setData(result);
-            // } catch (error) {
-            //     console.error('Error fetching employee data:', error);
-            // } finally {
-            //     setLoading(false);
-            // }
             try {
                 const res = await api.get('/admin/employees/dashboard/getEmployee');
 
