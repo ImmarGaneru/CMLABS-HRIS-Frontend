@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Mail, Phone, MapPin, Briefcase, Calendar, RectangleEllipsis } from 'lucide-react';
+import api from '@/lib/axios';
 
 interface EmployeeData {
     id: string;
@@ -41,23 +42,16 @@ export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [profileImage, setProfileImage] = useState<string>('/avatar.png');
 
-    const [token] = useState("76|tb8nV2Eu25nHIg5IIIVpok5WGslKJkx85qzBda3Yad86900b");
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch('http://api.hriscmlabs.my.id/api/auth/me', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
+                const response = await api.get('/auth/me', {
                 });
 
-                if (!response.ok) throw new Error('Failed to fetch user data');
-                const data = await response.json();
-                console.log('Response data:', data); // Debug log
-                setUserData(data.data);
+                console.log('Response data:', response); // Debug log
+                setUserData(response.data.data);
 
-                const userData: UserData = data.data;
+                const userData: UserData = response.data.data;
 
                 if (userData.employee?.avatar) {
                     setProfileImage(userData.employee?.avatar);
@@ -73,7 +67,7 @@ export default function ProfilePage() {
         };
 
         fetchUserData();
-    }, [token]);
+    }, []);
 
     if (isLoading) {
         return (

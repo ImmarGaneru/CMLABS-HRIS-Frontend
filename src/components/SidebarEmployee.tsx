@@ -12,6 +12,7 @@ import {
     CalendarDays,
     ClipboardCheck,
     AlarmClock,
+    Mails,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -55,7 +56,7 @@ const sidebarNavItems = [
     {
         title: "Lettering",
         url: "/employee/lettering",
-        icon: FaEnvelopeOpenText,
+        icon: Mails,
     }
 ];
 
@@ -81,8 +82,8 @@ export function SidebarEmployee() {
                                             href={item.url}
                                             id={`${item.title.toLowerCase()}-tutorial`}
                                             className={cn(
-                                                "flex items-center rounded-full px-4 py-2 w-full text-4xl font-medium text-[#1E3A5F] hover:bg-accent hover:text-accent-foreground",
-                                                pathname === item.url ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
+                                                "flex items-center rounded-full px-4 py-2 w-full text-4xl font-medium text-[#1E3A5F]",
+                                                pathname === item.url ? "bg-[#1E3A5F] text-white rounded-full" : "hover:bg-accent hover:text-accent-foreground"
                                             )}
                                             replace
                                         >
