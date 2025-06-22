@@ -10,6 +10,9 @@ import { RxAvatar } from "react-icons/rx";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import EmployeeCardSum from "./component_employee/employee_card_sum";
 import DataTableHeader from "@/components/DatatableHeader";
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,9 +40,9 @@ type Employee = {
   tipe_kontrak: string | null;
 
   // tambahan
-  user?: { email: string };
+  user?: { email: string , phone_number: string };
   position?: { name: string };
-  no_telp: string;
+  // phone_number: string;
   cabang: string;
   jabatan: string;
 };
@@ -48,7 +51,7 @@ export default function EmployeeTablePage() {
   const router = useRouter();
 
   const [employees, setEmployees] = useState<FEEmployee[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [filterText, setFilterText] = useState("");
@@ -64,36 +67,29 @@ export default function EmployeeTablePage() {
     { label: "active", value: "active" },
     { label: "inactive", value: "inactive" },
   ];
-  const handleSoftDelete = async (id: number | string) => {
-    try {
-      const res = await fetch(`http://127.0.0.1:8000/api/employee/${id}`, {
-        method: "DELETE",
-      });
+ const handleSoftDelete = async (id: number | string) => {
+  try {
+    const res = await api.delete(`/admin/employees/${id}`);
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Gagal menghapus data");
-      }
-
-      // Update state untuk menghapus employee yang sudah dihapus
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-    } catch (error) {
-      let errorMessage = "Gagal menghapus data";
-
-      if (error instanceof Error) {
-        errorMessage += `: ${error.message}`;
-      } else if (
-        typeof error === "object" &&
-        error !== null &&
-        "message" in error
-      ) {
-        errorMessage += `: ${(error as { message: string }).message}`;
-      }
-
-      alert(errorMessage);
-      console.error(error);
+    // Jika responsenya punya struktur `data.success` atau semacam itu, kamu bisa cek di sini
+    if (res.status !== 200) {
+      throw new Error(res.data?.message || "Gagal menghapus data");
     }
-  };
+
+    // Hapus data dari state
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+  } catch (error) {
+    let errorMessage = "Gagal menghapus data";
+
+    if (error instanceof Error) {
+      errorMessage += `: ${error.message}`;
+    }
+
+    alert(errorMessage);
+    console.error(error);
+  }
+};
+
 
   // Fetch data dari backend
   useEffect(() => {
@@ -103,19 +99,81 @@ export default function EmployeeTablePage() {
       try {
         const res = await api.get("/admin/employees/comp-employees");
         
-        const feData = res.data.data.map((emp: Employee) => ({
-          id: emp.id,
-          id_user: emp.id_user,
-          nama: `${emp.first_name} ${emp.last_name}`,
-          jenis_kelamin: emp.jenis_kelamin,
-          no_telp: emp.no_telp || "-",
-          cabang: emp.cabang || "-",
-          jabatan: emp.jabatan || "-",
-          status: emp.employment_status,
-          Email: emp.user?.email || "-",
+        // Fetch position details for each employee
+        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
+          let positionName = "-";
+          if (emp.id_position) {
+            try {
+              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
+              if (positionRes.data.meta.success) {
+                positionName = positionRes.data.data.name;
+              }
+            } catch (err) {
+              console.error(`Error fetching position for employee ${emp.id}:`, err);
+            }
+          }
 
-          // hireDate: emp.created_at,
-          // employmentType: emp.tipe_kontrak || "-",
+          return {
+            id: emp.id,
+            id_user: emp.id_user,
+            nama: `${emp.first_name} ${emp.last_name}`,
+            jenis_kelamin: emp.jenis_kelamin,
+            phone_number: emp.user?.phone_number || "-",
+            cabang: emp.cabang || "-",
+            jabatan: positionName,
+            tipe_kontrak: emp.tipe_kontrak,
+            status: emp.employment_status,
+            Email: emp.user?.email || "-",
+          };
+        }));
+
+        setEmployees(feData);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await api.get("/admin/employees/comp-employees");
+        
+        // Fetch position details for each employee
+        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
+          let positionName = "-";
+          if (emp.id_position) {
+            try {
+              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
+              if (positionRes.data.meta.success) {
+                positionName = positionRes.data.data.name;
+              }
+            } catch (err) {
+              console.error(`Error fetching position for employee ${emp.id}:`, err);
+            }
+          }
+
+          return {
+            id: emp.id,
+            id_user: emp.id_user,
+            nama: `${emp.first_name} ${emp.last_name}`,
+            jenis_kelamin: emp.jenis_kelamin,
+            phone_number: emp.user?.phone_number || "-",
+            cabang: emp.cabang || "-",
+            tipe_kontrak: emp.tipe_kontrak,
+            jabatan: positionName,
+            status: emp.employment_status,
+            Email: emp.user?.email || "-",
+          };
         }));
 
         setEmployees(feData);
@@ -154,14 +212,23 @@ export default function EmployeeTablePage() {
         size: 20,
       },
       {
-        id: "Avatar",
-        header: "Avatar",
-        cell: () => (
-          <div className="flex items-center justify-center text-lg">
-            <RxAvatar size={24} />
-          </div>
-        ),
-        size: 40,
+      id: "Avatar",
+  header: "Avatar",
+  cell: ({ row }) => (
+    <div className="flex items-center justify-center">
+      {row.original.avatar ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`/storage/${row.original.avatar}`} // atau URL lengkap jika disimpan sebagai path lengkap
+          alt="Avatar"
+          className="w-8 h-8 rounded-full object-cover"
+        />
+      ) : (
+        <RxAvatar size={24} className="text-gray-400" />
+      )}
+    </div>
+  ),
+  size: 60,
       },
       {
         accessorKey: "nama",
@@ -184,7 +251,7 @@ export default function EmployeeTablePage() {
         size: 100,
       },
       {
-        accessorKey: "no_telp",
+        accessorKey: "phone_number",
         header: "Nomor Telepon",
         cell: (info) => (
           <div className="truncate max-w-[120px]">
@@ -213,30 +280,49 @@ export default function EmployeeTablePage() {
         ),
         size: 120,
       },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: (info) => {
-          const status = info.getValue() as "active" | "inactive";
+   {
+  accessorKey: "tipe_kontrak",
+  header: "Tipe Kontrak",
+  cell: (info) => (
+    <div className="flex justify-center">
+      <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+        {(info.getValue() as string) || "-"}
+      </span>
+    </div>
+  ),
+  size: 100,
+},
+{
+  accessorKey: "status",
+  header: "Status",
+  cell: (info) => {
+    const status = (info.getValue() as string)?.toLowerCase();
 
-          let displayStatus = "Unknown";
-          if (status === "active") displayStatus = "Aktif";
-          else if (status === "inactive") displayStatus = "inactive";
+    let displayLabel = "Tidak Diketahui";
+    let color = "bg-gray-200 text-gray-600";
 
-          return (
-            <div className="flex justify-center w-[100px]">
-              <span
-                className={`px-2 py-1 text-xs rounded ${getStatusStyle(
-                  displayStatus
-                )}`}
-              >
-                {displayStatus}
-              </span>
-            </div>
-          );
-        },
-        size: 100,
-      },
+    if (status === "active") {
+      displayLabel = "active";
+      color = "bg-green-100 text-green-700";
+    } else if (status === "resign") {
+      displayLabel = "resign";
+      color = "bg-red-100 text-red-700";
+    } else if (status === "inactive") {
+      displayLabel = "inactive";
+      color = "bg-yellow-100 text-yellow-700";
+    }
+
+    return (
+      <div className="flex justify-center">
+        <span className={`px-2 py-1 text-xs rounded ${color}`}>
+          {displayLabel}
+        </span>
+      </div>
+    );
+  },
+  size: 100,
+},
+
       {
         id: "actions",
         header: "Aksi",
@@ -246,14 +332,14 @@ export default function EmployeeTablePage() {
             <div className="flex gap-2 justify-center w-[120px]">
               <button
                 title="Detail"
-                onClick={() => router.push(`/employee/detail/${data.id}`)}
+                onClick={() => router.push(`/manager/employee/detail/${data.id}`)}
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEye />
               </button>
               <button
                 title="Edit"
-                onClick={() => router.push(`/employee/edit/${data.id}`)}
+                onClick={() => router.push(`/manager/employee/edit/${data.id}`)}
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEdit />
@@ -370,7 +456,7 @@ export default function EmployeeTablePage() {
         }
 
         alert("Import dan simpan berhasil!");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error("Gagal impor:", error);
 
@@ -413,12 +499,12 @@ export default function EmployeeTablePage() {
   }, [employees, filterText, filterGender, filterStatus]);
 
   return (
-    <div className="px-4 py-6 min-h-screen flex flex-col gap-4">
+    <div className="flex flex-col px-4 py-6 gap-6 w-full h-fit">
       <EmployeeCardSum employeesCard={employees} />
 
       <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">
-          {loading && <p>Loading data...</p>}
+       
           {error && <p className="text-red-600">Error: {error}</p>}
 
           <DataTableHeader
@@ -437,14 +523,24 @@ export default function EmployeeTablePage() {
             onSecondFilterChange={setFilterStatus}
             filterOptions={employeeFilters}
             secondFilterOptions={statusFilters}
-            onAdd={() => router.push("/employee/tambah")}
+            onAdd={() => router.push("/manager/employee/tambah")}
             importInputRef={fileInputRef}
             onExport={() => handleExportCSV(employees)}
             onImport={handleImportCSV}
+            emptyContent={
+              loading ? (
+                  <div className="flex justify-center items-center w-full h-screen">
+                    <LoadingSpinner size={48} />
+                  </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  Employee not found
+                </div>
+              )
+            }
           />
-
           <div className="w-full overflow-x-auto">
-            <DataTable columns={employeeColumns} data={filteredData} />
+             <DataTable columns={employeeColumns} data={filteredData} loading={loading} />
           </div>
         </div>
       </div>

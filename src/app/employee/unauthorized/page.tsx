@@ -16,7 +16,7 @@ export default function UnauthorizedPage() {
                     Sorry, you don't have permission to access this page. Please contact your administrator if you believe this is a mistake.
                 </p>
                 <button
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => router.push('/employee/dashboard')}
                     className="bg-[#1E3A5F] text-white px-6 py-2 rounded-lg hover:bg-[#2c5282] transition-colors"
                 >
                     Back to Dashboard

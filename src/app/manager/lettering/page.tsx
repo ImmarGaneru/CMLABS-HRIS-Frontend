@@ -161,7 +161,7 @@ export default function LetteringPage() {
           </div>
 
           <div className="flex justify-end">
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow">Kirim Surat</button>
+            <button type="submit" className="bg-[#1E3A5F] hover:bg-[#155A8A]  text-white px-6 py-2 rounded-lg shadow">Kirim Surat</button>
           </div>
         </form>
       </div>
