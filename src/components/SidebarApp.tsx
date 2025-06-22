@@ -101,16 +101,16 @@ export function SidebarApp() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter className="flex flex-col gap-2">
+            <SidebarFooter className="flex flex-col gap-2 mb-12">
                 <Link
-                    href="/settings"
+                    href="/manager/settings"
                     className={cn(
-                        "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                        pathname === "/manager/settings" ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
+                        "flex items-center rounded-full px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                        pathname.startsWith("/manager/settings")  ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
                     )}
                 >
                     <Settings className="mr-2 h-4 w-4"/>
-                    <span>Settings</span>
+                    <span>Company Settings</span>
                 </Link>
             </SidebarFooter>
         </Sidebar>
