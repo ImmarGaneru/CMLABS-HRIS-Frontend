@@ -901,13 +901,13 @@ export default function TambahKaryawan() {
           </div>
 
           <div className="col-span-2 flex justify-end gap-4">
-            <button
+              <button
               type="button"
               className="text-blue-500 cursor-pointer hover:text-blue-700"
-              onClick={() => (window.location.href = "/employee")}
+              onClick={() => (window.location.href = "/manager/employee")}
             >
               Batal
-            </button>
+              </button>
             {/* Submit Button */}
             <div className="col-span-2 text-right">
               <button
