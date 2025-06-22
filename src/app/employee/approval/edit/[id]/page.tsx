@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useApproval } from "@/contexts/ApprovalContext";
 import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -35,7 +35,8 @@ const FormSchema = z.object({
         .min(1),
 })
 
-export default function ApprovalEdit({ params }: { params: { id: string } }) {
+export default function ApprovalEdit({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
     const router = useRouter();
     const { updateApproval, fetchApproval } = useApproval();
     const [isLoading, setIsLoading] = useState(true);
@@ -53,9 +54,9 @@ export default function ApprovalEdit({ params }: { params: { id: string } }) {
 
     useEffect(() => {
         const loadApprovalData = async () => {
-            if (params.id) {
+            if (id) {
                 try {
-                    const approval = await fetchApproval(params.id);
+                    const approval = await fetchApproval(id);
                     if (approval) {
                         form.reset({
                             request_type: approval.request_type,
@@ -72,7 +73,7 @@ export default function ApprovalEdit({ params }: { params: { id: string } }) {
             }
         };
         loadApprovalData();
-    }, [params.id, fetchApproval, form]);
+    }, [id, fetchApproval, form]);
 
 
 
@@ -83,9 +84,9 @@ export default function ApprovalEdit({ params }: { params: { id: string } }) {
     ];
 
     const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-        if (!params.id) return;
+        if (!id) return;
         try {
-            await updateApproval(params.id, data);
+            await updateApproval(id, data);
             router.back();
         } catch (error) {
             console.error("Error updating approval:", error);
