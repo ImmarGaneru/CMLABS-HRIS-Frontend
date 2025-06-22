@@ -283,40 +283,30 @@ export default function ApprovalPage() {
                         <div className="border rounded-lg p-4 mb-6">
                             <h3 className="font-bold text-[#1E3A5F] mb-2">Lampiran</h3>
                             {selectedApproval.document_url ? (
-                                <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
-                                    <span>{selectedApproval.document_url.split('/').pop()}</span>
-                                    <div className="flex gap-2">
-                                        {/* Preview button */}
-                                        {selectedApproval.document_url.endsWith('.jpg') || selectedApproval.document_url.endsWith('.png') ? (
-                                            <img
-                                                src={selectedApproval.document_url}
-                                                alt="Lampiran"
-                                                className="max-w-full h-auto rounded-lg"
-                                            />
-                                        ) : (
+                                <div className="flex flex-col gap3">
+                                    <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
+                                        <span>{selectedApproval.document_url.split('/').pop()}</span>
+                                        <div className="flex gap-2">
+                                            {/* Download button */}
                                             <Button
                                                 variant="ghost"
                                                 className="text-gray-600 hover:text-gray-800"
-                                                onClick={() => window.open(selectedApproval.document_url, '_blank')}
+                                                onClick={() => {
+                                                    const link = document.createElement('a');
+                                                    link.href = selectedApproval.document_url;
+                                                    link.download = selectedApproval.document_url.split('/').pop() ?? 'default-filename';
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    document.body.removeChild(link);
+                                                }}
+                                                title="Unduh Lampiran"
                                             >
-                                                <FaEye />
+                                                <FaDownload />
                                             </Button>
-                                        )}
-                                        {/* Download button */}
-                                        <Button
-                                            variant="ghost"
-                                            className="text-gray-600 hover:text-gray-800"
-                                            onClick={() => {
-                                                const link = document.createElement('a');
-                                                link.href = selectedApproval.document_url;
-                                                link.download = selectedApproval.document_url.split('/').pop() ?? 'default-filename';
-                                                link.click();
-                                            }}
-                                        >
-                                            <FaDownload />
-                                        </Button>
+                                        </div>
                                     </div>
                                 </div>
+
                             ) : (
                                 <p className="text-sm text-gray-700">Tidak ada lampiran.</p>
                             )}
