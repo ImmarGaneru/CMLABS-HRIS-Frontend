@@ -8,8 +8,10 @@ import LeafletMapControl from "./LeafletMapControl";
 const position: LatLngTuple = [-7.95450378241118, 112.63217148198788]
 
 export default function LeafletMap({
+    initialPosition,
     cb
 }: {
+    initialPosition?: LatLngTuple;
     cb?: (e: any) => void;
 }) {
     if (typeof window === 'undefined') {
@@ -17,8 +19,8 @@ export default function LeafletMap({
     } else {
         return (
 
-            <MapContainer center={position} zoom={13} scrollWheelZoom={true}>
-                < LeafletMapControl cb={cb} />
+            <MapContainer center={initialPosition || position} zoom={13} scrollWheelZoom={true}>
+                <LeafletMapControl initialMarkerPosition={initialPosition || position} cb={cb} />
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

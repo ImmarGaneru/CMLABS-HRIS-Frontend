@@ -20,6 +20,7 @@ export interface CheckClockSetting {
     radius: number | null;
     check_clock_setting_time: CheckClockSettingTime[];
     user_ids: string[];
+    users?: User[];
 }
 
 export interface CheckClockSettingTime {

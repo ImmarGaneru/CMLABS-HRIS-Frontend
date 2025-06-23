@@ -9,12 +9,14 @@ import { useState } from "react";
 const position: LatLngTuple = [-7.95450378241118, 112.63217148198788]
 
 export default function LeafletMapControl({
+    initialMarkerPosition = position,
     cb
 }: {
+    initialMarkerPosition?: LatLngTuple;
     cb?: (e: any) => void;
 }) {
 
-    const [currentLatLng, setCurrentLatLng] = useState<LatLngTuple>(position);
+    const [currentLatLng, setCurrentLatLng] = useState<LatLngTuple>(initialMarkerPosition || position);
 
     const map = useMapEvents({
         click: (e) => {

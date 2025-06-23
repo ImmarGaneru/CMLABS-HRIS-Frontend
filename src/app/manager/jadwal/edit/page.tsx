@@ -5,18 +5,29 @@ import { Switch } from "@headlessui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
 import { GoogleMap } from "@react-google-maps/api";
+import Multiselect from "multiselect-react-dropdown";
+import LeafletMap from "@/components/LeafletMap";
 
 function JadwalBody() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id') || "";
-    const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting } = useAttendance();
+    const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting, fetchCompanyEmployees, companyEmployees } = useAttendance();
     const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
     const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
     const [checkClockSetting, setCheckClockSetting] = useState<CheckClockSetting | null>(null);
     const router = useRouter();
 
+    useState(() => {
+        fetchCompanyEmployees()
+    });
+
+
+    const [employeesOptions, setEmployeesOptions] = useState<{ id_user: string; name: string }[]>([]);
+    const [selectedEmployees, setSelectedEmployees] = useState<{ id_user: string; name: string }[]>([]);
+    const [selectedLatLng, setSelectedLatLng] = useState({} as { latlng: { lat: number; lng: number } } | null);
+
     // Fetch checkClockSetting when component mounts
-    useEffect(() => {
+    useState(() => {
         if (id) {
             fetchSingleCheckClockSetting(id)
                 .then((data) => {
@@ -27,7 +38,24 @@ function JadwalBody() {
                     console.error("Error fetching check clock setting:", error);
                 });
         }
-    }, [id, fetchSingleCheckClockSetting]);
+    });
+
+    useEffect(() => {
+        if (companyEmployees) {
+            const options = companyEmployees.map((employee) => ({
+                id_user: employee.user.id,
+                name: employee.first_name + " " + employee.last_name,
+            }));
+            setEmployeesOptions(options);
+
+            // Set selected employees based on existing checkClockSetting
+            if (checkClockSetting) {
+                const user_ids = (checkClockSetting.users ?? []).map((user) => user.id);
+                const selected = options.filter((option) => user_ids.includes(option.id_user));
+                setSelectedEmployees(selected);
+            }
+        }
+    }, [companyEmployees, checkClockSetting]);
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -43,8 +71,20 @@ function JadwalBody() {
                     </button>
                 </div>
 
+                {checkClockSetting == null ? (
+                    <div className="text-center text-gray-500">
+                        <h2>Loading...</h2>
+                    </div>
+                ) : <LeafletMap
+                    initialPosition={[checkClockSetting.location_lat || -7.95450378241118, checkClockSetting.location_lng || 112.63217148198788]}
+                    cb={
+                        (e) => {
+                            setSelectedLatLng(e);
+                        }
+                    } />}
+
                 {/* Input Nama Jadwal dan Tanggal */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
                     <div>
                         <label className="block font-medium mb-1">Nama Jadwal</label>
                         <input
@@ -56,11 +96,35 @@ function JadwalBody() {
                         />
                     </div>
                     <div>
+                        <label className="block font-medium mb-1">Radius</label>
+                        <input
+                            type="number"
+                            name="ck_setting_radius"
+                            defaultValue={checkClockSetting?.radius || ""}
+                            placeholder="Masukkan radius (dalam meter)"
+                            className="w-full border rounded px-3 py-2"
+                        />
+                    </div>
+                    <div>
                         <label className="block font-medium mb-1">Type</label>
                         <select className="w-full border rounded px-3 py-2" name="ck_setting_type" defaultValue={checkClockSetting?.type || "WFO"}>
                             <option value="WFO">WFO</option>
                             <option value="WFH">WFH</option>
                         </select>
+                    </div>
+                    <div>
+                        <label className="block font-medium mb-1">Employees</label>
+                        <Multiselect
+                            options={employeesOptions}
+                            selectedValues={selectedEmployees}
+                            onSelect={(selectedList, selectedItem) => {
+                                setSelectedEmployees(selectedList as { id_user: string; name: string }[]);
+                            }}
+                            onRemove={(selectedList, removedItem) => {
+                                setSelectedEmployees(selectedList as { id_user: string; name: string }[]);
+                            }}
+                            displayValue="name"
+                        />
                     </div>
                 </div>
 
@@ -141,6 +205,12 @@ function JadwalBody() {
                                     updated_at: new Date(),
                                     deleted_at: null,
                                     check_clock_setting_time: [],
+                                    location_lat: selectedLatLng ? selectedLatLng.latlng.lat : null,
+                                    location_lng: selectedLatLng ? selectedLatLng.latlng.lng : null,
+                                    radius: parseInt((document.querySelector(
+                                        'input[name="ck_setting_radius"]'
+                                    ) as HTMLInputElement).value) || null,
+                                    user_ids: selectedEmployees.map((employee) => employee.id_user),
                                 }
 
                                 const check_clock_setting_time: CheckClockSettingTime[] = checkClockSetting!.check_clock_setting_time.map((row, idx) => ({
