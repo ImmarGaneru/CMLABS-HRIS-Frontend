@@ -15,7 +15,11 @@ export interface CheckClockSetting {
     created_at: Date;
     updated_at: Date;
     deleted_at: null;
+    location_lat: number | null;
+    location_lng: number | null;
+    radius: number | null;
     check_clock_setting_time: CheckClockSettingTime[];
+    user_ids: string[];
 }
 
 export interface CheckClockSettingTime {
@@ -87,6 +91,7 @@ export interface Employee {
     end_date: null;
     tanggal_efektif: null;
     deleted_at: null;
+    user: User;
 }
 
 export interface Workplace {
@@ -105,6 +110,8 @@ interface AttendanceContext {
     employeeCheckClocks: CheckClock[];
     selfCheckClocks: CheckClock[];
     checkClockSettings: CheckClockSetting[];
+    companyEmployees: Employee[];
+    fetchCompanyEmployees: () => Promise<Employee[]>;
     fetchSelfCheckClockSetting: () => Promise<CheckClockSetting | null>;
     handleClockIn: (locationLatitude?: number, locationLongitude?: number) => Promise<void>;
     handleClockOut: (locationLatitude?: number, locationLongitude?: number) => Promise<void>;
@@ -122,6 +129,7 @@ interface AttendanceContext {
 const AttendanceContext = createContext<AttendanceContext | undefined>(undefined);
 
 export function AttendanceProvider({ children }: { children: React.ReactNode }) {
+    const [companyEmployees, setCompanyEmployees] = useState<Employee[]>([]);
     const [selfCheckClockSetting, setSelfCheckClockSetting] = useState<CheckClockSetting | null>(null);
     const [employeeCheckClocks, setEmployeeCheckClocks] = useState<CheckClock[]>([]);
     const [selfCheckClocks, setSelfCheckClocks] = useState<CheckClock[]>([]);
@@ -152,6 +160,17 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
         navigator.geolocation.getCurrentPosition(success, error, geoOptions);
     }
+
+    const fetchCompanyEmployees = async () => {
+        try {
+            const data = await request<Employee[]>(api.get("/admin/employees/comp-employees"));
+            setCompanyEmployees(data);
+            return data;
+        } catch (error) {
+            toast.error("Failed to fetch company employees.");
+            return [];
+        }
+    };
 
     const fetchSelfCheckClockSetting = async () => {
         try {
@@ -274,6 +293,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 checkClockSettings,
                 employeeCheckClocks,
                 selfCheckClocks,
+                companyEmployees,
+                fetchCompanyEmployees,
                 fetchSelfCheckClockSetting,
                 handleClockIn,
                 handleClockOut,

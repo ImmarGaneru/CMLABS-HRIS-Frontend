@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect } from "react";
 import { Switch } from "@headlessui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
+import { GoogleMap } from "@react-google-maps/api";
 
 function JadwalBody() {
     const searchParams = useSearchParams();

@@ -180,7 +180,7 @@ export default function AttendacePage() {
                         <SelectValue placeholder="Select Employee" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="${selfCheckClockSetting?.id}">
+                        <SelectItem value={`${selfCheckClockSetting?.id}`}>
                             {selfCheckClockSetting?.name || ""}
                         </SelectItem>
                     </SelectContent>
