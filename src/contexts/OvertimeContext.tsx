@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useEffect, useState, useContext, ReactNode } from "react";
+import React, {createContext, useEffect, useState, useContext, ReactNode, useCallback} from "react";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 
@@ -43,6 +43,22 @@ interface OvertimeFilters {
     employee_name?: string;
 }
 
+export interface OvertimeSettingRulePayload {
+    day_type: 'weekday' | 'weekend' | 'holiday';
+    start_hour: string;
+    end_hour: string;
+    rate_multiplier: number;
+    max_hour: number;
+    notes?: string;
+}
+
+export interface OvertimeSettingPayload {
+    name: string;
+    source: 'government' | 'company';
+    is_active?: boolean;
+    rules: OvertimeSettingRulePayload[];
+}
+
 interface OvertimeContextType {
     // State
     overtimeSettings: OvertimeSetting[];
@@ -50,8 +66,8 @@ interface OvertimeContextType {
     isLoading: boolean;
     // Functions
     fetchOvertimeSettings: () => Promise<void>;
-    createOvertimeSetting: (data: Omit<OvertimeSetting, 'id' | 'is_active'>) => Promise<void>;
-    updateOvertimeSetting: (id: string, data: OvertimeSetting) => Promise<void>;
+    createOvertimeSetting: (data: OvertimeSettingPayload) => Promise<void>;
+    updateOvertimeSetting: (id: string, data: OvertimeSettingPayload) => Promise<void>;
     deleteOvertimeSetting: (id: string) => Promise<void>;
     fetchOvertimes: (filters?: OvertimeFilters) => Promise<void>;
     createOvertime: (data: Omit<Overtime, 'id' | 'approved_by' | 'status' | 'employee' | 'setting' | 'approver'>) => Promise<void>;
@@ -68,7 +84,7 @@ export function OvertimeProvider({ children }: { children: ReactNode }) {
 
     // --- FUNGSI UNTUK OVERTIME SETTINGS ---
 
-    const fetchOvertimeSettings = async () => {
+    const fetchOvertimeSettings = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await api.get('/overtime-settings');
@@ -78,33 +94,31 @@ export function OvertimeProvider({ children }: { children: ReactNode }) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
-    const createOvertimeSetting = async (data: Omit<OvertimeSetting, 'id' | 'is_active'>) => {
+    const createOvertimeSetting = useCallback(async (data: OvertimeSettingPayload) => {
         try {
             const response = await api.post('/overtime-settings', data);
             toast.success("Pengaturan lembur berhasil dibuat.");
-            // Update state lokal daripada fetch ulang semua data
             setOvertimeSettings(prev => [...prev, response.data.data]);
         } catch (error) {
             toast.error("Gagal membuat pengaturan lembur.");
             console.error(error);
         }
-    };
+    }, []);
 
-    const updateOvertimeSetting = async (id: string, data: OvertimeSetting) => {
+    const updateOvertimeSetting = useCallback( async (id: string, data: OvertimeSettingPayload) => {
         try {
             const response = await api.put(`/overtime-settings/${id}`, data);
             toast.success("Pengaturan lembur berhasil diperbarui.");
-            // Update satu item di state lokal
             setOvertimeSettings(prev => prev.map(setting => setting.id === id ? response.data.data : setting));
         } catch (error) {
             toast.error("Gagal memperbarui pengaturan lembur.");
             console.error(error);
         }
-    };
+    }, []);
 
-    const deleteOvertimeSetting = async (id: string) => {
+    const deleteOvertimeSetting = useCallback( async (id: string) => {
         try {
             await api.delete(`/overtime-settings/${id}`);
             toast.success("Pengaturan lembur berhasil dihapus.");
@@ -113,11 +127,11 @@ export function OvertimeProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             toast.error("Gagal menghapus pengaturan lembur.");
         }
-    };
+    }, []);
 
     // --- FUNGSI UNTUK MANAJEMEN OVERTIME ---
 
-    const fetchOvertimes = async (filters: OvertimeFilters = {}) => {
+    const fetchOvertimes = useCallback( async (filters: OvertimeFilters = {}) => {
         setIsLoading(true);
         try {
             const response = await api.get('/overtimes', { params: filters });
@@ -127,9 +141,9 @@ export function OvertimeProvider({ children }: { children: ReactNode }) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
-    const createOvertime = async (data: Omit<Overtime, 'id' | 'approved_by' | 'status' | 'employee' | 'setting' | 'approver'>) => {
+    const createOvertime = useCallback( async (data: Omit<Overtime, 'id' | 'approved_by' | 'status' | 'employee' | 'setting' | 'approver'>) => {
         try {
             const response = await api.post('/overtimes', data);
             toast.success("Data lembur berhasil ditambahkan.");
@@ -144,9 +158,9 @@ export function OvertimeProvider({ children }: { children: ReactNode }) {
             }
             console.error(error);
         }
-    };
+    }, []);
 
-    const approveOvertime = async (id: string) => {
+    const approveOvertime = useCallback( async (id: string) => {
         try {
             const response = await api.patch(`/overtimes/${id}/approve`);
             toast.success("Lembur berhasil disetujui.");
@@ -154,9 +168,9 @@ export function OvertimeProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             toast.error("Gagal menyetujui lembur.");
         }
-    };
+    }, []);
 
-    const rejectOvertime = async (id: string) => {
+    const rejectOvertime = useCallback( async (id: string) => {
         try {
             const response = await api.patch(`/overtimes/${id}/reject`);
             toast.success("Lembur berhasil ditolak.");
@@ -164,14 +178,13 @@ export function OvertimeProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             toast.error("Gagal menolak lembur.");
         }
-    };
+    }, []);
 
     // --- EFEK UNTUK MENGAMBIL DATA AWAL ---
 
     useEffect(() => {
         fetchOvertimeSettings();
-        fetchOvertimes();
-    }, []);
+    }, [fetchOvertimeSettings]);
 
     // --- RETURN PROVIDER ---
 
