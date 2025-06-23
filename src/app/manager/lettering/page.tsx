@@ -33,6 +33,7 @@ type LetterFormat = {
 
 type Karyawan = {
   id: string;
+  id_user: string;
   first_name: string;
   last_name: string;
 };
@@ -159,18 +160,19 @@ export default function LetteringPage() {
           {/* Pegawai */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Kepada</label>
-            <Select onValueChange={(val) => setRecipient(val)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pilih Pegawai" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60 overflow-y-auto">
-                {employees.map((emp) => (
-                  <SelectItem key={emp.id} value={emp.id}>
-                    {emp.first_name} {emp.last_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <Select onValueChange={(val) => setRecipient(val)}>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Pilih Pegawai" />
+  </SelectTrigger>
+  <SelectContent className="max-h-60 overflow-y-auto">
+    {employees.map((emp) => (
+      <SelectItem key={emp.id_user} value={emp.id_user}>
+        {emp.first_name} {emp.last_name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
           </div>
 
           {/* Subjek */}
