@@ -42,16 +42,16 @@ export default function EmployeeCardSum({ employeesCard }: Props) {
     emp.tipe_kontrak?.toLowerCase().trim() === "kontrak"
   ).length;
 
-  // Karyawan Lepas: tipe_kontrak === "Lepas" && status === "Active"
+  // Karyawan Magang: tipe_kontrak === "magang" && status === "Active"
   const internEmployees = activeEmployees.filter((emp) => 
-    emp.tipe_kontrak?.toLowerCase().trim() === "lepas"
+    emp.tipe_kontrak?.toLowerCase().trim() === "magang"
   ).length;
 
   const infoData = [
     { label: "Periode", value: periode },
     { label: "Pegawai Tetap", value: `${permanentEmployees} Orang` },
     { label: "Karyawan Kontrak", value: `${contractEmployees} Orang` },
-    { label: "Karyawan Lepas", value: `${internEmployees} Orang` },
+    { label: "Karyawan Magang", value: `${internEmployees} Orang` },
   ];
 
   return (

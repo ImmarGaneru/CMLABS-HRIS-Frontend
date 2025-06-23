@@ -6,9 +6,11 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { FaCamera, FaEye, FaTrash } from "react-icons/fa";
 import axios from "axios";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getPositions } from "../../../../../utils/position";
+import { getDepartments } from "../../../../../utils/department";
 
 import {
   AlertDialog,
@@ -193,15 +195,15 @@ export default function EditKaryawan() {
   useEffect(() => {
     async function fetchPositions() {
       try {
-        const response = await api.get('/admin/positions');
-     const mapped = response.data.data.map((pos: any) => ({
-  id: pos.id.toString(),
-  name: pos.name,
-  gaji: Number(pos.gaji ?? 0),
-  uang_lembur: 0, // default atau sesuaikan jika ada
-  denda_terlambat: 0,
-  total_gaji: Number(pos.gaji ?? 0), // sementara disamakan dengan gaji
-}));
+        const response = await getPositions();
+        const mapped = response.data.map((pos: PositionResponse) => ({
+          id: pos.id.toString(),
+          name: pos.name,
+          gaji: pos.gaji ?? 0,
+          uang_lembur: pos.uang_lembur ?? 0,
+          denda_terlambat: pos.denda_terlambat ?? 0,
+          total_gaji: pos.total_gaji ?? 0,
+        }));
         setPositions(mapped);
       } catch (error) {
         console.error("Failed to fetch positions:", error);
@@ -331,7 +333,7 @@ export default function EditKaryawan() {
           tipe_kontrak: mappedData.tipe_kontrak,
           grade: "", // jika tidak ada di mappedData, bisa kosong
           jabatan: mappedData.jabatan,
-        id_position: mappedData.id_position.toString(),
+          id_position: mappedData.id_position,
           id_department: mappedData.id_department,
           department: mappedData.department,
           cabang: mappedData.cabang,
@@ -571,7 +573,7 @@ export default function EditKaryawan() {
 
       toast.success("Data berhasil diperbarui!");
       setTimeout(() => {
-        router.push("/manager/employee");
+        router.push("/employee");
       }, 1500);
     } catch (error: unknown) {
    if (axios.isAxiosError(error)) {
@@ -601,8 +603,19 @@ export default function EditKaryawan() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center w-full h-screen">
-        <LoadingSpinner size={48} />
+      <div className="flex justify-center items-center p-6 space-x-2">
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0s" }}
+        ></span>
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0.2s" }}
+        ></span>
+        <span
+          className="w-3 h-3 rounded-full bg-[#1E3A5F] animate-bounce"
+          style={{ animationDelay: "0.4s" }}
+        ></span>
       </div>
     );
   }
@@ -622,7 +635,7 @@ export default function EditKaryawan() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#141414]">Edit Karyawan</h1>
         <button
-          onClick={() => router.push("/manager/employee")}
+          onClick={() => router.push("/employee")}
           className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200"
         >
           <svg
@@ -877,11 +890,9 @@ export default function EditKaryawan() {
           </div>
 
           <div>
-           <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
-            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+            <h2 className="text-xl font-semibold text-[#141414] mb-4">
               Payroll
-            </h1>
-          </div>
+            </h2>
             <div className="space-y-4">
               <EditableField
                 label="Tanggal Efektif"
@@ -946,12 +957,9 @@ export default function EditKaryawan() {
 
         <div className="relative mb-24">
           <div className="w-full mt-10">
-   
-             <div className="col-span-2 border-b border-gray-300 pb-2">
-            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
-               📂 Dokumen Karyawan
-            </h1>
-          </div>
+            <h2 className="text-2xl font-semibold text-[#1e293b] mb-4 border-b pb-2">
+              📂 Dokumen Karyawan
+            </h2>
 
             {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
               <div className="w-full overflow-x-auto rounded-lg shadow-md mb-6">

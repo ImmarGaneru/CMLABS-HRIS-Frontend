@@ -14,6 +14,7 @@ interface Letter {
   id_user: string;
   id_letter_format: string;
   subject: string;
+  created_at?: string;
   user?: {
     email: string;  // ganti dari name ke email
   };
@@ -91,15 +92,15 @@ useEffect(() => {
   }, [letters, filterText]);
 
   const columns: ColumnDef<Letter>[] = [
-  {
-    accessorKey: "user.email",
-    header: "Email Manager",
-    cell: ({ row }) => (
-      <div className="text-center">
-        {row.original.user?.email ?? "Tidak ditemukan"}
-      </div>
-    ),
-  },
+  // {
+  //   accessorKey: "user.email",
+  //   header: "Email Manager",
+  //   cell: ({ row }) => (
+  //     <div className="text-center">
+  //       {row.original.user?.email ?? "Tidak ditemukan"}
+  //     </div>
+  //   ),
+  // },
   {
     accessorKey: "format.name",
     header: "Nama Surat",
@@ -118,6 +119,15 @@ useEffect(() => {
       </div>
     ),
   },
+  {
+  accessorKey: "created_at",
+  header: "Tanggal Kirim",
+  cell: ({ row }) => (
+    <div className="text-center">
+      {row.original.created_at ?? "-"}
+    </div>
+  ),
+},
  {
   id: "actions",
   header: "Aksi",
@@ -180,6 +190,7 @@ useEffect(() => {
       <p><strong>Judul:</strong> {selectedLetter.subject}</p>
       <p><strong>Email:</strong> {selectedLetter.user?.email}</p>
       <p><strong>Format Surat:</strong> {selectedLetter.format?.name}</p>
+      <p><strong>Dikirim pada:</strong> {selectedLetter.created_at}</p>
       <div className="mt-4 border-t pt-3">
         <div
           className="prose"
@@ -189,7 +200,7 @@ useEffect(() => {
       <div className="mt-6 text-right">
         <button
           onClick={() => setShowModal(false)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-4 py-2 bg-[#1E3A5F] text-white rounded hover:bg-[#155A8A]"
         >
           Tutup
         </button>

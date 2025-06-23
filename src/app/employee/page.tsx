@@ -1,18 +1,15 @@
-"use client";
+import {redirect} from "next/navigation";
 
 import { useRouter } from "next/navigation";
-import React, { useMemo, useState, useEffect, useRef } from "react";
 import { FEEmployee } from "@/types/employee";
 import * as XLSX from "xlsx";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import { RxAvatar } from "react-icons/rx";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
-import EmployeeCardSum from "./component_employee/employee_card_sum";
+// import EmployeeCardSum from "./component_employee/employee_card_sum";
 import DataTableHeader from "@/components/DatatableHeader";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -120,7 +117,7 @@ export default function EmployeeTablePage() {
             jenis_kelamin: emp.jenis_kelamin,
             phone_number: emp.user?.phone_number || "-",
             cabang: emp.cabang || "-",
-         jabatan: emp.position?.name ?? "-", // ✅ ini yang penting
+            jabatan: positionName,
             tipe_kontrak: emp.tipe_kontrak,
             status: emp.employment_status,
             Email: emp.user?.email || "-",
@@ -149,19 +146,32 @@ export default function EmployeeTablePage() {
         const res = await api.get("/admin/employees/comp-employees");
         
         // Fetch position details for each employee
-    const feData = res.data.data.map((emp: Employee) => ({
-  id: emp.id,
-  id_user: emp.id_user,
-  nama: `${emp.first_name} ${emp.last_name}`,
-  jenis_kelamin: emp.jenis_kelamin,
-  phone_number: emp.user?.phone_number || "-",
-  cabang: emp.cabang || "-",
-  tipe_kontrak: emp.tipe_kontrak,
-  jabatan: emp.position?.name ?? "-", // GANTI DI SINI ✅
-  status: emp.employment_status,
-  Email: emp.user?.email || "-",
+        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
+          let positionName = "-";
+          if (emp.id_position) {
+            try {
+              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
+              if (positionRes.data.meta.success) {
+                positionName = positionRes.data.data.name;
+              }
+            } catch (err) {
+              console.error(`Error fetching position for employee ${emp.id}:`, err);
+            }
+          }
 
-}));
+          return {
+            id: emp.id,
+            id_user: emp.id_user,
+            nama: `${emp.first_name} ${emp.last_name}`,
+            jenis_kelamin: emp.jenis_kelamin,
+            phone_number: emp.user?.phone_number || "-",
+            cabang: emp.cabang || "-",
+            tipe_kontrak: emp.tipe_kontrak,
+            jabatan: positionName,
+            status: emp.employment_status,
+            Email: emp.user?.email || "-",
+          };
+        }));
 
         setEmployees(feData);
       } catch (err: unknown) {
@@ -257,7 +267,7 @@ export default function EmployeeTablePage() {
         ),
         size: 100,
       },
-     {
+      {
         accessorKey: "jabatan",
         header: "Jabatan",
         cell: (info) => (
@@ -319,14 +329,14 @@ export default function EmployeeTablePage() {
             <div className="flex gap-2 justify-center w-[120px]">
               <button
                 title="Detail"
-                onClick={() => router.push(`/manager/employee/detail/${data.id}`)}
+                onClick={() => router.push(`/employee/detail/${data.id}`)}
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEye />
               </button>
               <button
                 title="Edit"
-                onClick={() => router.push(`/manager/employee/edit/${data.id}`)}
+                onClick={() => router.push(`/employee/edit/${data.id}`)}
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEdit />
@@ -486,8 +496,8 @@ export default function EmployeeTablePage() {
   }, [employees, filterText, filterGender, filterStatus]);
 
   return (
-    <div className="flex flex-col px-4 py-6 gap-6 w-full h-fit">
-      <EmployeeCardSum employeesCard={employees} />
+    <div className="px-4 py-6 min-h-screen flex flex-col gap-4">
+      {/* <EmployeeCardSum employeesCard={employees} /> */}
 
       <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">
@@ -510,15 +520,13 @@ export default function EmployeeTablePage() {
             onSecondFilterChange={setFilterStatus}
             filterOptions={employeeFilters}
             secondFilterOptions={statusFilters}
-            onAdd={() => router.push("/manager/employee/tambah")}
+            onAdd={() => router.push("/employee/tambah")}
             importInputRef={fileInputRef}
             onExport={() => handleExportCSV(employees)}
             onImport={handleImportCSV}
             emptyContent={
               loading ? (
-                  <div className="flex justify-center items-center w-full h-screen">
-                    <LoadingSpinner size={48} />
-                  </div>
+                <div className="text-center py-4">Loading...</div>
               ) : (
                 <div className="text-center py-4 text-gray-500">
                   Employee not found
