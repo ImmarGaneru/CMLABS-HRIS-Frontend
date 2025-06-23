@@ -120,7 +120,7 @@ export default function EmployeeTablePage() {
             jenis_kelamin: emp.jenis_kelamin,
             phone_number: emp.user?.phone_number || "-",
             cabang: emp.cabang || "-",
-            jabatan: positionName,
+         jabatan: emp.position?.name ?? "-", // ✅ ini yang penting
             tipe_kontrak: emp.tipe_kontrak,
             status: emp.employment_status,
             Email: emp.user?.email || "-",
@@ -149,32 +149,19 @@ export default function EmployeeTablePage() {
         const res = await api.get("/admin/employees/comp-employees");
         
         // Fetch position details for each employee
-        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
-          let positionName = "-";
-          if (emp.id_position) {
-            try {
-              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
-              if (positionRes.data.meta.success) {
-                positionName = positionRes.data.data.name;
-              }
-            } catch (err) {
-              console.error(`Error fetching position for employee ${emp.id}:`, err);
-            }
-          }
+    const feData = res.data.data.map((emp: Employee) => ({
+  id: emp.id,
+  id_user: emp.id_user,
+  nama: `${emp.first_name} ${emp.last_name}`,
+  jenis_kelamin: emp.jenis_kelamin,
+  phone_number: emp.user?.phone_number || "-",
+  cabang: emp.cabang || "-",
+  tipe_kontrak: emp.tipe_kontrak,
+  jabatan: emp.position?.name ?? "-", // GANTI DI SINI ✅
+  status: emp.employment_status,
+  Email: emp.user?.email || "-",
 
-          return {
-            id: emp.id,
-            id_user: emp.id_user,
-            nama: `${emp.first_name} ${emp.last_name}`,
-            jenis_kelamin: emp.jenis_kelamin,
-            phone_number: emp.user?.phone_number || "-",
-            cabang: emp.cabang || "-",
-            tipe_kontrak: emp.tipe_kontrak,
-            jabatan: positionName,
-            status: emp.employment_status,
-            Email: emp.user?.email || "-",
-          };
-        }));
+}));
 
         setEmployees(feData);
       } catch (err: unknown) {
@@ -270,7 +257,7 @@ export default function EmployeeTablePage() {
         ),
         size: 100,
       },
-      {
+     {
         accessorKey: "jabatan",
         header: "Jabatan",
         cell: (info) => (
