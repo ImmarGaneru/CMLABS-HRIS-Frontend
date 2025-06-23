@@ -9,11 +9,12 @@ import { useAttendance, CheckClockSetting, CheckClock, CheckClockSettingTime } f
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast, Toaster } from "sonner";
 
 
 
 export default function AttendacePage() {
-    const { selfCheckClockSetting, selfCheckClocks, handleClockIn, handleClockOut, handleBreakStart, handleBreakEnd } = useAttendance();
+    const { selfCheckClockSetting, selfCheckClocks, handleClockIn, handleClockOut } = useAttendance();
     const router = useRouter();
     const [filterText, setFilterText] = useState("");
     const [filterTipeKehadiran, setFilterTipeKehadiran] = useState("");
@@ -99,6 +100,7 @@ export default function AttendacePage() {
         ], []
     )
 
+
     // Filter data based on search text, status and type
     const filteredData = useMemo(() => {
         if (!filterText) {
@@ -116,30 +118,61 @@ export default function AttendacePage() {
         {
             'name': "Clock In",
             'action': () => {
-                handleClockIn();
-            }
-        },
-        {
-            'name': "Break Start",
-            'action': () => {
-                handleBreakStart();
-            }
-        },
-        {
-            'name': "Break End",
-            'action': () => {
-                handleBreakEnd();
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0,
+                };
+
+                function success(pos: any) {
+                    const crd = pos.coords;
+
+                    handleClockIn(crd.latitude, crd.longitude);
+
+                    console.log("Your current position is:");
+                    console.log(`Latitude : ${crd.latitude}`);
+                    console.log(`Longitude: ${crd.longitude}`);
+                    console.log(`More or less ${crd.accuracy} meters.`);
+                }
+
+                function error(err: any) {
+                    console.warn(`ERROR(${err.code}): ${err.message}`);
+                }
+
+                navigator.geolocation.getCurrentPosition(success, error, options);
             }
         },
         {
             'name': "Clock Out",
             'action': () => {
-                handleClockOut();
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0,
+                };
+
+                function success(pos: any) {
+                    const crd = pos.coords;
+
+                    handleClockOut(crd.latitude, crd.longitude);
+
+                    console.log("Your current position is:");
+                    console.log(`Latitude : ${crd.latitude}`);
+                    console.log(`Longitude: ${crd.longitude}`);
+                    console.log(`More or less ${crd.accuracy} meters.`);
+                }
+
+                function error(err: any) {
+                    console.warn(`ERROR(${err.code}): ${err.message}`);
+                }
+
+                navigator.geolocation.getCurrentPosition(success, error, options);
             }
         }
     ]
     return (
         <main className="px-2 py-4 min-h-screen flex flex-col gap-4">
+            <Toaster />
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
                 <Select
                     defaultValue="${selfCheckClockSetting?.id}">
@@ -152,7 +185,7 @@ export default function AttendacePage() {
                         </SelectItem>
                     </SelectContent>
                 </Select>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-6">
                     {actions.map((action) => (
                         <Button
                             key={action.name}
