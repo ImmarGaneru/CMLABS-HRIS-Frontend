@@ -110,7 +110,7 @@ interface AttendanceContext {
     selfCheckClockSetting: CheckClockSetting | null;
     employeeCheckClocks: CheckClock[];
     selfCheckClocks: CheckClock[];
-    checkClockSettings: CheckClockSetting[];
+    checkClockSettings?: CheckClockSetting[] | null;
     companyEmployees: Employee[];
     fetchCompanyEmployees: () => Promise<Employee[]>;
     fetchSelfCheckClockSetting: () => Promise<CheckClockSetting | null>;
@@ -134,7 +134,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const [selfCheckClockSetting, setSelfCheckClockSetting] = useState<CheckClockSetting | null>(null);
     const [employeeCheckClocks, setEmployeeCheckClocks] = useState<CheckClock[]>([]);
     const [selfCheckClocks, setSelfCheckClocks] = useState<CheckClock[]>([]);
-    const [checkClockSettings, setAttendance] = useState<CheckClockSetting[]>([]);
+    const [checkClockSettings, setCheckClockSetting] = useState<CheckClockSetting[] | null>(null);
     const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -215,7 +215,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const fetchCheckClockSettings = async () => {
         try {
             const data = await request<CheckClockSetting[]>(api.get("/admin/attendance/check-clock-setting"));
-            setAttendance(data);
+            setCheckClockSetting(data);
         } catch (error) {
             toast.error("Failed to fetch attendance data.");
         }

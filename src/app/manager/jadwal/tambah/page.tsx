@@ -7,6 +7,7 @@ import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/conte
 import LeafletMap from "../../../../components/LeafletMap";
 import { object } from "zod";
 import Multiselect from "multiselect-react-dropdown";
+import OverlaySpinner from "@/components/OverlaySpinner";
 
 export default function Jadwal(this: any) {
   const { completeNewCheckClockSetting, fetchCompanyEmployees, companyEmployees } = useAttendance();
@@ -28,14 +29,22 @@ export default function Jadwal(this: any) {
     }))
   );
 
-  useState(() => {
+  useEffect(() => {
     fetchCompanyEmployees()
-  });
+  }, []);
 
+  const shouldLoading = () => {
+    return isLoading;
+  }
+
+  const [isLoading, setIsLoading] = useState(false);
   const [employeesOptions, setEmployeesOptions] = useState<{ id_user: string; name: string }[]>([]);
   const [selectedEmployees, setSelectedEmployees] = useState<{ id_user: string; name: string }[]>([]);
   const [selectedLatLng, setSelectedLatLng] = useState({} as { latlng: { lat: number; lng: number } } | null);
 
+  useEffect(() => {
+    setSelectedLatLng({ latlng: { lat: -7.95450378241118, lng: 112.63217148198788 } });
+  }, []);
 
   useEffect(() => {
     if (companyEmployees) {
@@ -51,6 +60,7 @@ export default function Jadwal(this: any) {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
+      <OverlaySpinner isLoading={shouldLoading()} />
       {/* Form Tambah Jadwal */}
       <div className="bg-white p-6 rounded-xl shadow">
         <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
@@ -63,11 +73,12 @@ export default function Jadwal(this: any) {
           </button>
         </div>
 
-        <LeafletMap cb={
-          (e) => {
-            setSelectedLatLng(e);
-          }
-        } />
+        <LeafletMap
+          cb={
+            (e) => {
+              setSelectedLatLng(e);
+            }
+          } />
 
         {/* Input Nama Jadwal dan Tanggal */}
         <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
@@ -93,7 +104,8 @@ export default function Jadwal(this: any) {
             <label className="block font-medium mb-1">Type</label>
             <select className="w-full border rounded px-3 py-2" name="ck_setting_type">
               <option value="WFO">WFO</option>
-              <option value="WFH">WFH</option>
+              <option value="WFA">WFA</option>
+              <option value="Hybrid">Hybrid</option>
             </select>
           </div>
           <div>
@@ -175,6 +187,7 @@ export default function Jadwal(this: any) {
           </button>
           <button
             onClick={() => {
+              setIsLoading(true);
               const newCKSetting: CheckClockSetting = {
                 id: "",
                 id_company: "",
@@ -223,6 +236,7 @@ export default function Jadwal(this: any) {
                 .catch((error) => {
                   console.error("Error saving schedule:", error);
                 });
+              setIsLoading(false);
             }
             }
             className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer">

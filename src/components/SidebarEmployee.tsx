@@ -39,11 +39,6 @@ const sidebarNavItems = [
         icon: Clock,
     },
     {
-        title: "Jadwal",
-        url: "/employee/jadwal",
-        icon: CalendarDays,
-    },
-    {
         title: "Approval",
         url: "/employee/approval",
         icon: ClipboardCheck,
@@ -87,7 +82,7 @@ export function SidebarEmployee() {
                                             )}
                                             replace
                                         >
-                                            <item.icon className="mr-2 h-4 w-4"/>
+                                            <item.icon className="mr-2 h-4 w-4" />
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
@@ -105,15 +100,15 @@ export function SidebarEmployee() {
                         pathname === "/settings" ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
                     )}
                 >
-                    <Settings className="mr-2 h-4 w-4"/>
+                    <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                 </Link>
                 <Button
                     variant="ghost"
                     className="w-full justify-start"
-                    onClick={() => {router.push("/")}}
+                    onClick={() => { router.push("/") }}
                 >
-                    <LogOut className="mr-2 h-4 w-4"/>
+                    <LogOut className="mr-2 h-4 w-4" />
                     Log out
                 </Button>
             </SidebarFooter>

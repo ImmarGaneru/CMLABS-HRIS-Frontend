@@ -1,26 +1,32 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/Datatable";
 import DataTableHeader from "@/components/DatatableHeader";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import { useAttendance, CheckClockSetting } from "@/contexts/AttendanceContext";
+import { Overlay } from "@radix-ui/react-dialog";
+import OverlaySpinner from "@/components/OverlaySpinner";
 
 export default function JadwalTablePage() {
   const { checkClockSettings, deleteCheckClockSetting } = useAttendance();
   const router = useRouter();
   const [filterText, setFilterText] = useState("");
   const [filterType, setFilterTipeJadwal] = useState("");
-  const [filterTanggal] = useState("");
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedSetting, setSelectedSchedule] = useState<CheckClockSetting | null>(null);
 
   const jadwalFilters = [
     { label: 'WFO', value: 'WFO' },
-    { label: 'WFH', value: 'WFH' }
+    { label: 'WFA', value: 'WFA' },
+    { label: 'Hybrid', value: 'Hybrid' },
   ];
+
+  const shouldLoading = () => {
+    return checkClockSettings === null;
+  }
 
   //Kolom untuk Tabel jadwal
   const jadwalColumns = useMemo<ColumnDef<CheckClockSetting>[]>(
@@ -167,7 +173,7 @@ export default function JadwalTablePage() {
     if (!filterText && !filterType) {
       return checkClockSettings;
     }
-    return checkClockSettings.filter((item) => {
+    return (checkClockSettings ?? []).filter((item) => {
       const matchesText = item.name.toLowerCase().includes(filterText.toLowerCase());
       const matchesType = filterType ? item.type === filterType : true;
       // const matchesDate = filterTanggal ? item.tanggalEfektif === filterTanggal : true; // Uncomment if date filtering is implemented
@@ -177,6 +183,7 @@ export default function JadwalTablePage() {
   //RETURN CLASS MAIN FUNCTION== 
   return (
     <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
+      <OverlaySpinner isLoading={shouldLoading()} />
       {/* Second Section: Schedule Information */}
       <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
         <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
@@ -203,7 +210,7 @@ export default function JadwalTablePage() {
           />
 
           {/* Data Tabel Isi Jadwal */}
-          <DataTable columns={jadwalColumns} data={filteredData} />
+          <DataTable columns={jadwalColumns} data={filteredData ?? []} />
 
         </div>
       </div>

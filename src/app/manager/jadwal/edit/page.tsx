@@ -7,27 +7,17 @@ import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/conte
 import { GoogleMap } from "@react-google-maps/api";
 import Multiselect from "multiselect-react-dropdown";
 import LeafletMap from "@/components/LeafletMap";
+import OverlaySpinner from "@/components/OverlaySpinner";
 
 function JadwalBody() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id') || "";
     const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting, fetchCompanyEmployees, companyEmployees } = useAttendance();
-    const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
-    const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
     const [checkClockSetting, setCheckClockSetting] = useState<CheckClockSetting | null>(null);
     const router = useRouter();
 
-    useState(() => {
+    useEffect(() => {
         fetchCompanyEmployees()
-    });
-
-
-    const [employeesOptions, setEmployeesOptions] = useState<{ id_user: string; name: string }[]>([]);
-    const [selectedEmployees, setSelectedEmployees] = useState<{ id_user: string; name: string }[]>([]);
-    const [selectedLatLng, setSelectedLatLng] = useState({} as { latlng: { lat: number; lng: number } } | null);
-
-    // Fetch checkClockSetting when component mounts
-    useState(() => {
         if (id) {
             fetchSingleCheckClockSetting(id)
                 .then((data) => {
@@ -38,10 +28,20 @@ function JadwalBody() {
                     console.error("Error fetching check clock setting:", error);
                 });
         }
-    });
+    }, []);
 
+    const shouldLoading = () => {
+        return checkClockSetting === null || companyEmployees.length === 0 || isLoading;
+    }
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [employeesOptions, setEmployeesOptions] = useState<{ id_user: string; name: string }[]>([]);
+    const [selectedEmployees, setSelectedEmployees] = useState<{ id_user: string; name: string }[]>([]);
+    const [selectedLatLng, setSelectedLatLng] = useState({} as { latlng: { lat: number; lng: number } } | null);
+
+    // Fetch checkClockSetting when component mounts
     useEffect(() => {
-        if (companyEmployees) {
+        if (companyEmployees.length > 0 && checkClockSetting !== null) {
             const options = companyEmployees.map((employee) => ({
                 id_user: employee.user.id,
                 name: employee.first_name + " " + employee.last_name,
@@ -49,16 +49,22 @@ function JadwalBody() {
             setEmployeesOptions(options);
 
             // Set selected employees based on existing checkClockSetting
-            if (checkClockSetting) {
-                const user_ids = (checkClockSetting.users ?? []).map((user) => user.id);
-                const selected = options.filter((option) => user_ids.includes(option.id_user));
-                setSelectedEmployees(selected);
-            }
+            const user_ids = (checkClockSetting.users ?? []).map((user) => user.id);
+            const selected = options.filter((option) => user_ids.includes(option.id_user));
+            setSelectedEmployees(selected);
+            setSelectedLatLng({
+                latlng: {
+                    lat: checkClockSetting.location_lat || -7.95450378241118,
+                    lng: checkClockSetting.location_lng || 112.63217148198788,
+                }
+            });
         }
+
     }, [companyEmployees, checkClockSetting]);
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
+            <OverlaySpinner isLoading={shouldLoading()} />
             {/* Form Tambah Jadwal */}
             <div className="bg-white p-6 rounded-xl shadow">
                 <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
@@ -109,7 +115,8 @@ function JadwalBody() {
                         <label className="block font-medium mb-1">Type</label>
                         <select className="w-full border rounded px-3 py-2" name="ck_setting_type" defaultValue={checkClockSetting?.type || "WFO"}>
                             <option value="WFO">WFO</option>
-                            <option value="WFH">WFH</option>
+                            <option value="WFA">WFA</option>
+                            <option value="Hybrid">Hybrid</option>
                         </select>
                     </div>
                     <div>
@@ -191,6 +198,7 @@ function JadwalBody() {
                     </button>
                     <button
                         onClick={() => {
+                            setIsLoading(true);
                             if (checkClockSetting?.id) {
                                 const updatedCKSetting: CheckClockSetting = {
                                     id: "",
@@ -205,8 +213,8 @@ function JadwalBody() {
                                     updated_at: new Date(),
                                     deleted_at: null,
                                     check_clock_setting_time: [],
-                                    location_lat: selectedLatLng ? selectedLatLng.latlng.lat : null,
-                                    location_lng: selectedLatLng ? selectedLatLng.latlng.lng : null,
+                                    location_lat: selectedLatLng ? selectedLatLng.latlng.lat : checkClockSetting.location_lat,
+                                    location_lng: selectedLatLng ? selectedLatLng.latlng.lng : checkClockSetting.location_lng,
                                     radius: parseInt((document.querySelector(
                                         'input[name="ck_setting_radius"]'
                                     ) as HTMLInputElement).value) || null,
@@ -239,6 +247,8 @@ function JadwalBody() {
                                     .then(() => router.push("/manager/jadwal"))
                                     .catch((error) => {
                                         console.error("Error saving schedule:", error);
+
+                                        setIsLoading(false);
                                     });
                             }
                         }}

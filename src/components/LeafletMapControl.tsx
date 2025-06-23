@@ -4,7 +4,7 @@
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import type { LatLngTuple } from 'leaflet'
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const position: LatLngTuple = [-7.95450378241118, 112.63217148198788]
 
