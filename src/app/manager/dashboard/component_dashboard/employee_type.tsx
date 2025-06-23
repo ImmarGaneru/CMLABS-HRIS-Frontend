@@ -24,13 +24,8 @@ export default function EmployeeType() {
   };
 
   const getColor = (label: string): string => {
-    const colorMap = {
-      'Tetap': '#1E3A5F',
-      'Kontrak': '#7CA5BF',
-      'Lepas': '#BA3C54'
-    };
-
-    return colorMap[label as keyof typeof colorMap] || '#ccc';
+    if (label === 'Lepas') return '#BA3C54';
+    return '#1E3A5F';
   };
 
   useEffect(() => {
@@ -132,15 +127,15 @@ export default function EmployeeType() {
               <BarChart
                   data={chartData}
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+                  margin={{ top: 5, right: 30, left: -40, bottom: 5 }}
               >
                 <XAxis type="number" />
                 <YAxis type="category" dataKey="label" width={100} />
                 <Tooltip />
-                <Bar dataKey="total">
-                  {chartData.map((entry, index) => (
+                <Bar dataKey="total" radius={[0,40,40,0]}>
+                  {chartData.map((entry) => (
                       <Cell
-                          key={`cell-${index}`}
+                          key={`cell-${entry.label}`}
                           fill={getColor(entry.label)}
                       />
                   ))}

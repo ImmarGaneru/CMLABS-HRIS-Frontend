@@ -73,10 +73,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="clock-status">
-                    <ClockStatus/>
-                </div>
+            <div className="grid grid-cols-1">
                 <div className="department-distribution">
                     <DepartmentDistribution/>
                 </div>
