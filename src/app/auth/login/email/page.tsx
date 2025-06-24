@@ -37,21 +37,23 @@ export default function LoginEmailPage() {
           localStorage.setItem("token", token);
 
           if (result.data.user) {
+            // ⬇️ Tambahkan log di sini
+      console.log("User object:", result.data.user);
             localStorage.setItem("user", JSON.stringify(result.data.user));
           }
 
-          alert("Login berhasil!");
-          // Tambahkan bagian ini:
- const user = result.data.user;
- const role = user?.role;
+          if (result.data.user) {
+  const user = result.data.user;
+  localStorage.setItem("user", JSON.stringify({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    is_admin: user.is_admin, // <- pastikan ini ikut
+  }));
+}
 
- if (role === "admin") {
-   router.push("/manager/dashboard");
- } else if (role === "employee") {
-   router.push("/employee/dashboard");
- } else {
-   router.push("/auth/login/email");
- }
+          alert("Login berhasil!");
+          router.push("/manager/dashboard");
         } else {
           throw new Error("Token tidak ditemukan dalam response.");
         }
