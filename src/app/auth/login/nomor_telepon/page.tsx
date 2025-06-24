@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/axios";
 
-export default function LoginIdKaryawanPage() {
+export default function LoginNomorTeleponPage() {
   const router = useRouter();
 
   const [phoneNumber, setPhoneNumber] = useState("");
