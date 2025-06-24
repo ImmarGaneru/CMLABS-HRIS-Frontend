@@ -23,13 +23,8 @@ export default function EmployeeStat() {
   };
 
   const getColor = (label: string): string => {
-    const colorMap = {
-      'Aktif': '#1E3A5F',
-      'Baru': '#7CA5BF',
-      'Tidak Aktif': '#BA3C54'
-    };
-
-    return colorMap[label as keyof typeof colorMap] || '#ccc';
+    if (label === 'Tidak Aktif') return '#BA3C54';
+    return '#1E3A5F';
   }
 
   useEffect(() => {
@@ -129,7 +124,7 @@ export default function EmployeeStat() {
             <XAxis dataKey="label" />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="total">
+            <Bar dataKey="total" radius={[40, 40, 0, 0]}>
               {chartData.map((entry, index) => (
                   <Cell
                       key={`cell-${index}`}

@@ -67,7 +67,7 @@ export default function Jadwal(this: any) {
         <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
           <h1 className="text-xl font-bold text-[#1E3A5F]">Tambah Jadwal</h1>
           <button
-            onClick={() => router.push("/jadwal")}
+            onClick={() => router.push("/manager/jadwal")}
             className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
           >
             Kembali
