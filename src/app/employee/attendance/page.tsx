@@ -4,16 +4,17 @@ import DataTableHeader from "@/components/DatatableHeader"
 import { DataTable } from "@/components/Datatable"
 import { JSX, useMemo, useState } from "react"
 import { ColumnDef } from "@tanstack/react-table"
-import { FaEdit, FaEye } from "react-icons/fa";
 import { useAttendance, CheckClockSetting, CheckClock, CheckClockSettingTime } from "@/contexts/AttendanceContext";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast, Toaster } from "sonner";
+import { Toaster } from "sonner";
 import OverlaySpinner from "@/components/OverlaySpinner";
 import LeafletMap from "@/components/LeafletMap";
 import { Circle, CircleMarker, Marker, Popup, Tooltip } from "react-leaflet";
 import { LatLngTuple } from "leaflet";
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 
 
@@ -257,12 +258,115 @@ export default function AttendacePage() {
             }
         }
     ]
+
     return (
         <main className="px-2 py-4 min-h-screen flex flex-col gap-4">
             <OverlaySpinner isLoading={shouldLoading()} />
             <Toaster />
             <div className="bg-[#f8f8f8] rounded-xl p-8 shadow-md mt-6">
-                {leafletMap()}
+                <Accordion elevation={0}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon style={{ color: 'white' }} />}
+                        aria-controls="panel1-content"
+                        id="panel1-header" style={{ backgroundColor: '#1e3a5f', color: 'white' }} >
+                        <h2 className="text-lg">
+                            {selfCheckClockSetting ? selfCheckClockSetting.name : "Check Clock Setting"}
+                        </h2>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+                            <div>
+                                <label className="block font-medium mb-1">Nama Jadwal</label>
+                                <input
+                                    type="text"
+                                    name="ck_setting_name"
+                                    defaultValue={selfCheckClockSetting?.name || ""}
+                                    placeholder="Masukkan nama jadwal"
+                                    className="w-full border rounded px-3 py-2"
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block font-medium mb-1">Radius</label>
+                                <input
+                                    type="number"
+                                    name="ck_setting_radius"
+                                    defaultValue={selfCheckClockSetting?.radius || ""}
+                                    placeholder="Masukkan radius (dalam meter)"
+                                    className="w-full border rounded px-3 py-2"
+                                    disabled
+                                />
+                            </div>
+                            <div>
+                                <label className="block font-medium mb-1">Type</label>
+                                <select className="w-full border rounded px-3 py-2" name="ck_setting_type" defaultValue={selfCheckClockSetting?.type || "WFO"} disabled>
+                                    <option value="WFO">WFO</option>
+                                    <option value="WFA">WFA</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        {/* Tabel Jadwal */}
+                        <div className="overflow-x-auto border rounded mb-6">
+                            <table className="min-w-full text-sm text-left">
+                                <thead className="bg-gray-100 text-gray-700 font-semibold">
+                                    <tr>
+                                        <th className="px-4 py-2">Hari</th>
+                                        <th className="px-4 py-2">Clock In</th>
+                                        <th className="px-4 py-2">Break Start</th>
+                                        <th className="px-4 py-2">Break End</th>
+                                        <th className="px-4 py-2">Clock Out</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {selfCheckClockSetting?.check_clock_setting_time.map((row, idx) => (
+                                        <tr key={idx} className="border-t">
+                                            <td className="px-4 py-2">{row.day}</td>
+                                            <td className="px-4 py-2">
+                                                <input
+                                                    type="time"
+                                                    name={`ck_setting_clock_in_${idx}`}
+                                                    defaultValue={row.clock_in.split(":").slice(0, 2).join(":")}
+                                                    className="border rounded px-2 py-1 w-full"
+                                                    disabled
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                <input
+                                                    type="time"
+                                                    name={`ck_setting_break_start_${idx}`}
+                                                    defaultValue={row.break_start.split(":").slice(0, 2).join(":")}
+                                                    className="border rounded px-2 py-1 w-full"
+                                                    disabled
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                <input
+                                                    type="time"
+                                                    name={`ck_setting_break_end_${idx}`}
+                                                    defaultValue={row.break_end.split(":").slice(0, 2).join(":")}
+                                                    className="border rounded px-2 py-1 w-full"
+                                                    disabled
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2 ">
+                                                <input
+                                                    type="time"
+                                                    name={`ck_setting_clock_out_${idx}`}
+                                                    defaultValue={row.clock_out.split(":").slice(0, 2).join(":")}
+                                                    className="border rounded px-2 py-1 w-full"
+                                                    disabled
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        {leafletMap()}
+                    </AccordionDetails>
+                </Accordion>
                 <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-6">
                     {actions.map((action) => (
                         <Button
@@ -292,6 +396,6 @@ export default function AttendacePage() {
 
             </div>
 
-        </main>
+        </main >
     )
 }
