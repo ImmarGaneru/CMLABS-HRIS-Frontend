@@ -16,7 +16,7 @@ export default function OverlaySpinner({
 
     return (
         <div
-            className={`fixed inset-0 flex items-center justify-center bg-gray-900 opacity-50 z-1 ${className}`}
+            className={`fixed inset-0 flex items-center justify-center bg-gray-900 opacity-50 z-5 ${className}`}
             style={{ display: isLoading ? 'flex' : 'none' }}
         >
             <LoadingSpinner className="w-16 h-16 text-white animate-spin" />

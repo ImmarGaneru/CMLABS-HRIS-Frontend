@@ -8,6 +8,7 @@ import { GoogleMap } from "@react-google-maps/api";
 import Multiselect from "multiselect-react-dropdown";
 import LeafletMap from "@/components/LeafletMap";
 import OverlaySpinner from "@/components/OverlaySpinner";
+import LeafletMapControl from "@/components/LeafletMapControl";
 
 function JadwalBody() {
     const searchParams = useSearchParams();
@@ -82,12 +83,12 @@ function JadwalBody() {
                         <h2>Loading...</h2>
                     </div>
                 ) : <LeafletMap
-                    initialPosition={[checkClockSetting.location_lat || -7.95450378241118, checkClockSetting.location_lng || 112.63217148198788]}
-                    cb={
+                    initialPosition={[checkClockSetting.location_lat || -7.95450378241118, checkClockSetting.location_lng || 112.63217148198788]}>
+                    <LeafletMapControl initialMarkerPosition={[checkClockSetting.location_lat || -7.95450378241118, checkClockSetting.location_lng || 112.63217148198788]} cb={
                         (e) => {
                             setSelectedLatLng(e);
-                        }
-                    } />}
+                        }} />
+                </LeafletMap>}
 
                 {/* Input Nama Jadwal dan Tanggal */}
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">

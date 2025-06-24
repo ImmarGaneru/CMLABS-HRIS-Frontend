@@ -9,18 +9,18 @@ const position: LatLngTuple = [-7.95450378241118, 112.63217148198788]
 
 export default function LeafletMap({
     initialPosition,
-    cb
+    children
 }: {
     initialPosition?: LatLngTuple;
-    cb?: (e: any) => void;
+    children?: React.ReactNode;
 }) {
     if (typeof window === 'undefined') {
         return null;
     } else {
         return (
 
-            <MapContainer center={initialPosition || position} zoom={13} scrollWheelZoom={true}>
-                <LeafletMapControl initialMarkerPosition={initialPosition || position} cb={cb} />
+            <MapContainer center={initialPosition || position} zoom={7} scrollWheelZoom={true}>
+                {children}
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

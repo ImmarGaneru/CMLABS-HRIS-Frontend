@@ -8,6 +8,7 @@ import LeafletMap from "../../../../components/LeafletMap";
 import { object } from "zod";
 import Multiselect from "multiselect-react-dropdown";
 import OverlaySpinner from "@/components/OverlaySpinner";
+import LeafletMapControl from "@/components/LeafletMapControl";
 
 export default function Jadwal(this: any) {
   const { completeNewCheckClockSetting, fetchCompanyEmployees, companyEmployees } = useAttendance();
@@ -73,12 +74,12 @@ export default function Jadwal(this: any) {
           </button>
         </div>
 
-        <LeafletMap
-          cb={
+        <LeafletMap>
+          <LeafletMapControl cb={
             (e) => {
               setSelectedLatLng(e);
-            }
-          } />
+            }} />
+        </LeafletMap>
 
         {/* Input Nama Jadwal dan Tanggal */}
         <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
