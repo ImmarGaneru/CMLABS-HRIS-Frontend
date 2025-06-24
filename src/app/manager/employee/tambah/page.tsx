@@ -219,11 +219,15 @@ export default function TambahKaryawan() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const isValidUUID = (val: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
 
-    if (!isUUID(formData.id_position)) {
-      toast.error("ID posisi harus dalam format UUID yang benar!");
-      return;
-    }
+
+    if (!isValidUUID(formData.id_position)) {
+  toast.error("ID posisi harus dalam format UUID yang benar!");
+  return;
+}
+
 
     try {
       const data = new FormData();
