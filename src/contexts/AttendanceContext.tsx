@@ -15,7 +15,12 @@ export interface CheckClockSetting {
     created_at: Date;
     updated_at: Date;
     deleted_at: null;
+    location_lat: number | null;
+    location_lng: number | null;
+    radius: number | null;
     check_clock_setting_time: CheckClockSettingTime[];
+    user_ids: string[];
+    users?: User[];
 }
 
 export interface CheckClockSettingTime {
@@ -87,6 +92,7 @@ export interface Employee {
     end_date: null;
     tanggal_efektif: null;
     deleted_at: null;
+    user: User;
 }
 
 export interface Workplace {
@@ -103,13 +109,13 @@ export interface Workplace {
 interface AttendanceContext {
     selfCheckClockSetting: CheckClockSetting | null;
     employeeCheckClocks: CheckClock[];
-    selfCheckClocks: CheckClock[];
-    checkClockSettings: CheckClockSetting[];
+    selfCheckClocks: CheckClock[] | null;
+    checkClockSettings?: CheckClockSetting[] | null;
+    companyEmployees: Employee[];
+    fetchCompanyEmployees: () => Promise<Employee[]>;
     fetchSelfCheckClockSetting: () => Promise<CheckClockSetting | null>;
-    handleClockIn: () => Promise<void>;
-    handleClockOut: () => Promise<void>;
-    handleBreakStart: () => Promise<void>;
-    handleBreakEnd: () => Promise<void>;
+    handleClockIn: (locationLatitude?: number, locationLongitude?: number) => Promise<void>;
+    handleClockOut: (locationLatitude?: number, locationLongitude?: number) => Promise<void>;
     fetchEmployeeCheckClocks: () => Promise<void>;
     fetchSelfCheckClocks: () => Promise<void>;
     fetchCheckClockSettings: () => Promise<void>;
@@ -124,12 +130,48 @@ interface AttendanceContext {
 const AttendanceContext = createContext<AttendanceContext | undefined>(undefined);
 
 export function AttendanceProvider({ children }: { children: React.ReactNode }) {
+    const [companyEmployees, setCompanyEmployees] = useState<Employee[]>([]);
     const [selfCheckClockSetting, setSelfCheckClockSetting] = useState<CheckClockSetting | null>(null);
     const [employeeCheckClocks, setEmployeeCheckClocks] = useState<CheckClock[]>([]);
-    const [selfCheckClocks, setSelfCheckClocks] = useState<CheckClock[]>([]);
-    const [checkClockSettings, setAttendance] = useState<CheckClockSetting[]>([]);
+    const [selfCheckClocks, setSelfCheckClocks] = useState<CheckClock[] | null>(null);
+    const [checkClockSettings, setCheckClockSetting] = useState<CheckClockSetting[] | null>(null);
     const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+
+    const getCurrentLocation = () => {
+        const geoOptions = {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0,
+        };
+
+        function success(pos: any) {
+            const crd = pos.coords;
+
+            console.log("Your current position is:");
+            console.log(`Latitude : ${crd.latitude}`);
+            console.log(`Longitude: ${crd.longitude}`);
+            console.log(`More or less ${crd.accuracy} meters.`);
+        }
+
+        function error(err: any) {
+            console.warn(`ERROR(${err.code}): ${err.message}`);
+        }
+
+        navigator.geolocation.getCurrentPosition(success, error, geoOptions);
+    }
+
+    const fetchCompanyEmployees = async () => {
+        try {
+            const data = await request<Employee[]>(api.get("/admin/employees/comp-employees"));
+            setCompanyEmployees(data);
+            return data;
+        } catch (error) {
+            toast.error("Failed to fetch company employees.");
+            return [];
+        }
+    };
 
     const fetchSelfCheckClockSetting = async () => {
         try {
@@ -142,51 +184,38 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         }
     };
 
-    const handleClockIn = async () => {
+    const handleClockIn = async (locationLatitude?: number, locationLongitude?: number) => {
         try {
-            const response = await request<CheckClock>(api.get("/attendance/check-clock/clock-in"));
+            await request<CheckClock>(api.post("/attendance/check-clock/clock-in", {
+                location_lat: locationLatitude,
+                location_lng: locationLongitude
+            }));
+            await fetchSelfCheckClocks();
             toast.success("Clock-in successful.");
-            fetchSelfCheckClocks();
-        } catch (error) {
-            toast.error("Failed to clock-in. Please try again.");
+        } catch (error: any) {
+            console.log("Clock-in error:", error);
+            toast.error("Failed to clock-in: " + (error?.meta?.message || "Please try again."));
         }
     }
 
-    const handleBreakStart = async () => {
+    const handleClockOut = async (locationLatitude?: number, locationLongitude?: number) => {
         try {
-            const response = await request<CheckClock>(api.get("/attendance/check-clock/break-start"));
-            toast.success("Break started successfully.");
-            fetchSelfCheckClocks();
-        } catch (error) {
-            toast.error("Failed to start break. Please try again.");
-        }
-    }
-
-    const handleBreakEnd = async () => {
-        try {
-            const response = await request<CheckClock>(api.get("/attendance/check-clock/break-end"));
-            toast.success("Break ended successfully.");
-            fetchSelfCheckClocks();
-        } catch (error) {
-            toast.error("Failed to end break. Please try again.");
-        }
-    }
-
-
-    const handleClockOut = async () => {
-        try {
-            const response = await request<CheckClock>(api.get("/attendance/check-clock/clock-out"));
-            toast.success("Clock-out successful.");
-            fetchSelfCheckClocks();
-        } catch (error) {
-            toast.error("Failed to clock-out. Please try again.");
+            await request<CheckClock>(api.post("/attendance/check-clock/clock-out", {
+                location_lat: locationLatitude,
+                location_lng: locationLongitude
+            }));
+            await fetchSelfCheckClocks();
+            toast.success("Clock-in successful.");
+        } catch (error: any) {
+            console.log("Clock-in error:", error);
+            toast.error("Failed to clock-in: " + (error?.meta?.message || "Please try again."));
         }
     }
 
     const fetchCheckClockSettings = async () => {
         try {
             const data = await request<CheckClockSetting[]>(api.get("/admin/attendance/check-clock-setting"));
-            setAttendance(data);
+            setCheckClockSetting(data);
         } catch (error) {
             toast.error("Failed to fetch attendance data.");
         }
@@ -203,7 +232,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
     const fetchSelfCheckClocks = async () => {
         try {
-            const data = await request<CheckClock[]>(api.get("/attendance/check-clock/self"));
+            const data = await request<CheckClock[] | null>(api.get("/attendance/check-clock/self"));
             setSelfCheckClocks(data);
         } catch (error) {
             toast.error("Failed to fetch self check clocks.");
@@ -265,11 +294,11 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
                 checkClockSettings,
                 employeeCheckClocks,
                 selfCheckClocks,
+                companyEmployees,
+                fetchCompanyEmployees,
                 fetchSelfCheckClockSetting,
                 handleClockIn,
                 handleClockOut,
-                handleBreakStart,
-                handleBreakEnd,
                 fetchEmployeeCheckClocks,
                 fetchSelfCheckClocks,
                 fetchCheckClockSettings,

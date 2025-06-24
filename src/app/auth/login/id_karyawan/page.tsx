@@ -110,7 +110,7 @@ export default function LoginIdKaryawanPage() {
                 type="text"
                 value={signInCode}
                 onChange={(e) => setSignInCode(e.target.value)}
-                placeholder="MN1234"
+                placeholder="ky1234"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
                 required
               />

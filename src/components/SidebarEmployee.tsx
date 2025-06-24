@@ -13,6 +13,7 @@ import {
     ClipboardCheck,
     AlarmClock,
     Mails,
+    UserCircle,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { JSX } from "react";
 
 const sidebarNavItems = [
     {
@@ -37,11 +39,6 @@ const sidebarNavItems = [
         title: "Kehadiran",
         url: "/employee/attendance",
         icon: Clock,
-    },
-    {
-        title: "Jadwal",
-        url: "/employee/jadwal",
-        icon: CalendarDays,
     },
     {
         title: "Approval",
@@ -59,6 +56,46 @@ const sidebarNavItems = [
         icon: Mails,
     }
 ];
+
+function SwitchModeButton(): JSX.Element | null {
+
+    if (typeof window === "undefined") {
+        return null;
+    }
+
+    if (localStorage.getItem("user") === null) {
+        return null;
+    }
+    const user = JSON.parse(localStorage.getItem("user")!);
+
+    if (!(user && user.workplace && user.workplace.id_manager === user.id)) {
+        return null;
+    }
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const pathname = usePathname();
+    if (pathname.startsWith("/manager")) {
+        return (
+            <Link
+                href="/employee/dashboard"
+                className="flex items-center rounded-full px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+            >
+                <UserCircle className="mr-2 h-4 w-4" />
+                <span>Employee Mode</span>
+            </Link>
+        );
+    }
+
+    return (
+        <Link
+            href="/manager/dashboard"
+            className="flex items-center rounded-full px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+        >
+            <UserCircle className="mr-2 h-4 w-4" />
+            <span>Manager Mode</span>
+        </Link>
+    );
+}
 
 export function SidebarEmployee() {
     const pathname = usePathname();
@@ -87,7 +124,7 @@ export function SidebarEmployee() {
                                             )}
                                             replace
                                         >
-                                            <item.icon className="mr-2 h-4 w-4"/>
+                                            <item.icon className="mr-2 h-4 w-4" />
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>

@@ -15,7 +15,7 @@ const LoadingSpinner = React.forwardRef<SVGSVGElement, LoadingSpinnerProps>(
         ref={ref}
         width={size}
         height={size}
-        color='#1E3A5F'
+        color='white'
         className={cn('animate-spin text-primary', className)}
         {...props}
       />

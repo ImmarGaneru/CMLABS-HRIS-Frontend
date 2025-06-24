@@ -4,18 +4,21 @@ import { useState, Suspense, useEffect } from "react";
 import { Switch } from "@headlessui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
+import { GoogleMap } from "@react-google-maps/api";
+import Multiselect from "multiselect-react-dropdown";
+import LeafletMap from "@/components/LeafletMap";
+import OverlaySpinner from "@/components/OverlaySpinner";
+import LeafletMapControl from "@/components/LeafletMapControl";
 
 function JadwalBody() {
     const searchParams = useSearchParams();
     const id = searchParams.get('id') || "";
-    const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting } = useAttendance();
-    const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
-    const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
+    const { completeUpdateCheckClockSetting, fetchSingleCheckClockSetting, fetchCompanyEmployees, companyEmployees } = useAttendance();
     const [checkClockSetting, setCheckClockSetting] = useState<CheckClockSetting | null>(null);
     const router = useRouter();
 
-    // Fetch checkClockSetting when component mounts
     useEffect(() => {
+        fetchCompanyEmployees()
         if (id) {
             fetchSingleCheckClockSetting(id)
                 .then((data) => {
@@ -26,10 +29,43 @@ function JadwalBody() {
                     console.error("Error fetching check clock setting:", error);
                 });
         }
-    }, [id, fetchSingleCheckClockSetting]);
+    }, []);
+
+    const shouldLoading = () => {
+        return checkClockSetting === null || companyEmployees.length === 0 || isLoading;
+    }
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [employeesOptions, setEmployeesOptions] = useState<{ id_user: string; name: string }[]>([]);
+    const [selectedEmployees, setSelectedEmployees] = useState<{ id_user: string; name: string }[]>([]);
+    const [selectedLatLng, setSelectedLatLng] = useState({} as { latlng: { lat: number; lng: number } } | null);
+
+    // Fetch checkClockSetting when component mounts
+    useEffect(() => {
+        if (companyEmployees.length > 0 && checkClockSetting !== null) {
+            const options = companyEmployees.map((employee) => ({
+                id_user: employee.user.id,
+                name: employee.first_name + " " + employee.last_name,
+            }));
+            setEmployeesOptions(options);
+
+            // Set selected employees based on existing checkClockSetting
+            const user_ids = (checkClockSetting.users ?? []).map((user) => user.id);
+            const selected = options.filter((option) => user_ids.includes(option.id_user));
+            setSelectedEmployees(selected);
+            setSelectedLatLng({
+                latlng: {
+                    lat: checkClockSetting.location_lat || -7.95450378241118,
+                    lng: checkClockSetting.location_lng || 112.63217148198788,
+                }
+            });
+        }
+
+    }, [companyEmployees, checkClockSetting]);
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
+            <OverlaySpinner isLoading={shouldLoading()} />
             {/* Form Tambah Jadwal */}
             <div className="bg-white p-6 rounded-xl shadow">
                 <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
@@ -42,8 +78,20 @@ function JadwalBody() {
                     </button>
                 </div>
 
+                {checkClockSetting == null ? (
+                    <div className="text-center text-gray-500">
+                        <h2>Loading...</h2>
+                    </div>
+                ) : <LeafletMap
+                    initialPosition={[checkClockSetting.location_lat || -7.95450378241118, checkClockSetting.location_lng || 112.63217148198788]}>
+                    <LeafletMapControl initialMarkerPosition={[checkClockSetting.location_lat || -7.95450378241118, checkClockSetting.location_lng || 112.63217148198788]} cb={
+                        (e) => {
+                            setSelectedLatLng(e);
+                        }} />
+                </LeafletMap>}
+
                 {/* Input Nama Jadwal dan Tanggal */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
                     <div>
                         <label className="block font-medium mb-1">Nama Jadwal</label>
                         <input
@@ -55,11 +103,36 @@ function JadwalBody() {
                         />
                     </div>
                     <div>
+                        <label className="block font-medium mb-1">Radius</label>
+                        <input
+                            type="number"
+                            name="ck_setting_radius"
+                            defaultValue={checkClockSetting?.radius || ""}
+                            placeholder="Masukkan radius (dalam meter)"
+                            className="w-full border rounded px-3 py-2"
+                        />
+                    </div>
+                    <div>
                         <label className="block font-medium mb-1">Type</label>
                         <select className="w-full border rounded px-3 py-2" name="ck_setting_type" defaultValue={checkClockSetting?.type || "WFO"}>
                             <option value="WFO">WFO</option>
-                            <option value="WFH">WFH</option>
+                            <option value="WFA">WFA</option>
+                            <option value="Hybrid">Hybrid</option>
                         </select>
+                    </div>
+                    <div>
+                        <label className="block font-medium mb-1">Employees</label>
+                        <Multiselect
+                            options={employeesOptions}
+                            selectedValues={selectedEmployees}
+                            onSelect={(selectedList, selectedItem) => {
+                                setSelectedEmployees(selectedList as { id_user: string; name: string }[]);
+                            }}
+                            onRemove={(selectedList, removedItem) => {
+                                setSelectedEmployees(selectedList as { id_user: string; name: string }[]);
+                            }}
+                            displayValue="name"
+                        />
                     </div>
                 </div>
 
@@ -126,6 +199,7 @@ function JadwalBody() {
                     </button>
                     <button
                         onClick={() => {
+                            setIsLoading(true);
                             if (checkClockSetting?.id) {
                                 const updatedCKSetting: CheckClockSetting = {
                                     id: "",
@@ -140,6 +214,12 @@ function JadwalBody() {
                                     updated_at: new Date(),
                                     deleted_at: null,
                                     check_clock_setting_time: [],
+                                    location_lat: selectedLatLng ? selectedLatLng.latlng.lat : checkClockSetting.location_lat,
+                                    location_lng: selectedLatLng ? selectedLatLng.latlng.lng : checkClockSetting.location_lng,
+                                    radius: parseInt((document.querySelector(
+                                        'input[name="ck_setting_radius"]'
+                                    ) as HTMLInputElement).value) || null,
+                                    user_ids: selectedEmployees.map((employee) => employee.id_user),
                                 }
 
                                 const check_clock_setting_time: CheckClockSettingTime[] = checkClockSetting!.check_clock_setting_time.map((row, idx) => ({
@@ -168,6 +248,8 @@ function JadwalBody() {
                                     .then(() => router.push("/manager/jadwal"))
                                     .catch((error) => {
                                         console.error("Error saving schedule:", error);
+
+                                        setIsLoading(false);
                                     });
                             }
                         }}
