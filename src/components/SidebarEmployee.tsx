@@ -58,6 +58,11 @@ const sidebarNavItems = [
 ];
 
 function SwitchModeButton(): JSX.Element | null {
+
+    if (typeof window === "undefined") {
+        return null;
+    }
+
     if (localStorage.getItem("user") === null) {
         return null;
     }

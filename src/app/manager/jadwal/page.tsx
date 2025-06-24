@@ -67,16 +67,6 @@ export default function JadwalTablePage() {
           return (
             <div className="flex gap-2 justify-center">
               <button
-                title="Detail"
-                onClick={() => {
-                  setSelectedSchedule(data);
-                  setIsDetailOpen(true);
-                }}
-                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
-              >
-                <FaEye />
-              </button>
-              <button
                 title="Edit"
                 onClick={() => router.push(`/manager/jadwal/edit?id=${data.id}`)}
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
