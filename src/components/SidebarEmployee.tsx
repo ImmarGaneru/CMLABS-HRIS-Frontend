@@ -97,26 +97,6 @@ export function SidebarEmployee() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter className="flex flex-col gap-2">
-                <Link
-                    href="/settings"
-                    className={cn(
-                        "flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                        pathname === "/settings" ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
-                    )}
-                >
-                    <Settings className="mr-2 h-4 w-4"/>
-                    <span>Settings</span>
-                </Link>
-                <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {router.push("/")}}
-                >
-                    <LogOut className="mr-2 h-4 w-4"/>
-                    Log out
-                </Button>
-            </SidebarFooter>
         </Sidebar>
     );
 }

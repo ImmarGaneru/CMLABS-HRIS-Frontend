@@ -78,4 +78,43 @@ export const searchableItems: SearchItem[] = [
         category: 'Settings',
         keywords: ['settings', 'department', 'configuration']
     },
+];
+
+export const employeeSearchableItems: SearchItem[] = [
+    {
+        title: 'Dashboard',
+        path: '/employee/dashboard',
+        category: 'Main',
+        keywords: ['dashboard', 'home', 'overview', 'main']
+    },
+    {
+        title: 'Attendance',
+        path: '/employee/attendance',
+        category: 'Attendance',
+        keywords: ['attendance', 'clock in', 'clock out', 'absen', 'time tracking']
+    },
+    {
+        title: 'Profile',
+        path: '/employee/profile',
+        category: 'User',
+        keywords: ['profile', 'account', 'user info', 'my profile', 'biodata']
+    },
+    {
+        title: 'Schedule',
+        path: '/employee/jadwal',
+        category: 'Schedule',
+        keywords: ['schedule', 'jadwal', 'shift', 'work hours']
+    },
+    {
+        title: 'Lettering',
+        path: '/employee/lettering',
+        category: 'Letter',
+        keywords: ['letter', 'surat', 'izin', 'cuti', 'sick', 'leave']
+    },
+    {
+        title: 'Overtime',
+        path: '/employee/overtime',
+        category: 'Overtime',
+        keywords: ['overtime', 'lembur', 'extra hours']
+    },
 ]; 

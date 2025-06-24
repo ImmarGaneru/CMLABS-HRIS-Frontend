@@ -14,21 +14,6 @@ import { dashboardTutorialSteps } from '../tutorial/dashboard_tutorial';
 export default function DashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        // Add loading state management
-        const initializeDashboard = async () => {
-            try {
-                // Add your data fetching logic here
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error initializing dashboard:', error);
-                setIsLoading(false);
-            }
-        };
-
-        initializeDashboard();
-    }, []);
-
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">

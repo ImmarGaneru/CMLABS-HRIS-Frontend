@@ -10,6 +10,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { Navbar3 } from "./Navbar3";
 import { Navbar4 } from "./Navbar4";
+import NavbarEmployee from "./NavbarEmployee";
 
 export default function Layout2({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -84,7 +85,7 @@ export default function Layout2({ children }: { children: React.ReactNode }) {
                 </Head>
                 <SidebarEmployee />
                 <div className="flex-1 flex flex-col bg-gray-300">
-                    <Navbar3 />
+                    <NavbarEmployee />
                     <div className="flex-1">
                         <main>{children}</main>
                     </div>
