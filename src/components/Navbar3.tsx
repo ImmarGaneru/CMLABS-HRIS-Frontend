@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { usePathname, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { RiNotification4Fill } from 'react-icons/ri';
 import {
     Popover,
@@ -41,7 +40,7 @@ interface PackageType {
 interface EmployeeData {
     first_name: string;
     last_name: string;
-    avatar: string;
+    avatar: string | null | undefined;
 }
 
 interface UserData {
@@ -57,10 +56,21 @@ interface UserData {
     };
 }
 
+function capitalize(text: string) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export function Navbar3() {
     const pathname = usePathname();
     const router = useRouter();
-    const pageTitle = pathname?.split("/")[1] || "Dashboard";
+
+    const segments = pathname?.split("/") || [];
+    const role = segments[1] || "";
+    const page = segments[2] || "";
+
+    const pageTitle = page
+        ? `${capitalize(page)} ${capitalize(role)}`
+        : capitalize(role || "Dashboard");
 
     const [userName, setUserName] = useState<string>('User');
     const [packageType, setPackageType] = useState<string | null>(null);
@@ -69,54 +79,34 @@ export function Navbar3() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
+    const getFullImageUrl = (path: string | undefined | null): string => {
+        if (!path || path.trim() === "") return '/avatar.png';
+        if (path.startsWith('http://') || path.startsWith('https://')) return path;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+        return `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+    };
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const userResponse = await api.get('/auth/me');
-
-                if (!userResponse.status) {
-                    console.warn('Failed to fetch user', userResponse.status);
-                    return;
-                }
-
-                // const responseJson = await userResponse.data
-                // console.log('Full API Response:', responseJson); // Debug log
+                if (!userResponse.status) return;
 
                 const userData: UserData = userResponse.data.data;
-
-                // Debug logs
-                console.log('User Data:', userData);
-                console.log('Employee Data:', userData.employee);
-                console.log('Workplace Data:', userData.workplace);
-
-                // Ambil nama dari employee
                 let nameToShow = 'User';
+
                 if (userData.employee) {
                     const { first_name, last_name } = userData.employee;
                     nameToShow = `${first_name}${last_name ? ` ${last_name}` : ''}`;
-                } else {
-                    console.log('No employee data found in response');
                 }
-
                 setUserName(nameToShow);
 
-                if (userData.employee?.avatar) {
-                    setProfileImage(userData.employee?.avatar);
-                } else {
-                    setProfileImage('/avatar.png');
-                }
+                const avatarPath = userData.employee?.avatar;
+                console.log('EMPLOYEE AVATAR:', avatarPath);
+                console.log('HASIL FULL URL:', getFullImageUrl(avatarPath));
 
-
-                // Cek subscription jika punya company
-                if (userData.workplace?.id) {
-                    if (userData.workplace.subscription?.packageType) {
-                        setPackageType(userData.workplace.subscription.packageType?.name);
-                    } else {
-                        console.log('No subscription data found in workplace');
-                    }
-                } else {
-                    console.log('No workplace data found in user data');
-                }
+                setProfileImage(getFullImageUrl(avatarPath));
+                setPackageType(userData.workplace?.subscription?.packageType?.name ?? null);
             } catch (error) {
                 console.error('Error fetching user data:', error);
             } finally {
@@ -127,16 +117,12 @@ export function Navbar3() {
         fetchUserData();
     }, []);
 
-    const handleNavigation = (path: string) => {
-        router.push(path);
-    };
-
+    const handleNavigation = (path: string) => router.push(path);
     const handleLogout = () => {
-        localStorage.removeItem('token'); // atau Cookies.remove('token')
+        localStorage.removeItem('token');
         router.replace('/');
     };
 
-    // Search functionality
     const handleSearch = (query: string) => {
         setSearchQuery(query);
         setSearchOpen(true);
@@ -159,7 +145,6 @@ export function Navbar3() {
 
     return (
         <div className="flex items-center justify-between border-b h-16 px-6 bg-white">
-            {/* Left: Sidebar trigger + page title */}
             <div className="flex items-center gap-4">
                 <SidebarTrigger>
                     <Button variant="ghost" size="icon">
@@ -208,7 +193,6 @@ export function Navbar3() {
                 </div>
             </div>
 
-            {/* Right: User avatar + name */}
             <div className="flex items-center gap-3">
                 <div className="p-4 text-[#1E3A5F] hover:text-[#155A8A] transition duration-200 ease-in-out cursor-pointer">
                     <RiNotification4Fill size={24} />
@@ -220,12 +204,16 @@ export function Navbar3() {
                             variant="ghost"
                             className="flex items-center gap-2 rounded-md p-2 hover:shadow-sm transition-shadow"
                         >
-                            <Image
+                            {/* ✅ Gunakan img biasa agar domain localhost:8000 bisa muncul */}
+                            <img
                                 src={profileImage}
                                 alt="Profile Picture"
                                 width={32}
                                 height={32}
-                                className="rounded-full"
+                                className="rounded-full border border-gray-300"
+                                onError={(e) => {
+                                    e.currentTarget.src = "/avatar.png";
+                                }}
                             />
                             <span className="text-sm text-muted-foreground hidden sm:inline-block">
                                 Hi, {isLoading ? '...' : userName}
