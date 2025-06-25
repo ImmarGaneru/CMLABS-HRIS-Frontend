@@ -41,7 +41,17 @@ export default function LoginEmailPage() {
           }
 
           alert("Login berhasil!");
-          router.push("/manager/dashboard");
+          // Tambahkan bagian ini:
+ const user = result.data.user;
+ const role = user?.role;
+
+ if (role === "admin") {
+   router.push("/manager/dashboard");
+ } else if (role === "employee") {
+   router.push("/employee/dashboard");
+ } else {
+   router.push("/auth/login/email");
+ }
         } else {
           throw new Error("Token tidak ditemukan dalam response.");
         }

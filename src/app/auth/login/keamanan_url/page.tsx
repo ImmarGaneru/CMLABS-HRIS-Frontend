@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 interface KeamananURLProps {
-  role: 'admin' | 'employee';
+  role: "admin" | "employee";
   children: ReactNode;
 }
 
@@ -13,41 +13,42 @@ export default function KeamananURL({ role, children }: KeamananURLProps) {
   const [allowed, setAllowed] = useState<boolean | null>(null); // null = loading
 
   useEffect(() => {
-    // Jangan jalanin kalau bukan client
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const token = localStorage.getItem('token');
-    const userString = localStorage.getItem('user');
-    let user = null;
+    const token = localStorage.getItem("token");
+    const userString = localStorage.getItem("user");
 
-    try {
-      user = userString ? JSON.parse(userString) : null;
-    } catch (err) {
-      console.error('Gagal parse user:', err);
-      user = null;
-    }
-
-    if (!token || !user) {
-      router.push('/auth/login/email');
+    if (!token || !userString) {
+      console.warn("Token atau user tidak ditemukan. Redirect ke login.");
+      router.replace("/auth/login/email");
       return;
     }
 
-    // Deteksi role
-    let userRole: 'admin' | 'employee' | null = null;
-
-    if (user?.workplace?.id_manager && user.id === user.workplace.id_manager) {
-      userRole = 'admin';
-    } else if (user?.employee) {
-      userRole = 'employee';
+    let user = null;
+    try {
+      user = JSON.parse(userString);
+    } catch (err) {
+      console.error("Gagal parse user dari localStorage:", err);
+      localStorage.clear();
+      router.replace("/auth/login/email");
+      return;
     }
 
-    console.log('Detected role:', userRole, 'Required:', role);
+    // Logging untuk debugging
+    console.log("localStorage user:", user);
 
-    if (userRole !== role) {
-      router.push('/auth/login/email');
-    } else {
-      setAllowed(true);
-    }
+    // Ambil role dari user
+    const userRole: string | null = user?.role || null;
+
+console.log("Detected role:", userRole, "Required:", role);
+console.log("localStorage user:", user);
+
+if (userRole === role) {
+  setAllowed(true);
+} else {
+  console.log("Role tidak sesuai. Redirect ke login.");
+  router.replace("/auth/login/email");
+}
   }, [role, router]);
 
   if (allowed === null) {
@@ -57,8 +58,6 @@ export default function KeamananURL({ role, children }: KeamananURLProps) {
       </div>
     );
   }
-
-  if (!allowed) return null;
 
   return <>{children}</>;
 }
