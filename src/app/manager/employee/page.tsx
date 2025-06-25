@@ -78,18 +78,19 @@ export default function EmployeeTablePage() {
 
     // Hapus data dari state
     setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+  // ✅ Tambahkan toast sukses
+    toast.success("Data berhasil dihapus!");
   } catch (error) {
     let errorMessage = "Gagal menghapus data";
-
     if (error instanceof Error) {
       errorMessage += `: ${error.message}`;
     }
 
-    alert(errorMessage);
+    // ✅ Tambahkan toast error
+    toast.error(errorMessage);
     console.error(error);
   }
 };
-
 
   // Fetch data dari backend
   useEffect(() => {
@@ -188,6 +189,7 @@ export default function EmployeeTablePage() {
     return styles[status] ?? "bg-gray-100 text-gray-800";
   };
 
+
   const employeeColumns = useMemo<ColumnDef<FEEmployee>[]>(
     () => [
       {
@@ -198,30 +200,30 @@ export default function EmployeeTablePage() {
         ),
         size: 20,
       },
-      {
-      id: "Avatar",
-  header: "Avatar",
-  cell: ({ row }) => (
-    <div className="flex items-center justify-center">
-      {row.original.avatar ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={`/storage/${row.original.avatar}`} // atau URL lengkap jika disimpan sebagai path lengkap
-          alt="Avatar"
-          className="w-8 h-8 rounded-full object-cover"
-        />
-      ) : (
-        <RxAvatar size={24} className="text-gray-400" />
-      )}
-    </div>
-  ),
-  size: 60,
-      },
+  //     {
+  //     id: "Avatar",
+  // header: "Avatar",
+  // cell: ({ row }) => (
+  //   <div className="flex items-center justify-center">
+  //     {row.original.avatar ? (
+  //       // eslint-disable-next-line @next/next/no-img-element
+  //       <img
+  //         src={`/storage/${row.original.avatar}`} // atau URL lengkap jika disimpan sebagai path lengkap
+  //         alt="Avatar"
+  //         className="w-8 h-8 rounded-full object-cover"
+  //       />
+  //     ) : (
+  //       <RxAvatar size={24} className="text-gray-400" />
+  //     )}
+  //   </div>
+  // ),
+  // size: 60,
+  //     },
       {
         accessorKey: "nama",
         header: "Nama",
         cell: (info) => (
-          <div className="truncate max-w-[120px]">
+          <div className="truncate max-w-[120px]flex text-center flex items-center justify-center">
             {info.getValue() as string}
           </div>
         ),
@@ -231,7 +233,7 @@ export default function EmployeeTablePage() {
         accessorKey: "jenis_kelamin",
         header: "Jenis Kelamin",
         cell: (info) => (
-          <div className="truncate max-w-[100px]">
+          <div className="truncate max-w-[100px] text-center flex items-center justify-center">
             {info.getValue() as string}
           </div>
         ),
@@ -241,7 +243,7 @@ export default function EmployeeTablePage() {
         accessorKey: "phone_number",
         header: "Nomor Telepon",
         cell: (info) => (
-          <div className="truncate max-w-[120px]">
+          <div className="truncate max-w-[120px]text-center flex items-center justify-center">
             {info.getValue() as string}
           </div>
         ),
@@ -251,7 +253,7 @@ export default function EmployeeTablePage() {
         accessorKey: "cabang",
         header: "Cabang",
         cell: (info) => (
-          <div className="truncate max-w-[100px]">
+          <div className="truncate max-w-[100px] text-center flex items-center justify-center">
             {info.getValue() as string}
           </div>
         ),
@@ -261,7 +263,7 @@ export default function EmployeeTablePage() {
         accessorKey: "jabatan",
         header: "Jabatan",
         cell: (info) => (
-          <div className="truncate max-w-[120px]">
+          <div className="truncate max-w-[120px] text-center flex items-center justify-center">
             {info.getValue() as string}
           </div>
         ),
@@ -271,7 +273,7 @@ export default function EmployeeTablePage() {
   accessorKey: "tipe_kontrak",
   header: "Tipe Kontrak",
   cell: (info) => (
-    <div className="flex justify-center">
+    <div className="truncate max-w-[100px] text-center flex items-center justify-center">
       <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
         {(info.getValue() as string) || "-"}
       </span>
@@ -300,10 +302,11 @@ export default function EmployeeTablePage() {
     }
 
     return (
-      <div className="flex justify-center">
+      <div className="truncate max-w-[100px] text-center flex items-center justify-center ">
         <span className={`px-2 py-1 text-xs rounded ${color}`}>
           {displayLabel}
         </span>
+      
       </div>
     );
   },
@@ -316,7 +319,7 @@ export default function EmployeeTablePage() {
         cell: ({ row }) => {
           const data = row.original;
           return (
-            <div className="flex gap-2 justify-center w-[120px]">
+            <div className="flex gap-2 justify-center w-[120px] ">
               <button
                 title="Detail"
                 onClick={() => router.push(`/manager/employee/detail/${data.id}`)}
@@ -531,6 +534,7 @@ export default function EmployeeTablePage() {
           </div>
         </div>
       </div>
+        <ToastContainer/>
     </div>
   );
 }

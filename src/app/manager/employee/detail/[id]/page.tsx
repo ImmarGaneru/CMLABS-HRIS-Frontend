@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { FaEye } from "react-icons/fa";
 import React from "react";
 import api from "@/lib/axios";
@@ -32,7 +32,7 @@ type Karyawan = {
   jenis_kelamin: string;
   pendidikan: string;
   email: string;
-
+  id_ck_setting: string;
   dokumen: Dokumen[];
   start_date: string;
   tenure: string;
@@ -50,8 +50,9 @@ type Karyawan = {
   total_gaji: string;
 
   // tambahan
-  user?: { email: string; phone_number: string };
+  user?: { email: string; phone_number: string; jadwal_type: string };
   position?: { name: string; gaji?: string };
+  jadwal_type:string;
   phone_number: string;
 };
 
@@ -143,33 +144,51 @@ export default function DetailKaryawan() {
             // Biarkan positionName tetap "-"
           }
         }
-       
-    // Ambil nama departemen berdasarkan id_department
-let departemenName = rawData.department || "-";
 
-if (rawData.id_department && !rawData.department) {
-  try {
-    const departmentRes = await api.get(
-      `/admin/departments/get/${rawData.id_department}`
-    );
-    if (
-      departmentRes.data?.meta?.success &&
-      departmentRes.data?.data?.name
-    ) {
-      departemenName = departmentRes.data.data.name;
-    }
-  } catch (err) {
-    console.error("Gagal mengambil data department:", err);
-  }
-}
+        // Ambil nama departemen berdasarkan id_department
+        let departemenName = rawData.department || "-";
 
-// Simpan hasil ke objek
-const karyawan = {
-  ...rawData,
-  id_department: rawData.id_department || "-",
-  department: departemenName,
-};
+        if (rawData.id_department && !rawData.department) {
+          try {
+            const departmentRes = await api.get(
+              `/admin/departments/get/${rawData.id_department}`
+            );
+            if (
+              departmentRes.data?.meta?.success &&
+              departmentRes.data?.data?.name
+            ) {
+              departemenName = departmentRes.data.data.name;
+            }
+          } catch (err) {
+            console.error("Gagal mengambil data department:", err);
+          }
+        }
+        // Ambil tipe check clock berdasarkan id_ck_setting
+        let checkClockType = "-";
+        const idCkSetting =
+          rawData.id_ck_setting || rawData.user?.id_check_clock_setting;
 
+        if (idCkSetting) {
+          try {
+            const clockRes = await api.get(
+              `/admin/attendance/check-clock-setting/${idCkSetting}`
+            );
+            if (clockRes.data?.meta?.success && clockRes.data?.data?.type) {
+              checkClockType = clockRes.data.data.type;
+            }
+          } catch (err) {
+            console.error("Gagal mengambil check clock setting:", err);
+          }
+        }
+
+        // Simpan hasil ke objek
+        const karyawan = {
+          ...rawData,
+          id_department: rawData.id_department || "-",
+          department: departemenName,
+        };
+
+        console.log("Final karyawan object:", karyawan);
 
         // Pastikan parseRupiahToNumber tidak error
         const gajiNum = parseRupiahToNumber(rawData.gaji || "Rp 0");
@@ -192,6 +211,9 @@ const karyawan = {
           jenis_kelamin: rawData.jenis_kelamin || "-",
           pendidikan: rawData.pendidikan || "-",
           phone_number: rawData.user?.phone_number || "-",
+        jadwal_type: rawData.user?.jadwal_type || "-",
+
+          id_ck_setting: idCkSetting || "-",
           email: rawData.user?.email || "-",
           dokumen: rawData.dokumen || [],
           start_date: rawData.start_date || "-",
@@ -206,7 +228,7 @@ const karyawan = {
           bank: rawData.bank || "-",
           no_rek: rawData.no_rek || "-",
           gaji: gajiNum.toString(),
-         
+
           uang_lembur: lemburNum.toString(),
           denda_terlambat: dendaNum.toString(),
           total_gaji: totalNum.toString(),
@@ -324,97 +346,101 @@ const karyawan = {
   }
 
   return (
-     <div className="min-h-screen bg-gray-100 p-5">
-       <ToastContainer />
-       <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
-         <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#141414]">Detail Karyawan</h1>
-        <button
-          onClick={() => router.push("/manager/employee")}
-          className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+    <div className="min-h-screen bg-gray-100 p-5">
+      <ToastContainer />
+      <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-[#141414]">Detail Karyawan</h1>
+          <button
+            onClick={() => router.push("/manager/employee")}
+            className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Kembali
-        </button>
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-20 items-start">
-        {/* Foto dan Identitas */}
-        <div className="flex flex-col items-start mb-6">
-           <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
-            <img
-              src={karyawan.avatar || "/default.jpg"}
-              alt={karyawan.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <p className="font-bold text-lg">{karyawan.name}</p>
-          <p className="text-sm text-gray-500">{karyawan.jabatan}</p>
-          <p className="text-sm text-gray-500">{karyawan.department}</p>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Kembali
+          </button>
         </div>
 
-        {/* Detail Info */}
-        <div className="flex-1 flex flex-col gap-y-10">
-          <Section title="Informasi Pribadi">
-            <FieldRow label="NIK" value={karyawan.nik} />
-            <FieldRow label="Alamat" value={karyawan.address} />
-            <FieldRow
-              label="Tempat, Tgl Lahir"
-              value={`${karyawan.tempat_lahir}, ${karyawan.tanggal_lahir}`}
-            />
-            <FieldRow label="Jenis Kelamin" value={karyawan.jenis_kelamin} />
-            <FieldRow label="Pendidikan Terakhir" value={karyawan.pendidikan} />
-            <FieldRow label="Email" value={karyawan.email} />
-            <FieldRow label="No Telp" value={karyawan.phone_number} />
-          </Section>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-13">
-            <Section title="Informasi Kepegawaian">
-              <FieldRow label="Mulai Kerja" value={karyawan.start_date} />
-              <FieldRow label="Masa Kerja" value={karyawan.tenure} />
-              <FieldRow label="Akhir Kerja" value={karyawan.end_date} />
-              <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} />
-              <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
-              <FieldRow label="Jabatan" value={karyawan.jabatan} />
-              <FieldRow label="Departemen" value={karyawan.department} />
-            
-            
-              <FieldRow label="Cabang" value={karyawan.cabang} />
-              <FieldRow
-                label="Status Kerja"
-                value={karyawan.employment_status}
+        <div className="flex flex-col md:flex-row gap-20 items-start">
+          {/* Foto dan Identitas */}
+          <div className="flex flex-col items-start mb-6">
+            <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
+              <img
+                src={karyawan.avatar || "/default.jpg"}
+                alt={karyawan.name}
+                className="w-full h-full object-cover"
               />
+            </div>
+            <p className="font-bold text-lg">{karyawan.name}</p>
+            <p className="text-sm text-gray-500">{karyawan.jabatan}</p>
+            <p className="text-sm text-gray-500">{karyawan.department}</p>
+          </div>
+
+          {/* Detail Info */}
+          <div className="flex-1 flex flex-col gap-y-10">
+            <Section title="Informasi Pribadi">
+              <FieldRow label="NIK" value={karyawan.nik} />
+              <FieldRow label="Alamat" value={karyawan.address} />
+              <FieldRow
+                label="Tempat, Tgl Lahir"
+                value={`${karyawan.tempat_lahir}, ${karyawan.tanggal_lahir}`}
+              />
+              <FieldRow label="Jenis Kelamin" value={karyawan.jenis_kelamin} />
+              <FieldRow
+                label="Pendidikan Terakhir"
+                value={karyawan.pendidikan}
+              />
+              <FieldRow label="Email" value={karyawan.email} />
+              <FieldRow label="No Telp" value={karyawan.phone_number} />
             </Section>
 
-            <Section title="Payroll">
-              <FieldRow
-                label="Tanggal Efektif"
-                value={karyawan.tanggal_efektif}
-              />
-              <FieldRow label="Bank" value={karyawan.bank} />
-              <FieldRow label="Nomer Rekening" value={karyawan.no_rek} />
-              <FieldRow
-                label="Gaji Pokok"
-                value={formatRupiah(karyawan.gaji)}
-              />
-              {/* <FieldRow
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-13">
+              <Section title="Informasi Kepegawaian">
+                <FieldRow label="Mulai Kerja" value={karyawan.start_date} />
+                <FieldRow label="Masa Kerja" value={karyawan.tenure} />
+                <FieldRow label="Akhir Kerja" value={karyawan.end_date} />
+                {/* <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} /> */}
+                <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
+                <FieldRow label="Jabatan" value={karyawan.jabatan} />
+                <FieldRow label="Departemen" value={karyawan.department} />
+      <FieldRow label="Type Jadwal" value={karyawan?.jadwal_type} />
+
+
+
+                <FieldRow label="Cabang" value={karyawan.cabang} />
+                <FieldRow
+                  label="Status Kerja"
+                  value={karyawan.employment_status}
+                />
+              </Section>
+              <Section title="Payroll">
+                <FieldRow
+                  label="Tanggal Efektif"
+                  value={karyawan.tanggal_efektif}
+                />
+                <FieldRow label="Bank" value={karyawan.bank} />
+                <FieldRow label="Nomer Rekening" value={karyawan.no_rek} />
+                <FieldRow
+                  label="Gaji Pokok"
+                  value={formatRupiah(karyawan.gaji)}
+                />
+                {/* <FieldRow
                 label="Uang Lembur"
                 value={formatRupiah(karyawan.uang_lembur)}
               /> */}
-              {/* <FieldRow
+                {/* <FieldRow
                 label="Denda Terlambat"
                 value={formatRupiah(karyawan.denda_terlambat)}
               />
@@ -422,139 +448,143 @@ const karyawan = {
                 label="Total Gaji"
                 value={formatRupiah(karyawan.total_gaji)}
               /> */}
-            </Section>
-          </div>
-          <div className="w-full mt-10">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-semibold text-[#1e293b]">
-                  📂 Dokumen Karyawan
-                </h2>
-                <label
-                  htmlFor="fileUpload"
-                  className="flex items-center gap-2 bg-[#1E3A5F] text-white px-2 py-2 rounded-md shadow-md hover:bg-[#155A8A] cursor-pointer transition duration-200 select-none"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Tambah Dokumen
-                </label>
-              </div>
-
-              <input
-                id="fileUpload"
-                type="file"
-                multiple
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files) {
-                    const newFiles = Array.from(e.target.files);
-                    setDokumen((prevFiles) => {
-                      const combinedFiles = [...prevFiles];
-                      newFiles.forEach((file) => {
-                        if (
-                          !combinedFiles.some(
-                            (f) => f.name === file.name && f.size === file.size
-                          )
-                        ) {
-                          combinedFiles.push(file);
-                        }
-                      });
-                      return combinedFiles;
-                    });
-                  }
-                }}
-              />
+              </Section>
             </div>
+            <div className="w-full mt-10">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-semibold text-[#1e293b]">
+                    📂 Dokumen Karyawan
+                  </h2>
+                  <label
+                    htmlFor="fileUpload"
+                    className="flex items-center gap-2 bg-[#1E3A5F] text-white px-2 py-2 rounded-md shadow-md hover:bg-[#155A8A] cursor-pointer transition duration-200 select-none"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    Tambah Dokumen
+                  </label>
+                </div>
 
-            {dokumen.length > 0 && (
-              <div className="mt-10">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  📎 Dokumen yang dipilih:
-                </h3>
-                <ul className="mt-2 list-disc list-inside">
-                  {dokumen.map((file, idx) => (
-                    <li key={idx}>{file.name}</li>
-                  ))}
-                </ul>
-                <button
-                  onClick={handleUpload}
-                  className="mt-5 mb-5 bg-[#1E3A5F] text-white px-4 py-2 rounded"
-                >
-                  Upload Dokumen
-                </button>
+                <input
+                  id="fileUpload"
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      const newFiles = Array.from(e.target.files);
+                      setDokumen((prevFiles) => {
+                        const combinedFiles = [...prevFiles];
+                        newFiles.forEach((file) => {
+                          if (
+                            !combinedFiles.some(
+                              (f) =>
+                                f.name === file.name && f.size === file.size
+                            )
+                          ) {
+                            combinedFiles.push(file);
+                          }
+                        });
+                        return combinedFiles;
+                      });
+                    }
+                  }}
+                />
               </div>
-            )}
 
-            {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
-              <div className="w-full overflow-x-auto rounded-lg shadow-md">
-                <table className="min-w-[640px] w-full text-left text-sm text-gray-700 border border-gray-300">
-                  <thead className="bg-gray-100 text-gray-700 uppercase tracking-wide border-b border-gray-300">
-                    <tr>
-                      <th className="px-6 py-3 border-r border-gray-300">
-                        Nama Dokumen
-                      </th>
-                      <th className="px-6 py-3 text-center">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {karyawan.dokumen.map((doc, index) => (
-                      <tr
-                        key={doc.id ?? index}
-                        className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        }`}
-                      >
-                        <td className="px-6 py-4 border-r border-gray-200 font-medium whitespace-nowrap">
-                          {doc.name}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button
-                            onClick={() => handleViewDocument(doc.file)}
-                            title="Lihat Dokumen"
-                            className="text-blue-600 border border-blue-600 rounded-md px-3 py-1 hover:bg-blue-100 transition"
-                            type="button"
-                          >
-                            <FaEye />
-                          </button>
-                        </td>
-                      </tr>
+              {dokumen.length > 0 && (
+                <div className="mt-10">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    📎 Dokumen yang dipilih:
+                  </h3>
+                  <ul className="mt-2 list-disc list-inside">
+                    {dokumen.map((file, idx) => (
+                      <li key={idx}>{file.name}</li>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
-            )}
+                  </ul>
+                  <button
+                    onClick={handleUpload}
+                    className="mt-5 mb-5 bg-[#1E3A5F] text-white px-4 py-2 rounded"
+                  >
+                    Upload Dokumen
+                  </button>
+                </div>
+              )}
+
+              {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
+                <div className="w-full overflow-x-auto rounded-lg shadow-md">
+                  <table className="min-w-[640px] w-full text-left text-sm text-gray-700 border border-gray-300">
+                    <thead className="bg-gray-100 text-gray-700 uppercase tracking-wide border-b border-gray-300">
+                      <tr>
+                        <th className="px-6 py-3 border-r border-gray-300">
+                          Nama Dokumen
+                        </th>
+                        <th className="px-6 py-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {karyawan.dokumen.map((doc, index) => (
+                        <tr
+                          key={doc.id ?? index}
+                          className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }`}
+                        >
+                          <td className="px-6 py-4 border-r border-gray-200 font-medium whitespace-nowrap">
+                            {doc.name}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              onClick={() => handleViewDocument(doc.file)}
+                              title="Lihat Dokumen"
+                              className="text-blue-600 border border-blue-600 rounded-md px-3 py-1 hover:bg-blue-100 transition"
+                              type="button"
+                            >
+                              <FaEye />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600 italic">
+                  Tidak ada dokumen
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }
 
 function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
- <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 py-2">
-  <div className="sm:w-40 font-semibold text-gray-700">{label}</div>
-  <div className="w-4 flex justify-center items-start pt-[2px] text-gray-400 select-none">
-    :
-  </div>
-  <div className="flex-1 text-gray-500 font-semibold break-words">{value || '-'}</div>
-</div>
-
+    <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 py-2">
+      <div className="sm:w-40 font-semibold text-gray-700">{label}</div>
+      <div className="w-4 flex justify-center items-start pt-[2px] text-gray-400 select-none">
+        :
+      </div>
+      <div className="flex-1 text-gray-500 font-semibold break-words">
+        {value || "-"}
+      </div>
+    </div>
   );
 }
 function Section({
