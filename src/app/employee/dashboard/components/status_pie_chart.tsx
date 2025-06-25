@@ -65,7 +65,7 @@ export default function StatusPieChart({ stats, loading }: StatusPieChartProps) 
                   cy="50%"
                   labelLine={false}
                   label={renderCustomizedLabel}
-                  outerRadius={50}
+                  outerRadius={90}
                   fill="#8884d8"
                   dataKey="value"
                 >

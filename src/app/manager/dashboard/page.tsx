@@ -10,14 +10,19 @@ import { useEffect, useState } from 'react';
 import ClockStatus from './component_dashboard/clock_status';
 import DepartmentDistribution from './component_dashboard/department_distribution';
 import { dashboardTutorialSteps } from '../tutorial/dashboard_tutorial';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function DashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
 
+    useEffect(() => {
+        setIsLoading(false);
+    }, []);
+
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="flex justify-center items-center w-full h-screen">
+              <LoadingSpinner size={48} />
             </div>
         );
     }

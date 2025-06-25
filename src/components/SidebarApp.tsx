@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
@@ -61,41 +62,37 @@ const sidebarNavItems = [
 ];
 
 function SwitchModeButton(): JSX.Element | null {
-
-    if (typeof window === "undefined") {
-        return null;
-    }
-
-    if (localStorage.getItem("user") === null) {
-        return null;
-    }
-    const user = JSON.parse(localStorage.getItem("user")!);
-
-    if (!(user && user.workplace && user.workplace.id_manager === user.id)) {
-        return null;
-    }
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const pathname = usePathname();
-    if (pathname.startsWith("/manager")) {
-        return (
-            <Link
-                href="/employee/dashboard"
-                className="flex items-center rounded-full px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-            >
-                <UserCircle className="mr-2 h-4 w-4" />
-                <span>Employee Mode</span>
-            </Link>
-        );
-    }
+    const [isManager, setIsManager] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const userRaw = localStorage.getItem("user");
+            if (userRaw) {
+                try {
+                    const user = JSON.parse(userRaw);
+                    const isUserManager = user?.workplace?.id_manager === user?.id;
+                    setIsManager(isUserManager);
+                } catch (e) {
+                    setIsManager(false);
+                }
+            } else {
+                setIsManager(false);
+            }
+        }
+    }, []);
+
+    if (isManager === null) return null; // loading di client, hindari mismatch
+
+    const isManagerRoute = pathname.startsWith("/manager");
 
     return (
         <Link
-            href="/manager/dashboard"
+            href={isManagerRoute ? "/employee/dashboard" : "/manager/dashboard"}
             className="flex items-center rounded-full px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
         >
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Manager Mode</span>
+            <UserCircle className="mr-2 h-4 w-4" />
+            <span>{isManagerRoute ? "Employee Mode" : "Manager Mode"}</span>
         </Link>
     );
 }

@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Mail, Phone, MapPin, Briefcase, Calendar, RectangleEllipsis } from 'lucide-react';
 import api from '@/lib/axios';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface EmployeeData {
     id: string;
@@ -65,8 +66,8 @@ export default function ProfilePage() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-[#1E3A5F]"></div>
+            <div className="flex justify-center items-center w-full h-screen">
+              <LoadingSpinner size={48} />
             </div>
         );
     }
