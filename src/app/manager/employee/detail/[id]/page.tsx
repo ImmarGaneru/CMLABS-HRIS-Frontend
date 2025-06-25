@@ -409,8 +409,8 @@ export default function DetailKaryawan() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-13">
               <Section title="Informasi Kepegawaian">
                 <FieldRow label="Mulai Kerja" value={karyawan.start_date} />
-                <FieldRow label="Masa Kerja" value={karyawan.tenure} />
                 <FieldRow label="Akhir Kerja" value={karyawan.end_date} />
+                <FieldRow label="Masa Kerja" value={karyawan.tenure} />
                 {/* <FieldRow label="Jadwal Kerja" value={karyawan.jadwal} /> */}
                 <FieldRow label="Tipe Kontrak" value={karyawan.tipe_kontrak} />
                 <FieldRow label="Jabatan" value={karyawan.jabatan} />

@@ -6,7 +6,7 @@ import React, { ChangeEvent, useEffect, useState } from "react";
 import api from "@/lib/axios";
 import { FaCamera, FaEye, FaTrash } from "react-icons/fa";
 import axios from "axios";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -193,15 +193,15 @@ export default function EditKaryawan() {
   useEffect(() => {
     async function fetchPositions() {
       try {
-        const response = await api.get('/admin/positions');
-     const mapped = response.data.data.map((pos: any) => ({
-  id: pos.id.toString(),
-  name: pos.name,
-  gaji: Number(pos.gaji ?? 0),
-  uang_lembur: 0, // default atau sesuaikan jika ada
-  denda_terlambat: 0,
-  total_gaji: Number(pos.gaji ?? 0), // sementara disamakan dengan gaji
-}));
+        const response = await api.get("/admin/positions");
+        const mapped = response.data.data.map((pos: any) => ({
+          id: pos.id.toString(),
+          name: pos.name,
+          gaji: Number(pos.gaji ?? 0),
+          uang_lembur: 0, // default atau sesuaikan jika ada
+          denda_terlambat: 0,
+          total_gaji: Number(pos.gaji ?? 0), // sementara disamakan dengan gaji
+        }));
         setPositions(mapped);
       } catch (error) {
         console.error("Failed to fetch positions:", error);
@@ -331,7 +331,7 @@ export default function EditKaryawan() {
           tipe_kontrak: mappedData.tipe_kontrak,
           grade: "", // jika tidak ada di mappedData, bisa kosong
           jabatan: mappedData.jabatan,
-        id_position: mappedData.id_position.toString(),
+          id_position: mappedData.id_position.toString(),
           id_department: mappedData.id_department,
           department: mappedData.department,
           cabang: mappedData.cabang,
@@ -457,7 +457,7 @@ export default function EditKaryawan() {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedAvatar(file);
-      setPreview(URL.createObjectURL(file)); // 
+      setPreview(URL.createObjectURL(file)); //
     }
   };
 
@@ -487,6 +487,7 @@ export default function EditKaryawan() {
       alert("Format tanggal_efektif salah!");
       return;
     }
+    
     const validStatuses = ["active", "inactive", "resign"];
     if (!validStatuses.includes(formData.employment_status)) {
       toast.error(
@@ -494,7 +495,9 @@ export default function EditKaryawan() {
           ", "
         )}`
       );
+      
       return;
+      
     }
 
     try {
@@ -556,7 +559,13 @@ export default function EditKaryawan() {
       for (const pair of dataToSend.entries()) {
         console.log(pair[0], pair[1]);
       }
+// Kirim data
+console.log("Mengirim ke:", `admin/employees/${id}`);
 
+// Tampilkan semua isi FormData sebelum dikirim (debugging)
+for (const pair of dataToSend.entries()) {
+  console.log(pair[0], pair[1]);
+}
       // Kirim data
       const response = await api.post(
         `admin/employees/${id}?_method=PUT`,
@@ -568,34 +577,33 @@ export default function EditKaryawan() {
 
       console.log("Response dari server:", response.data);
 
-
       toast.success("Data berhasil diperbarui!");
       setTimeout(() => {
         router.push("/manager/employee");
       }, 1500);
     } catch (error: unknown) {
-   if (axios.isAxiosError(error)) {
-  const responseData = error.response?.data;
+      if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data;
 
-  // Coba ambil error dari `errors` Laravel (kalau pakai FormRequest)
-  const errorDetail = responseData?.errors || responseData?.data?.errors;
+        // Coba ambil error dari `errors` Laravel (kalau pakai FormRequest)
+        const errorDetail = responseData?.errors || responseData?.data?.errors;
 
-  console.log("🔴 Detail semua error:", errorDetail);
+        console.log("🔴 Detail semua error:", errorDetail);
 
-  if (errorDetail) {
-    // Tampilkan semua pesan error
-    Object.entries(errorDetail).forEach(([field, messages]) => {
-      toast.error(`${field}: ${messages}`);
-    });
-  } else {
-    // Fallback
-    toast.error(responseData?.message || "Terjadi kesalahan saat update.");
-  }
-} else {
-  toast.error("Gagal memperbarui data.");
-}
-
-
+        if (errorDetail) {
+          // Tampilkan semua pesan error
+          Object.entries(errorDetail).forEach(([field, messages]) => {
+            toast.error(`${field}: ${messages}`);
+          });
+        } else {
+          // Fallback
+          toast.error(
+            responseData?.message || "Terjadi kesalahan saat update."
+          );
+        }
+      } else {
+        toast.error("Gagal memperbarui data.");
+      }
     }
   };
 
@@ -616,196 +624,196 @@ export default function EditKaryawan() {
   }
 
   return (
-  <div className="min-h-screen bg-gray-100 p-5">
-    <ToastContainer />
-    <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#141414]">Edit Karyawan</h1>
-        <button
-          onClick={() => router.push("/manager/employee")}
-          className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+    <div className="min-h-screen bg-gray-100 p-5">
+      <ToastContainer />
+      <div className="w-full mx-auto bg-white shadow-lg rounded-2xl p-10">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-[#141414]">Edit Karyawan</h1>
+          <button
+            onClick={() => router.push("/manager/employee")}
+            className="flex items-center bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Kembali
-        </button>
-      </div>
-      <form
-        onSubmit={handleSubmit}
-        encType="multipart/form-data"
-        className="space-y-8"
-      >
-     
-
-        <div className="flex flex-col items-start space-y-4">
-          <div className="flex items-center gap-6">
-            {/* Kotak foto dengan border, bayangan dan rounded */}
-            <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
-              <img
-                src={preview || "/default-avatar.jpg"}
-                alt="Preview Avatar"
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
               />
+            </svg>
+            Kembali
+          </button>
+        </div>
+        <form
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+          className="space-y-8"
+        >
+          <div className="flex flex-col items-start space-y-4">
+            <div className="flex items-center gap-6">
+              {/* Kotak foto dengan border, bayangan dan rounded */}
+              <div className="w-40 h-52 rounded-lg bg-gray-100 overflow-hidden shadow-md border border-gray-300 hover:border-blue-500 transition-all duration-300">
+                <img
+                  src={preview || "/default-avatar.jpg"}
+                  alt="Preview Avatar"
+                />
+              </div>
+
+              {/* Tombol upload file custom */}
+              <label
+                htmlFor="avatarUpload"
+                className="cursor-pointer flex flex-col items-center justify-center px-4 py-3 bg-[#1E3A5F]  text-white rounded-md shadow-md hover:bg-[#155A8A]  transition-colors duration-300"
+                title="Upload Foto Avatar"
+              >
+                <FaCamera className="mb-2 text-lg" />
+                <span className="text-sm font-semibold">Ubah Foto</span>
+
+                <input
+                  id="avatarUpload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
+              </label>
             </div>
 
-            {/* Tombol upload file custom */}
-            <label
-              htmlFor="avatarUpload"
-              className="cursor-pointer flex flex-col items-center justify-center px-4 py-3 bg-[#1E3A5F]  text-white rounded-md shadow-md hover:bg-[#155A8A]  transition-colors duration-300"
-              title="Upload Foto Avatar"
-            >
-              <FaCamera className="mb-2 text-lg" />
-              <span className="text-sm font-semibold">Ubah Foto</span>
-
-              <input
-                id="avatarUpload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
-            </label>
+            {/* Optional: Tampilkan nama file yang dipilih */}
+            {selectedAvatar && (
+              <p className="text-gray-600 italic text-sm">
+                File terpilih: {selectedAvatar.name}
+              </p>
+            )}
           </div>
 
-          {/* Optional: Tampilkan nama file yang dipilih */}
-          {selectedAvatar && (
-            <p className="text-gray-600 italic text-sm">
-              File terpilih: {selectedAvatar.name}
-            </p>
-          )}
-        </div>
-
-        {/* Bagian Informasi Pribadi */}
-        <div>
-         <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
-            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
-              Informasi Pribadi
-            </h1>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <EditableField
-              label="Nama Depan"
-              value={formData.first_name}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, first_name: v }))
-              }
-            />
-            <EditableField
-              label="Nama Belakang"
-              value={formData.last_name}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, last_name: v }))
-              }
-            />
-            <EditableField
-              label="NIK"
-              type="number"
-              value={formData.nik}
-              onChange={(v) => setFormData((prev) => ({ ...prev, nik: v }))}
-            />
-            <EditableField
-              label="Alamat"
-              value={formData.address}
-              onChange={(v) => setFormData((prev) => ({ ...prev, address: v }))}
-            />
-            <EditableField
-              label="Tempat Lahir"
-              value={formData.tempat_lahir}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, tempat_lahir: v }))
-              }
-            />
-            <EditableField
-              label="Tanggal Lahir"
-              type="date"
-              value={formData.tanggal_lahir}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, tanggal_lahir: v }))
-              }
-            />
-            <EditableField
-              label="Jenis Kelamin"
-              type="select"
-              value={formData.jenis_kelamin || ""}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, jenis_kelamin: v }))
-              }
-              options={[
-                { value: "Laki-laki", label: "Laki-laki" },
-                { value: "Perempuan", label: "Perempuan" },
-              ]}
-            />
-            <EditableField
-              label="Pendidikan Terakhir"
-              type="select"
-              value={formData.pendidikan || ""}
-              onChange={(v) =>
-                setFormData((prev) => ({ ...prev, pendidikan: v }))
-              }
-              options={[
-                { value: "SMA/SMK", label: "SMA/SMK" },
-                { value: "D3", label: "D3" },
-                { value: "S1", label: "S1" },
-                { value: "S2", label: "S2" },
-                { value: "S3", label: "S3" },
-              ]}
-            />
-            <EditableField
-              label="Email"
-              type="text"
-              value={formData.email}
-              onChange={(v) => setFormData((prev) => ({ ...prev, email: v }))}
-            />
-            <EditableField
-              label="No Telp"
-              value={formData.phone_number}
-              onChange={(v) =>
-                setFormData((prev) => {
-                  console.log("Phone number updated to:", v);
-                  return { ...prev, phone_number: v };
-                })
-              }
-            />
-          </div>
-        </div>
-
-        {/* Bagian Informasi Kepegawaian & Payroll */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Bagian Informasi Pribadi */}
           <div>
-          <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
-            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
-              Informasi Kepegawaian
-            </h1>
+            <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
+              <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+                Informasi Pribadi
+              </h1>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <EditableField
+                label="Nama Depan"
+                value={formData.first_name}
+                onChange={(v) =>
+                  setFormData((prev) => ({ ...prev, first_name: v }))
+                }
+              />
+              <EditableField
+                label="Nama Belakang"
+                value={formData.last_name}
+                onChange={(v) =>
+                  setFormData((prev) => ({ ...prev, last_name: v }))
+                }
+              />
+              <EditableField
+                label="NIK"
+                type="number"
+                value={formData.nik}
+                onChange={(v) => setFormData((prev) => ({ ...prev, nik: v }))}
+              />
+              <EditableField
+                label="Alamat"
+                value={formData.address}
+                onChange={(v) =>
+                  setFormData((prev) => ({ ...prev, address: v }))
+                }
+              />
+              <EditableField
+                label="Tempat Lahir"
+                value={formData.tempat_lahir}
+                onChange={(v) =>
+                  setFormData((prev) => ({ ...prev, tempat_lahir: v }))
+                }
+              />
+              <EditableField
+                label="Tanggal Lahir"
+                type="date"
+                value={formData.tanggal_lahir}
+                onChange={(v) =>
+                  setFormData((prev) => ({ ...prev, tanggal_lahir: v }))
+                }
+              />
+              <EditableField
+                label="Jenis Kelamin"
+                type="select"
+                value={formData.jenis_kelamin || ""}
+                onChange={(v) =>
+                  setFormData((prev) => ({ ...prev, jenis_kelamin: v }))
+                }
+                options={[
+                  { value: "Laki-laki", label: "Laki-laki" },
+                  { value: "Perempuan", label: "Perempuan" },
+                ]}
+              />
+              <EditableField
+                label="Pendidikan Terakhir"
+                type="select"
+                value={formData.pendidikan || ""}
+                onChange={(v) =>
+                  setFormData((prev) => ({ ...prev, pendidikan: v }))
+                }
+                options={[
+                  { value: "SMA/SMK", label: "SMA/SMK" },
+                  { value: "D3", label: "D3" },
+                  { value: "S1", label: "S1" },
+                  { value: "S2", label: "S2" },
+                  { value: "S3", label: "S3" },
+                ]}
+              />
+              <EditableField
+                label="Email"
+                type="text"
+                value={formData.email}
+                onChange={(v) => setFormData((prev) => ({ ...prev, email: v }))}
+              />
+              <EditableField
+                label="No Telp"
+                value={formData.phone_number}
+                onChange={(v) =>
+                  setFormData((prev) => {
+                    console.log("Phone number updated to:", v);
+                    return { ...prev, phone_number: v };
+                  })
+                }
+              />
+            </div>
           </div>
-            <div className="space-y-4">
-              <EditableField
-                label="Mulai Kerja"
-                type="date"
-                value={formData.start_date}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, start_date: v }))
-                }
-              />
-              <EditableField
-                label="Akhir Kerja"
-                type="date"
-                value={formData.end_date}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, end_date: v }))
-                }
-              />
-              {/* <EditableField
+
+          {/* Bagian Informasi Kepegawaian & Payroll */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
+                <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+                  Informasi Kepegawaian
+                </h1>
+              </div>
+              <div className="space-y-4">
+                <EditableField
+                  label="Mulai Kerja"
+                  type="date"
+                  value={formData.start_date}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, start_date: v }))
+                  }
+                />
+                <EditableField
+                  label="Akhir Kerja"
+                  type="date"
+                  value={formData.end_date}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, end_date: v }))
+                  }
+                />
+                {/* <EditableField
                 label="Jadwal Kerja"
                 type="select"
                 value={formData.jadwal || ""}
@@ -818,263 +826,266 @@ export default function EditKaryawan() {
                   { value: "Non-Shift", label: "Non-Shift" },
                 ]}
               /> */}
-              <EditableField
-                label="Tipe Kontrak"
-                type="select"
-                value={formData.tipe_kontrak}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, tipe_kontrak: v }))
-                }
-                options={[
-                  { value: "Tetap", label: "Tetap" },
-                  { value: "Kontrak", label: "Kontrak" },
-                  { value: "Magang", label: "Magang" },
-                ]}
-              />
-              <EditableField
-                label="Department"
-                type="select"
-                value={formData.id_department || ""}
-                onChange={(v) => handleDepartmentChange(v)}
-                options={departments.map((dept) => ({
-                  value: dept.id,
-                  label: dept.name,
-                }))}
-              />
+                <EditableField
+                  label="Tipe Kontrak"
+                  type="select"
+                  value={formData.tipe_kontrak}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, tipe_kontrak: v }))
+                  }
+                  options={[
+                    { value: "Tetap", label: "Tetap" },
+                    { value: "Kontrak", label: "Kontrak" },
+                    { value: "Magang", label: "Magang" },
+                  ]}
+                />
+                <EditableField
+                  label="Department"
+                  type="select"
+                  value={formData.id_department || ""}
+                  onChange={(v) => handleDepartmentChange(v)}
+                  options={departments.map((dept) => ({
+                    value: dept.id,
+                    label: dept.name,
+                  }))}
+                />
 
-              <EditableField
-                label="Jabatan"
-                type="select"
-                value={formData.id_position || ""}
-                onChange={(v) => handleJabatanChange(v)}
-                options={positions.map((pos) => ({
-                  value: pos.id,
-                  label: pos.name,
-                }))}
-              />
+                <EditableField
+                  label="Jabatan"
+                  type="select"
+                  value={formData.id_position || ""}
+                  onChange={(v) => handleJabatanChange(v)}
+                  options={positions.map((pos) => ({
+                    value: pos.id,
+                    label: pos.name,
+                  }))}
+                />
 
-              <EditableField
-                label="Cabang"
-                value={formData.cabang}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, cabang: v }))
-                }
-              />
-              <EditableField
-                label="Status Kerja"
-                type="select"
-                value={formData.employment_status}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, employment_status: v }))
-                }
-                options={[
-                  { value: "active", label: "active" },
-                  { value: "inactive", label: "inactive" },
-                  { value: "resign", label: "resign" },
-                ]}
-              />
+                <EditableField
+                  label="Cabang"
+                  value={formData.cabang}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, cabang: v }))
+                  }
+                />
+                <EditableField
+                  label="Status Kerja"
+                  type="select"
+                  value={formData.employment_status}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, employment_status: v }))
+                  }
+                  options={[
+                    { value: "active", label: "active" },
+                    { value: "inactive", label: "inactive" },
+                    { value: "resign", label: "resign" },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
+                <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+                  Payroll
+                </h1>
+              </div>
+              <div className="space-y-4">
+                <EditableField
+                  label="Tanggal Efektif"
+                  type="date"
+                  value={formData.tanggal_efektif}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, tanggal_efektif: v }))
+                  }
+                />
+                <EditableField
+                  label="Bank"
+                  value={formData.bank}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, bank: v }))
+                  }
+                />
+                <EditableField
+                  label="Nomer Rekening"
+                  type="number"
+                  value={formData.no_rek}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, no_rek: v }))
+                  }
+                />
+                <EditableField
+                  label="Gaji Pokok"
+                  type="number"
+                  value={formData.gaji.toString()}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, gaji: Number(v) }))
+                  }
+                />
+                <EditableField
+                  label="Uang Lembur"
+                  type="number"
+                  value={formData.uang_lembur.toString()}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, uang_lembur: Number(v) }))
+                  }
+                />
+                <EditableField
+                  label="Denda Terlambat"
+                  type="number"
+                  value={formData.denda_terlambat.toString()}
+                  onChange={(v) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      denda_terlambat: Number(v),
+                    }))
+                  }
+                />
+                <EditableField
+                  label="Total Gaji"
+                  type="number"
+                  value={formData.total_gaji.toString()}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, total_gaji: Number(v) }))
+                  }
+                  readOnly
+                />
+              </div>
             </div>
           </div>
 
-          <div>
-           <div className="col-span-2 border-b border-gray-300 pb-2 mb-5">
-            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
-              Payroll
-            </h1>
-          </div>
-            <div className="space-y-4">
-              <EditableField
-                label="Tanggal Efektif"
-                type="date"
-                value={formData.tanggal_efektif}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, tanggal_efektif: v }))
-                }
-              />
-              <EditableField
-                label="Bank"
-                value={formData.bank}
-                onChange={(v) => setFormData((prev) => ({ ...prev, bank: v }))}
-              />
-              <EditableField
-                label="Nomer Rekening"
-                type="number"
-                value={formData.no_rek}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, no_rek: v }))
-                }
-              />
-              <EditableField
-                label="Gaji Pokok"
-                type="number"
-                value={formData.gaji.toString()}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, gaji: Number(v) }))
-                }
-              />
-              <EditableField
-                label="Uang Lembur"
-                type="number"
-                value={formData.uang_lembur.toString()}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, uang_lembur: Number(v) }))
-                }
-              />
-              <EditableField
-                label="Denda Terlambat"
-                type="number"
-                value={formData.denda_terlambat.toString()}
-                onChange={(v) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    denda_terlambat: Number(v),
-                  }))
-                }
-              />
-              <EditableField
-                label="Total Gaji"
-                type="number"
-                value={formData.total_gaji.toString()}
-                onChange={(v) =>
-                  setFormData((prev) => ({ ...prev, total_gaji: Number(v) }))
-                }
-                readOnly
-              />
-            </div>
-          </div>
-        </div>
+          <div className="relative mb-24">
+            <div className="w-full mt-10">
+              <div className="col-span-2 border-b border-gray-300 pb-2">
+                <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
+                  📂 Dokumen Karyawan
+                </h1>
+              </div>
 
-        <div className="relative mb-24">
-          <div className="w-full mt-10">
-   
-             <div className="col-span-2 border-b border-gray-300 pb-2">
-            <h1 className="text-2xl font-bold text-[#1E3A5F] pb-2">
-               📂 Dokumen Karyawan
-            </h1>
-          </div>
-
-            {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
-              <div className="w-full overflow-x-auto rounded-lg shadow-md mb-6">
-                <table className="min-w-[640px] w-full text-left text-sm text-gray-700 border border-gray-300">
-                  <thead className="bg-gray-100 text-gray-700 uppercase tracking-wide border-b border-gray-300">
-                    <tr>
-                      <th className="px-6 py-3 border-r border-gray-300">
-                        Nama Dokumen
-                      </th>
-                      {/* <th className="px-6 py-3 border-r border-gray-300">Tanggal Upload</th> */}
-                      <th className="px-6 py-3 text-center">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {karyawan.dokumen.map((doc, index) => (
-                      <tr
-                        key={index}
-                        className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
-                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        }`}
-                      >
-                        <td className="px-6 py-4 border-r border-gray-200 font-medium">
-                          {doc.name}
-                        </td>
-                        {/* <td className="px-6 py-4 border-r border-gray-200">
+              {karyawan.dokumen && karyawan.dokumen.length > 0 ? (
+                <div className="w-full overflow-x-auto rounded-lg shadow-md mb-6">
+                  <table className="min-w-[640px] w-full text-left text-sm text-gray-700 border border-gray-300">
+                    <thead className="bg-gray-100 text-gray-700 uppercase tracking-wide border-b border-gray-300">
+                      <tr>
+                        <th className="px-6 py-3 border-r border-gray-300">
+                          Nama Dokumen
+                        </th>
+                        {/* <th className="px-6 py-3 border-r border-gray-300">Tanggal Upload</th> */}
+                        <th className="px-6 py-3 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {karyawan.dokumen.map((doc, index) => (
+                        <tr
+                          key={index}
+                          className={`border-b border-gray-300 hover:bg-blue-50 transition duration-150 ${
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }`}
+                        >
+                          <td className="px-6 py-4 border-r border-gray-200 font-medium">
+                            {doc.name}
+                          </td>
+                          {/* <td className="px-6 py-4 border-r border-gray-200">
                   <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 text-xs rounded-full">
                     {doc.uploaded_at
                       ? new Date(doc.uploaded_at).toLocaleDateString("id-ID")
                       : "-"}
                   </span>
                 </td> */}
-                        <td className="px-6 py-4 text-center space-x-3">
-                          <div className="inline-flex space-x-2 items-center">
-                            <button
-                              title="Detail"
-                              onClick={() =>
-                                window.open(
-                                  doc.file,
-                                  "_blank",
-                                  "noopener,noreferrer"
-                                )
-                              }
-                              className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8] cursor-pointer"
-                            >
-                              <FaEye />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDocToDelete(doc.id);
-                                setIsDialogOpen(true);
-                              }}
-                              className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
-                            >
-                              <FaTrash />
-                            </button>
+                          <td className="px-6 py-4 text-center space-x-3">
+                            <div className="inline-flex space-x-2 items-center">
+                              <button
+                                title="Detail"
+                                onClick={() =>
+                                  window.open(
+                                    doc.file,
+                                    "_blank",
+                                    "noopener,noreferrer"
+                                  )
+                                }
+                                className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8] cursor-pointer"
+                              >
+                                <FaEye />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setDocToDelete(doc.id);
+                                  setIsDialogOpen(true);
+                                }}
+                                className="border border-red-600 px-3 py-1 rounded text-red-600 bg-[#f8f8f8] hover:bg-red-100"
+                              >
+                                <FaTrash />
+                              </button>
 
-                            <AlertDialog
-                              open={isDialogOpen}
-                              onOpenChange={setIsDialogOpen}
-                            >
-                              <AlertDialogTrigger asChild></AlertDialogTrigger>
+                              <AlertDialog
+                                open={isDialogOpen}
+                                onOpenChange={setIsDialogOpen}
+                              >
+                                <AlertDialogTrigger
+                                  asChild
+                                ></AlertDialogTrigger>
 
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Yakin ingin menghapus dokumen ini?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Dokumen yang dihapus tidak bisa
-                                    dikembalikan.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel
-                                    onClick={() => setIsDialogOpen(false)}
-                                  >
-                                    Batal
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => {
-                                      if (docToDelete) {
-                                        handleDeleteConfirm(docToDelete);
-                                      }
-                                    }}
-                                  >
-                                    Hapus
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600 italic">Tidak ada dokumen</p>
-            )}
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Yakin ingin menghapus dokumen ini?
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Dokumen yang dihapus tidak bisa
+                                      dikembalikan.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel
+                                      onClick={() => setIsDialogOpen(false)}
+                                    >
+                                      Batal
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => {
+                                        if (docToDelete) {
+                                          handleDeleteConfirm(docToDelete);
+                                        }
+                                      }}
+                                    >
+                                      Hapus
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600 italic">
+                  Tidak ada dokumen
+                </p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-4 mt-6">
+              <button
+                type="button"
+                className="text-blue-500 cursor-pointer hover:text-blue-700"
+                onClick={() => (window.location.href = "/employee")}
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
+              >
+                Simpan
+              </button>
+            </div>
           </div>
-
-          <div className="flex justify-end gap-4 mt-6">
-            <button
-              type="button"
-              className="text-blue-500 cursor-pointer hover:text-blue-700"
-              onClick={() => (window.location.href = "/employee")}
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="bg-[#1E3A5F] text-white px-6 py-2 rounded hover:bg-[#155A8A]"
-            >
-              Simpan
-            </button>
-          </div>
-        </div>
-      
-      </form>
+        </form>
+      </div>
     </div>
-    </div>
-
   );
 }

@@ -10,7 +10,7 @@ import { RxAvatar } from "react-icons/rx";
 import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
 import EmployeeCardSum from "./component_employee/employee_card_sum";
 import DataTableHeader from "@/components/DatatableHeader";
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
@@ -40,7 +40,7 @@ type Employee = {
   tipe_kontrak: string | null;
 
   // tambahan
-  user?: { email: string , phone_number: string };
+  user?: { email: string; phone_number: string };
   position?: { name: string };
   // phone_number: string;
   cabang: string;
@@ -67,102 +67,54 @@ export default function EmployeeTablePage() {
     { label: "active", value: "active" },
     { label: "inactive", value: "inactive" },
   ];
- const handleSoftDelete = async (id: number | string) => {
-  try {
-    const res = await api.delete(`/admin/employees/${id}`);
+  const handleSoftDelete = async (id: number | string) => {
+    try {
+      const res = await api.delete(`/admin/employees/${id}`);
 
-    // Jika responsenya punya struktur `data.success` atau semacam itu, kamu bisa cek di sini
-    if (res.status !== 200) {
-      throw new Error(res.data?.message || "Gagal menghapus data");
+      // Jika responsenya punya struktur `data.success` atau semacam itu, kamu bisa cek di sini
+      if (res.status !== 200) {
+        throw new Error(res.data?.message || "Gagal menghapus data");
+      }
+
+      // Hapus data dari state
+      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+      // ✅ Tambahkan toast sukses
+      toast.success("Data berhasil dihapus!");
+    } catch (error) {
+      let errorMessage = "Gagal menghapus data";
+      if (error instanceof Error) {
+        errorMessage += `: ${error.message}`;
+      }
+
+      // ✅ Tambahkan toast error
+      toast.error(errorMessage);
+      console.error(error);
     }
-
-    // Hapus data dari state
-    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
-  // ✅ Tambahkan toast sukses
-    toast.success("Data berhasil dihapus!");
-  } catch (error) {
-    let errorMessage = "Gagal menghapus data";
-    if (error instanceof Error) {
-      errorMessage += `: ${error.message}`;
-    }
-
-    // ✅ Tambahkan toast error
-    toast.error(errorMessage);
-    console.error(error);
-  }
-};
+  };
 
   // Fetch data dari backend
+
   useEffect(() => {
     const fetchEmployees = async () => {
       setLoading(true);
       setError(null);
       try {
         const res = await api.get("/admin/employees/comp-employees");
-        
+
         // Fetch position details for each employee
-        const feData = await Promise.all(res.data.data.map(async (emp: Employee) => {
-          let positionName = "-";
-          if (emp.id_position) {
-            try {
-              const positionRes = await api.get(`/admin/positions/get/${emp.id_position}`);
-              if (positionRes.data.meta.success) {
-                positionName = positionRes.data.data.name;
-              }
-            } catch (err) {
-              console.error(`Error fetching position for employee ${emp.id}:`, err);
-            }
-          }
-
-          return {
-            id: emp.id,
-            id_user: emp.id_user,
-            nama: `${emp.first_name} ${emp.last_name}`,
-            jenis_kelamin: emp.jenis_kelamin,
-            phone_number: emp.user?.phone_number || "-",
-            cabang: emp.cabang || "-",
-         jabatan: emp.position?.name ?? "-", // ✅ ini yang penting
-            tipe_kontrak: emp.tipe_kontrak,
-            status: emp.employment_status,
-            Email: emp.user?.email || "-",
-          };
-        }));
-
-        setEmployees(feData);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Unknown error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmployees();
-  }, []);
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await api.get("/admin/employees/comp-employees");
-        
-        // Fetch position details for each employee
-    const feData = res.data.data.map((emp: Employee) => ({
+     const feData = res.data.data.map((emp: any) => ({
   id: emp.id,
   id_user: emp.id_user,
-  nama: `${emp.first_name} ${emp.last_name}`,
-  jenis_kelamin: emp.jenis_kelamin,
-  phone_number: emp.user?.phone_number || "-",
-  cabang: emp.cabang || "-",
-  tipe_kontrak: emp.tipe_kontrak,
-  jabatan: emp.position?.name ?? "-", // GANTI DI SINI ✅
-  status: emp.employment_status,
-  Email: emp.user?.email || "-",
-
+  nama: `${emp.first_name ?? ""} ${emp.last_name ?? ""}`,
+  jenis_kelamin: emp.jenis_kelamin ?? "-",
+  phone_number: emp.user?.phone_number ?? emp.phone_number ?? "-",
+  cabang: emp.cabang ?? "-",
+  tipe_kontrak: emp.tipe_kontrak ?? "-",
+  jabatan: emp.position?.name ?? emp.jabatan ?? "-",
+  status: emp.employment_status ?? "-",
+  email: emp.user?.email ?? emp.email ?? "-",
 }));
+
 
         setEmployees(feData);
       } catch (err: unknown) {
@@ -189,7 +141,6 @@ export default function EmployeeTablePage() {
     return styles[status] ?? "bg-gray-100 text-gray-800";
   };
 
-
   const employeeColumns = useMemo<ColumnDef<FEEmployee>[]>(
     () => [
       {
@@ -200,25 +151,25 @@ export default function EmployeeTablePage() {
         ),
         size: 20,
       },
-  //     {
-  //     id: "Avatar",
-  // header: "Avatar",
-  // cell: ({ row }) => (
-  //   <div className="flex items-center justify-center">
-  //     {row.original.avatar ? (
-  //       // eslint-disable-next-line @next/next/no-img-element
-  //       <img
-  //         src={`/storage/${row.original.avatar}`} // atau URL lengkap jika disimpan sebagai path lengkap
-  //         alt="Avatar"
-  //         className="w-8 h-8 rounded-full object-cover"
-  //       />
-  //     ) : (
-  //       <RxAvatar size={24} className="text-gray-400" />
-  //     )}
-  //   </div>
-  // ),
-  // size: 60,
-  //     },
+      //     {
+      //     id: "Avatar",
+      // header: "Avatar",
+      // cell: ({ row }) => (
+      //   <div className="flex items-center justify-center">
+      //     {row.original.avatar ? (
+      //       // eslint-disable-next-line @next/next/no-img-element
+      //       <img
+      //         src={`/storage/${row.original.avatar}`} // atau URL lengkap jika disimpan sebagai path lengkap
+      //         alt="Avatar"
+      //         className="w-8 h-8 rounded-full object-cover"
+      //       />
+      //     ) : (
+      //       <RxAvatar size={24} className="text-gray-400" />
+      //     )}
+      //   </div>
+      // ),
+      // size: 60,
+      //     },
       {
         accessorKey: "nama",
         header: "Nama",
@@ -259,7 +210,7 @@ export default function EmployeeTablePage() {
         ),
         size: 100,
       },
-     {
+      {
         accessorKey: "jabatan",
         header: "Jabatan",
         cell: (info) => (
@@ -269,49 +220,48 @@ export default function EmployeeTablePage() {
         ),
         size: 120,
       },
-   {
-  accessorKey: "tipe_kontrak",
-  header: "Tipe Kontrak",
-  cell: (info) => (
-    <div className="truncate max-w-[100px] text-center flex items-center justify-center">
-      <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
-        {(info.getValue() as string) || "-"}
-      </span>
-    </div>
-  ),
-  size: 100,
-},
-{
-  accessorKey: "status",
-  header: "Status",
-  cell: (info) => {
-    const status = (info.getValue() as string)?.toLowerCase();
+      {
+        accessorKey: "tipe_kontrak",
+        header: "Tipe Kontrak",
+        cell: (info) => (
+          <div className="truncate max-w-[100px] text-center flex items-center justify-center">
+            <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+              {(info.getValue() as string) || "-"}
+            </span>
+          </div>
+        ),
+        size: 100,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: (info) => {
+          const status = (info.getValue() as string)?.toLowerCase();
 
-    let displayLabel = "Tidak Diketahui";
-    let color = "bg-gray-200 text-gray-600";
+          let displayLabel = "Tidak Diketahui";
+          let color = "bg-gray-200 text-gray-600";
 
-    if (status === "active") {
-      displayLabel = "active";
-      color = "bg-green-100 text-green-700";
-    } else if (status === "resign") {
-      displayLabel = "resign";
-      color = "bg-red-100 text-red-700";
-    } else if (status === "inactive") {
-      displayLabel = "inactive";
-      color = "bg-yellow-100 text-yellow-700";
-    }
+          if (status === "active") {
+            displayLabel = "active";
+            color = "bg-green-100 text-green-700";
+          } else if (status === "resign") {
+            displayLabel = "resign";
+            color = "bg-red-100 text-red-700";
+          } else if (status === "inactive") {
+            displayLabel = "inactive";
+            color = "bg-yellow-100 text-yellow-700";
+          }
 
-    return (
-      <div className="truncate max-w-[100px] text-center flex items-center justify-center ">
-        <span className={`px-2 py-1 text-xs rounded ${color}`}>
-          {displayLabel}
-        </span>
-      
-      </div>
-    );
-  },
-  size: 100,
-},
+          return (
+            <div className="truncate max-w-[100px] text-center flex items-center justify-center ">
+              <span className={`px-2 py-1 text-xs rounded ${color}`}>
+                {displayLabel}
+              </span>
+            </div>
+          );
+        },
+        size: 100,
+      },
 
       {
         id: "actions",
@@ -322,7 +272,9 @@ export default function EmployeeTablePage() {
             <div className="flex gap-2 justify-center w-[120px] ">
               <button
                 title="Detail"
-                onClick={() => router.push(`/manager/employee/detail/${data.id}`)}
+                onClick={() =>
+                  router.push(`/manager/employee/detail/${data.id}`)
+                }
                 className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
               >
                 <FaEye />
@@ -383,91 +335,119 @@ export default function EmployeeTablePage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Import handler
+const handleImportCSV = async (
+  event: React.ChangeEvent<HTMLInputElement>
+) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
 
-  const handleImportCSV = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = e.target?.result;
+      if (!data) throw new Error("File kosong atau tidak terbaca");
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
+      const fileName = file.name.toLowerCase();
+      const workbook = fileName.endsWith(".csv")
+        ? XLSX.read(data, { type: "string" })
+        : XLSX.read(data, { type: "array" });
+
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rawJsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+        worksheet,
+        { defval: "" }
+      );
+
+     const mappedEmployees = rawJsonData.map((row, i) => {
+  console.log(`📦 Row ${i}:`, row); // Tambahkan ini
+
+  const [first_name, ...last] = (row["nama"] || "").toString().split(" ");
+  return {
+    id: row["id"] || undefined,
+    first_name,
+    last_name: last.join(" "),
+    email: (row["email"] || row["Email"] || "")
+      .toString()
+      .toLowerCase(),
+    phone_number: row["phone_number"],
+    jenis_kelamin: row["jenis_kelamin"],
+    cabang: row["cabang"],
+    jabatan: row["jabatan"], // apakah ini undefined?
+    department: row["department"] || null,
+    address: "Tidak Diketahui",
+    status: row["status"] || "active",
+  };
+});
+
+
+      if (mappedEmployees.length === 0)
+        throw new Error("Tidak ada data valid untuk diimpor");
+
+      // 🔁 Kirim ke backend
+      await api.post("/admin/employees/import", {
+        employees: mappedEmployees,
+      });
+
+      // ✅ Setelah import, ambil ulang data dari backend
+ const fetchRes = await api.get("/admin/employees/comp-employees");
+const rawData = fetchRes.data.data;
+
+const updatedEmployees = await Promise.all(
+  rawData.map(async (emp: any) => {
+    let jabatan = "-";
+
+    if (emp.position?.name) {
+      jabatan = emp.position.name;
+    } else if (emp.jabatan) {
+      jabatan = emp.jabatan;
+    } else if (emp.id_position) {
       try {
-        const data = e.target?.result;
-        if (!data) throw new Error("File kosong atau tidak terbaca");
-
-        const fileName = file.name.toLowerCase();
-
-        let workbook;
-        if (fileName.endsWith(".csv")) {
-          workbook = XLSX.read(data, { type: "string" });
-        } else {
-          workbook = XLSX.read(data, { type: "array" });
+        const posRes = await api.get(`/admin/positions/get/${emp.id_position}`);
+        if (posRes.data.meta.success) {
+          jabatan = posRes.data.data.name;
         }
-
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const rawJsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(
-          worksheet,
-          {
-            defval: "",
-          }
-        );
-
-        // Konversi semua field jadi string (kecuali null/empty)
-        const jsonData: FEEmployee[] = rawJsonData.map((row) => {
-          const newRow: Record<string, unknown> = {};
-          for (const key in row) {
-            const val = row[key];
-            newRow[key] = val === null || val === "" ? "" : String(val);
-          }
-          return newRow as FEEmployee;
-        });
-
-        if (jsonData.length === 0)
-          throw new Error("Tidak ada data yang terbaca");
-
-        // Kirim data ke backend dengan axios instance api
-        const response = await api.post("/employee/import", {
-          employee: jsonData,
-        });
-
-        if (response.status !== 200 && response.status !== 201) {
-          throw new Error("Gagal menyimpan data ke server");
-        }
-
-        // const savedEmployees = response.data;
-
-        if (Array.isArray(response.data)) {
-          setEmployees(response.data);
-        } else {
-          alert("Backend tidak mengembalikan array data karyawan");
-          setEmployees([]); // reset supaya tidak error filter
-        }
-
-        alert("Import dan simpan berhasil!");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        console.error("Gagal impor:", error);
-
-        const message =
-          error?.response?.data?.message || // Jika Laravel kirim { message: "..."}
-          error?.response?.data?.error || // Jika Laravel kirim { error: "..." }
-          error?.message || // Jika error JS
-          JSON.stringify(error); // fallback, tampilkan objek sebagai string
-
-        alert("Terjadi kesalahan saat mengimpor file: " + message);
-      } finally {
-        if (fileInputRef.current) fileInputRef.current.value = "";
+      } catch (err) {
+        console.warn("Gagal ambil jabatan dari id_position", err);
       }
-    };
+    }
 
-    if (file.name.toLowerCase().endsWith(".csv")) {
-      reader.readAsText(file);
-    } else {
-      reader.readAsArrayBuffer(file);
+    return {
+      id: emp.id,
+      id_user: emp.id_user,
+      nama: `${emp.first_name} ${emp.last_name}`,
+      jenis_kelamin: emp.jenis_kelamin,
+      phone_number: emp.user?.phone_number || "-",
+      cabang: emp.cabang || "-",
+      jabatan, // ✅ sekarang benar
+      tipe_kontrak: emp.tipe_kontrak,
+      status: emp.employment_status?.toLowerCase(),
+      email: emp.user?.email || "-",
+    };
+  })
+);
+
+// ✅ Pindahkan setEmployees ke sini
+setEmployees(updatedEmployees);
+
+      toast.success("Import berhasil dan data diperbarui!");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || error?.message || "Unknown error";
+      alert("Terjadi kesalahan saat mengimpor file: " + message);
+      console.error(error);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
+
+  if (file.name.toLowerCase().endsWith(".csv")) {
+    reader.readAsText(file);
+  } else {
+    reader.readAsArrayBuffer(file);
+  }
+};
+
 
   // Filter data sesuai filter user
   const filteredData = useMemo(() => {
@@ -481,7 +461,8 @@ export default function EmployeeTablePage() {
         cabang.toLowerCase().includes(filterText.toLowerCase()) ||
         jabatan.toLowerCase().includes(filterText.toLowerCase());
 
-      const matchesGender = !filterGender || item.jenis_kelamin === filterGender;
+      const matchesGender =
+        !filterGender || item.jenis_kelamin === filterGender;
       const matchesStatus = !filterStatus || item.status === filterStatus;
 
       return matchesSearch && matchesGender && matchesStatus;
@@ -494,7 +475,6 @@ export default function EmployeeTablePage() {
 
       <div className="bg-[#f8f8f8] rounded-xl p-4 md:p-8 shadow-md w-full overflow-x-auto">
         <div className="flex flex-col gap-4 min-w-0">
-       
           {error && <p className="text-red-600">Error: {error}</p>}
 
           <DataTableHeader
@@ -519,9 +499,9 @@ export default function EmployeeTablePage() {
             onImport={handleImportCSV}
             emptyContent={
               loading ? (
-                  <div className="flex justify-center items-center w-full h-screen">
-                    <LoadingSpinner size={48} />
-                  </div>
+                <div className="flex justify-center items-center w-full h-screen">
+                  <LoadingSpinner size={48} />
+                </div>
               ) : (
                 <div className="text-center py-4 text-gray-500">
                   Employee not found
@@ -530,11 +510,15 @@ export default function EmployeeTablePage() {
             }
           />
           <div className="w-full overflow-x-auto">
-             <DataTable columns={employeeColumns} data={filteredData} loading={loading} />
+            <DataTable
+              columns={employeeColumns}
+              data={filteredData}
+              loading={loading}
+            />
           </div>
         </div>
       </div>
-        <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 }
