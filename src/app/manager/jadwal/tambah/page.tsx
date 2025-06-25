@@ -4,11 +4,19 @@
 import { JSX, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
-import LeafletMap from "../../../../components/LeafletMap";
+// import LeafletMap from "../../../../components/LeafletMap";
 import { object } from "zod";
 import Multiselect from "multiselect-react-dropdown";
 import OverlaySpinner from "@/components/OverlaySpinner";
-import LeafletMapControl from "@/components/LeafletMapControl";
+// import LeafletMapControl from "@/components/LeafletMapControl";
+
+import dynamic from "next/dynamic";
+const LeafletMap = dynamic(() => import("@/components/LeafletMap"), {
+  ssr: false,
+});
+const LeafletMapControl = dynamic(() => import("@/components/LeafletMapControl"), {
+  ssr: false,
+});
 
 export default function Jadwal(this: any) {
   const { completeNewCheckClockSetting, fetchCompanyEmployees, companyEmployees } = useAttendance();

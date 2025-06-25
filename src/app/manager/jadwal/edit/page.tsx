@@ -6,9 +6,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
 import { GoogleMap } from "@react-google-maps/api";
 import Multiselect from "multiselect-react-dropdown";
-import LeafletMap from "@/components/LeafletMap";
+// import LeafletMap from "@/components/LeafletMap";
 import OverlaySpinner from "@/components/OverlaySpinner";
-import LeafletMapControl from "@/components/LeafletMapControl";
+
+import dynamic from "next/dynamic";
+const LeafletMap = dynamic(() => import("@/components/LeafletMap"), {
+    ssr: false,
+});
+const LeafletMapControl = dynamic(() => import("@/components/LeafletMapControl"), {
+    ssr: false,
+});
 
 function JadwalBody() {
     const searchParams = useSearchParams();

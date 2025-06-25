@@ -2,29 +2,30 @@
 import { useRouter } from "next/navigation";
 import DataTableHeader from "@/components/DatatableHeader"
 import { DataTable } from "@/components/Datatable"
-import { JSX, useMemo, useState } from "react"
+import { JSX, useEffect, useMemo, useState } from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { useAttendance, CheckClockSetting, CheckClock, CheckClockSettingTime } from "@/contexts/AttendanceContext";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
 import OverlaySpinner from "@/components/OverlaySpinner";
-import LeafletMap from "@/components/LeafletMap";
-import { Circle, CircleMarker, Marker, Popup, Tooltip } from "react-leaflet";
+// import LeafletMap from "@/components/LeafletMap";
+import { Circle, Marker, Popup, Tooltip } from "react-leaflet";
 import { LatLngTuple } from "leaflet";
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import dynamic from "next/dynamic";
 
-
+const LeafletMap = dynamic(() => import("@/components/LeafletMap"), {
+    ssr: false,
+});
 
 export default function AttendacePage() {
     const { selfCheckClockSetting, selfCheckClocks, handleClockIn, handleClockOut } = useAttendance();
     const router = useRouter();
     const [filterText, setFilterText] = useState("");
     const [filterTipeKehadiran, setFilterTipeKehadiran] = useState("");
-    const [filterTanggal, setFilterTanggal] = useState("");
-    const [isDetailOpen, setIsDetailOpen] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -50,7 +51,17 @@ export default function AttendacePage() {
         console.warn(`ERROR(${err.code}): ${err.message}`);
     }
 
-    navigator.geolocation.getCurrentPosition(success, error, options);
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // Check if geolocation is supported
+            if ("geolocation" in navigator) {
+                // Get current position
+                navigator.geolocation.getCurrentPosition(success, error, options);
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+            }
+        }
+    });
 
     const initializingState = () => {
         return selfCheckClockSetting === null || selfCheckClocks === null || currentLatLng === null;
@@ -69,6 +80,10 @@ export default function AttendacePage() {
 
         if (selfCheckClockSetting!.location_lat !== null && selfCheckClockSetting!.location_lng !== null) {
             attendanceLatLng = [selfCheckClockSetting!.location_lat!, selfCheckClockSetting!.location_lng!];
+        }
+
+        if (typeof window === 'undefined') {
+            return <></>;
         }
 
         return (
