@@ -5,13 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
-  Settings,
-  UserCircle,
-  Clock,
-  CalendarDays,
-  ClipboardCheck,
-  Mails,
+    LayoutDashboard,
+    Settings,
+    UserCircle,
+    LogOut,
+    Clock,
+    CalendarDays,
+    ClipboardCheck,
+    Mails, AlarmClock
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,36 +28,41 @@ import Image from "next/image";
 
 // Daftar navigasi sidebar manager
 const sidebarNavItems = [
-  {
-    title: "Dashboard",
-    url: "/manager/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Karyawan",
-    url: "/manager/employee",
-    icon: UserCircle,
-  },
-  {
-    title: "Kehadiran",
-    url: "/manager/attendance",
-    icon: Clock,
-  },
-  {
-    title: "Schedule",
-    url: "/manager/jadwal",
-    icon: CalendarDays,
-  },
-  {
-    title: "Approval",
-    url: "/manager/approval",
-    icon: ClipboardCheck,
-  },
-  {
-    title: "Lettering",
-    url: "/manager/lettering",
-    icon: Mails,
-  },
+    {
+        title: "Dashboard",
+        url: "/manager/dashboard",
+        icon: LayoutDashboard,
+    },
+    {
+        title: "Karyawan",
+        url: "/manager/employee",
+        icon: UserCircle,
+    },
+    {
+        title: "Kehadiran",
+        url: "/manager/attendance",
+        icon: Clock,
+    },
+    {
+        title: "Schedule",
+        url: "/manager/jadwal",
+        icon: CalendarDays,
+    },
+    {
+        title: "Approval",
+        url: "/manager/approval",
+        icon: ClipboardCheck,
+    },
+    {
+        title: "Overtime",
+        url: "/employee/overtime",
+        icon: AlarmClock,
+    },
+    {
+        title: "Lettering",
+        url: "/manager/lettering",
+        icon: Mails,
+    },
 ];
 
 // Tombol Manager Mode → Pindah ke Employee Dashboard

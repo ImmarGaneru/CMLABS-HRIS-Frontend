@@ -41,10 +41,15 @@ const FormSchema = z.object({
     document: typeof window !== "undefined" ? z.instanceof(File).optional() : z.any().optional(),
 })
 
+type FormData = z.infer<typeof FormSchema>;
+
 export default function TambahApproval(){
     const { submitApproval, getCurrentUser } = useApproval();
     const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
+
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
 
     useEffect(() => {
         setHydrated(true);
@@ -68,7 +73,7 @@ export default function TambahApproval(){
         { value: "leave", label: "Cuti" },
     ];
 
-    const form = useForm<z.infer<typeof FormSchema>>({
+    const form = useForm<FormData>({
         resolver: zodResolver(FormSchema),
     })
 
@@ -78,12 +83,21 @@ export default function TambahApproval(){
     if (!hydrated) {
         return null; // Render nothing until the component is hydrated
     }
-    function onSubmit(data: z.infer<typeof FormSchema>) {
-        submitApproval(data).then(() => {
-            router.back();
-        });
-
+    function onSubmit(data: FormData) {
+        setFormDataToSubmit(data);
+        setIsConfirmOpen(true);
     }
+
+    const handleConfirmSubmit = async () => {
+        if (!formDataToSubmit) return;
+        try {
+            await submitApproval(formDataToSubmit);
+            router.back();
+        } finally {
+            setIsConfirmOpen(false);
+            setFormDataToSubmit(null);
+        }
+    };
 
     return (
         <div className="px-2 py-4 min-h-screen flex flex-col gap-4">
@@ -209,7 +223,19 @@ export default function TambahApproval(){
                         </form>
                     </Form>
                 </div>
-
+                {isConfirmOpen && (
+                    <>
+                        <div className="fixed inset-0 bg-[rgba(0,0,0,0.50)] z-50" onClick={() => setIsConfirmOpen(false)} />
+                        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg z-[60] w-full max-w-sm">
+                            <h3 className="text-lg font-bold">Konfirmasi Pengajuan</h3>
+                            <p className="my-4">Apakah Anda yakin ingin mengirim pengajuan ini?</p>
+                            <div className="flex justify-end gap-3 mt-4">
+                                <Button variant="secondary" type="submit" onClick={() => setIsConfirmOpen(false)}>Batal</Button>
+                                <Button variant="primary" type="submit" className="bg-blue-600 hover:bg-blue-700" onClick={handleConfirmSubmit}>Ya, Kirim</Button>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

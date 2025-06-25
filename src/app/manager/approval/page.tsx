@@ -20,6 +20,9 @@ export default function ApprovalPage() {
     const [filterType, setFilterType] = useState("");
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedApproval, setSelectedApproval] = useState<Approval | null>(null);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [actionToConfirm, setActionToConfirm] = useState<{ action: 'approve' | 'reject'; id: string } | null>(null);
+
 
     useEffect(() => {
     }, []);
@@ -47,6 +50,24 @@ export default function ApprovalPage() {
         if (!id) return;
         await rejectRequest(id);
         setIsDetailOpen(false);
+    };
+
+    const openConfirmation = (action: 'approve' | 'reject', id: string) => {
+        setActionToConfirm({ action, id });
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmAction = () => {
+        if (!actionToConfirm) return;
+
+        if (actionToConfirm.action === 'approve') {
+            handleApprove(actionToConfirm.id);
+        } else if (actionToConfirm.action === 'reject') {
+            handleReject(actionToConfirm.id);
+        }
+
+        setIsConfirmOpen(false);
+        setActionToConfirm(null);
     };
 
     const approvalColumns = useMemo<ColumnDef<Approval>[]>(
@@ -257,31 +278,14 @@ export default function ApprovalPage() {
                                     <p className="font-bold">{selectedApproval.request_type.charAt(0).toUpperCase() + selectedApproval.request_type.slice(1)}</p>
                                 </div>
                                 <div></div>
-                                {["permit", "sick", "leave"].includes(selectedApproval.request_type) && (
-                                    <>
-                                        <div>
-                                            <p className="text-gray-500">Tanggal Mulai</p>
-                                            <p className="font-bold">{format(new Date(selectedApproval.start_date), "dd MMMM yyyy", { locale: id})}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-500">Tanggal Selesai</p>
-                                            <p className="font-bold">{format(new Date(selectedApproval.end_date), "dd MMMM yyyy", { locale: id})}</p>
-                                        </div>
-                                    </>
-                                )}
-                                { selectedApproval.request_type === "overtime" && (
-                                    <>
-                                        <div>
-                                            <p className="text-gray-500">Tanggal Lembur</p>
-                                            <p className="font-bold">{format(new Date(selectedApproval.end_date), "dd MMMM yyyy", { locale: id})}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-500">Jam Lembur</p>
-                                            <p className="font-bold">{format(new Date(selectedApproval.start_date), "HH:mm")} - {format(new Date(selectedApproval.end_date), "HH:mm")}</p>
-                                        </div>
-                                    </>
-
-                                )}
+                                <div>
+                                    <p className="text-gray-500">Tanggal Mulai</p>
+                                    <p className="font-bold">{format(new Date(selectedApproval.start_date), "dd MMMM yyyy", { locale: id})}</p>
+                                </div>
+                                <div>
+                                    <p className="text-gray-500">Tanggal Selesai</p>
+                                    <p className="font-bold">{format(new Date(selectedApproval.end_date), "dd MMMM yyyy", { locale: id})}</p>
+                                </div>
                             </div>
                         </div>
 
@@ -296,17 +300,71 @@ export default function ApprovalPage() {
                         {/* Lampiran */}
                         <div className="border rounded-lg p-4 mb-6">
                             <h3 className="font-bold text-[#1E3A5F] mb-2">Lampiran</h3>
-                            <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
-                                <span>Proof of pengajuan.JPG</span>
-                                <div className="flex gap-2">
-                                    <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
-                                        <FaEye/>
-                                    </Button>
-                                    <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
-                                        <FaDownload/>
-                                    </Button>
+                            {selectedApproval.document_url ? (
+                                <div className="flex flex-col gap3">
+                                    <div className="flex items-center justify-between text-sm border px-3 py-2 rounded-lg">
+                                        <span>{selectedApproval.document_url.split('/').pop()}</span>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-gray-800"
+                                                onClick={() => window.open(selectedApproval?.document_url, '_blank')}
+                                                title="Lihat Lampiran"
+                                            >
+                                                <FaEye />
+                                            </Button>
+                                            {/* Download button */}
+                                            <Button
+                                                variant="ghost"
+                                                className="text-gray-600 hover:text-gray-800"
+                                                onClick={() => {
+                                                    const link = document.createElement('a');
+                                                    link.href = selectedApproval.document_url;
+                                                    link.download = selectedApproval.document_url.split('/').pop() ?? 'default-filename';
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    document.body.removeChild(link);
+                                                }}
+                                                title="Unduh Lampiran"
+                                            >
+                                                <FaDownload />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {(() => {
+                                        const url = selectedApproval.document_url.toLowerCase();
+                                        if (url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.png') || url.endsWith('.gif')) {
+                                            return (
+                                                <div className="mt-2 border p-2 rounded-lg bg-gray-50">
+                                                    <img
+                                                        src={selectedApproval.document_url}
+                                                        alt="Pratinjau Lampiran"
+                                                        className="max-w-full h-auto rounded-lg mx-auto"
+                                                    />
+                                                </div>
+                                            );
+                                        }
+                                        // Check for PDF files
+                                        if (url.endsWith('.pdf')) {
+                                            return (
+                                                <div className="mt-2 border rounded-lg overflow-hidden">
+                                                    <iframe
+                                                        src={selectedApproval.document_url}
+                                                        title="Pratinjau PDF"
+                                                        className="w-full h-[500px]" // Set a fixed height for the PDF viewer
+                                                    ></iframe>
+                                                </div>
+                                            );
+                                        }
+                                        // Return null if no preview is available for the file type
+                                        return null;
+                                    })()}
                                 </div>
-                            </div>
+
+                            ) : (
+                                <p className="text-sm text-gray-700">Tidak ada lampiran.</p>
+                            )}
                         </div>
 
                         {/* Actions */}
@@ -314,17 +372,40 @@ export default function ApprovalPage() {
                             <div className="flex justify-end gap-4">
                                 <button
                                     className="bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-700"
-                                    onClick={() => handleReject(selectedApproval.id)}
+                                    onClick={() => openConfirmation('reject', selectedApproval.id)}
                                 >
                                     Tolak
                                 </button>
                                 <button
                                     className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700"
-                                    onClick={() => handleApprove(selectedApproval.id)}
+                                    onClick={() => openConfirmation('approve', selectedApproval.id)}
                                 >
                                     Terima
                                 </button>
                             </div>
+                        )}
+
+                        {/*Dialog Konfirmasi*/}
+                        {isConfirmOpen && (
+                            <>
+                                <div className="fixed inset-0 bg-black bg-opacity-60 z-[60]" onClick={() => setIsConfirmOpen(false)}/>
+                                {/* Dialog Box */}
+                                <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg z-[70] w-full max-w-sm">
+                                    <h3 className="text-lg font-bold">Konfirmasi Tindakan</h3>
+                                    <p className="my-4">
+                                        {`Apakah Anda yakin ingin ${actionToConfirm?.action === 'approve' ? 'menyetujui' : 'menolak'} pengajuan ini?`}
+                                    </p>
+                                    <div className="flex justify-end gap-3 mt-4">
+                                        <Button variant="ghost" onClick={() => setIsConfirmOpen(false)}>Batal</Button>
+                                        <Button
+                                            className={actionToConfirm?.action === 'approve' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'}
+                                            onClick={handleConfirmAction}
+                                        >
+                                            Ya, Lanjutkan
+                                        </Button>
+                                    </div>
+                                </div>
+                            </>
                         )}
 
                     </div>
