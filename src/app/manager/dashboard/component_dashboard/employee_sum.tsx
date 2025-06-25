@@ -80,39 +80,40 @@ export default function EmployeeSumCard() {
                 {/* Tittle */}
                 <div className='flex flex-row gap-2 items-center'>
                     <MdOutlineGroup size={32} />
-                    <p className='text-[14px]'>Total Karyawan</p>
+                    <p className='font-bold text-[18px]'>Total Karyawan</p>
                 </div>
                 <p className='text-[24px] font-bold'>{chartData.total ?? 0}</p>
                 <p className='text-[14px]'>Update: {chartData.last_updated ? dayjs(chartData.last_updated).format('DD MM YYYY') : '-'}</p>
             </div>
-            {/* Card Karyawan Aktif */}
-            <div className='bg-gray-50 text-[#1E3A5F] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
-                {/* Tittle */}
-                <div className='flex flex-row gap-2 items-center'>
-                    <MdOutlineGroup size={32} />
-                    <p className='text-[14px]'>Karyawan Aktif</p>
-                </div>
-                <p className='text-[24px] font-bold'>{chartData.active ?? 0}</p>
-                <p className='text-[14px]'>Update: {chartData.last_updated ? dayjs(chartData.last_updated).format('DD MM YYYY') : '-'}</p>
-            </div>
-
             {/* Card Karyawan Baru */}
             <div className='bg-gray-50 text-[#257047] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
                 {/* Tittle */}
                 <div className='flex flex-row gap-2 items-center'>
                     <MdOutlineGroup size={32} />
-                    <p className='text-[14px]'>Karyawan Baru</p>
+                    <p className='font-bold text-[18px]'>Karyawan Baru</p>
                 </div>
                 <p className='text-[24px] font-bold'>{chartData.new_employees ?? 0}</p>
                 <p className='text-[14px]'>Update: {chartData.last_updated ? dayjs(chartData.last_updated).format('DD MM YYYY') : '-'}</p>
             </div>
+            
+            {/* Card Karyawan Aktif */}
+            <div className='bg-gray-50 text-[#1E3A5F] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
+                {/* Tittle */}
+                <div className='flex flex-row gap-2 items-center'>
+                    <MdOutlineGroup size={32} />
+                    <p className='font-bold text-[18px]'>Karyawan Aktif</p>
+                </div>
+                <p className='text-[24px] font-bold'>{chartData.active ?? 0}</p>
+                <p className='text-[14px]'>Update: {chartData.last_updated ? dayjs(chartData.last_updated).format('DD MM YYYY') : '-'}</p>
+            </div>
+
 
             {/* Card Karyawan Resign */}
             <div className='bg-gray-50 text-[#BA3C54] rounded-lg flex flex-col gap-2 px-8 py-8 h-[160px] w-full items-start shadow-md'>
                 {/* Tittle */}
                 <div className='flex flex-row gap-2 items-center'>
                     <MdOutlineGroup size={32} />
-                    <p className='text-[14px]'>Karyawan Resign</p>
+                    <p className='font-bold text-[18px]'>Karyawan Tidak Aktif</p>
                 </div>
                 <p className='text-[24px] font-bold'>{chartData.inactive ?? 0}</p>
                 <p className='text-[14px]'>Update: {chartData.last_updated ? dayjs(chartData.last_updated).format('DD MM YYYY') : '-'}</p>

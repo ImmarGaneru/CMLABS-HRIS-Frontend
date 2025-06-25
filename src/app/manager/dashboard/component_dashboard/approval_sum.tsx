@@ -18,8 +18,6 @@ export default function ApprovalSum(){
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [approvals, setApprovals] = useState<Approval[]>([]);
-    const [filter, setFilter] = useState('pending');
-    const [showFilter, setShowFilter] = useState(false);
 
     useEffect(() => {
         const fetchApprovals = async () => {
@@ -28,15 +26,9 @@ export default function ApprovalSum(){
                 const res = await api.get('/admin/employees/dashboard/recent-approvals');
 
                 if (Array.isArray(res.data.data?.data)) {
-                    setApprovals(res.data.data.data);
+                    setApprovals(res.data.data.data.filter((a: Approval) => a.status.toLowerCase() === 'pending'));
                 } else {
                     setApprovals([]);
-                }
-
-                if (filter !== 'all') {
-                    setApprovals(res.data.data.data.filter((a: Approval) => a.status.toLowerCase() === filter));
-                } else {
-                    setApprovals(res.data.data.data);
                 }
             } catch (error) {
                 console.error('Error fetching approvals:', error);
@@ -46,14 +38,10 @@ export default function ApprovalSum(){
         };
 
         fetchApprovals();
-    }, [filter]);
+    }, []);
 
     const handleViewAll = () => {
-        router.push('/approval');
-    };
-
-    const handleViewDetail = (id: number) => {
-        router.push(`/approval/${id}`);
+        router.push('/manager/approval');
     };
 
     const getStatusColor = (status: string) => {
@@ -127,58 +115,6 @@ export default function ApprovalSum(){
                     <p className='text-[24px] font-bold'>Catatan Approval</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    {/* Filter Dropdown */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowFilter(!showFilter)}
-                            className="flex items-center gap-2 px-4 py-2 border border-[#1E3A5F] rounded-lg text-[#1E3A5F] hover:bg-[#1E3A5F]/10 transition-colors"
-                        >
-                            <span>Filter: {getStatusLabel(filter)}</span>
-                            <IoMdArrowDropdown size={20} />
-                        </button>
-                        {showFilter && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                                <div className="py-1">
-                                    <button
-                                        onClick={() => {
-                                            setFilter('all');
-                                            setShowFilter(false);
-                                        }}
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
-                                    >
-                                        All
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setFilter('pending');
-                                            setShowFilter(false);
-                                        }}
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
-                                    >
-                                        Pending
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setFilter('approved');
-                                            setShowFilter(false);
-                                        }}
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
-                                    >
-                                        Approved
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setFilter('rejected');
-                                            setShowFilter(false);
-                                        }}
-                                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
-                                    >
-                                        Rejected
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
                     <button
                         onClick={handleViewAll}
                         className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -195,7 +131,6 @@ export default function ApprovalSum(){
                         <th className="px-4 py-3 font-semibold">Karyawan</th>
                         <th className="px-4 py-3 font-semibold">Jenis</th>
                         <th className="px-4 py-3 font-semibold">Status</th>
-                        <th className="px-4 py-3 font-semibold">Detail</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -209,14 +144,6 @@ export default function ApprovalSum(){
                                     <span className={`px-3 py-1 rounded-full text-sm flex justify-center ${getStatusColor(approval.status)}`}>
                                         {getStatusLabel(approval.status)}
                                     </span>
-                            </td>
-                            <td className="px-4 py-3 flex justify-center">
-                                <button
-                                    onClick={() => handleViewDetail(approval.id)}
-                                    className="border border-[#1E3A5F] px-3 py-1 rounded text-[#1E3A5F] bg-[#f8f8f8]"
-                                >
-                                    <FaEye size={20} />
-                                </button>
                             </td>
                         </tr>
                     ))}
