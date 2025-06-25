@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { JSX } from "react";
 
 const sidebarNavItems = [
     {
@@ -43,7 +45,7 @@ const sidebarNavItems = [
         icon: Clock,
     },
     {
-        title: "Jadwal",
+        title: "Schedule",
         url: "/manager/jadwal",
         icon: CalendarDays,
     },
@@ -58,6 +60,42 @@ const sidebarNavItems = [
         icon: Mails,
     },
 ];
+
+function SwitchModeButton(): JSX.Element | null {
+    const pathname = usePathname();
+    const [isManager, setIsManager] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const userRaw = localStorage.getItem("user");
+            if (userRaw) {
+                try {
+                    const user = JSON.parse(userRaw);
+                    const isUserManager = user?.workplace?.id_manager === user?.id;
+                    setIsManager(isUserManager);
+                } catch (e) {
+                    setIsManager(false);
+                }
+            } else {
+                setIsManager(false);
+            }
+        }
+    }, []);
+
+    if (isManager === null) return null; // loading di client, hindari mismatch
+
+    const isManagerRoute = pathname.startsWith("/manager");
+
+    return (
+        <Link
+            href={isManagerRoute ? "/employee/dashboard" : "/manager/dashboard"}
+            className="flex items-center rounded-full px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+        >
+            <UserCircle className="mr-2 h-4 w-4" />
+            <span>{isManagerRoute ? "Employee Mode" : "Manager Mode"}</span>
+        </Link>
+    );
+}
 
 export function SidebarApp() {
     const pathname = usePathname();
@@ -77,33 +115,34 @@ export function SidebarApp() {
                             {sidebarNavItems.map((item) => (
                                 <SidebarMenuItem key={item.title} className="w-full">
                                     <Link
-                                    href={item.url}
-                                    id={`${item.title.toLowerCase()}-tutorial`}
-                                    className={cn(
-                                        "flex items-center rounded-full px-4 py-2 w-full text-sm font-medium text-[#1E3A5F]",
-                                        pathname === item.url
-                                        ? "bg-[#1E3A5F] text-white"
-                                        : "hover:bg-accent hover:text-accent-foreground"
-                                    )}
+                                        href={item.url}
+                                        id={`${item.title.toLowerCase()}-tutorial`}
+                                        className={cn(
+                                            "flex items-center rounded-full px-4 py-2 w-full text-sm font-medium text-[#1E3A5F]",
+                                            pathname === item.url
+                                                ? "bg-[#1E3A5F] text-white"
+                                                : "hover:bg-accent hover:text-accent-foreground"
+                                        )}
                                     >
-                                    <item.icon className="mr-3 h-4 w-4"/>
-                                    <span>{item.title}</span>
+                                        <item.icon className="mr-3 h-4 w-4" />
+                                        <span>{item.title}</span>
                                     </Link>
                                 </SidebarMenuItem>
-                                ))}
+                            ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="flex flex-col gap-2 mb-12">
+                <SwitchModeButton />
                 <Link
                     href="/manager/settings"
                     className={cn(
                         "flex items-center rounded-full px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                        pathname.startsWith("/manager/settings")  ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
+                        pathname.startsWith("/manager/settings") ? "bg-[#1E3A5F] text-white rounded-full" : "transparent"
                     )}
                 >
-                    <Settings className="mr-2 h-4 w-4"/>
+                    <Settings className="mr-2 h-4 w-4" />
                     <span>Company Settings</span>
                 </Link>
             </SidebarFooter>

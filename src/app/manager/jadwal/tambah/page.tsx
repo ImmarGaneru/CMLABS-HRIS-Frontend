@@ -1,14 +1,17 @@
+/* eslint-disable react/no-direct-mutation-state */
 "use client";
 
-import { useState } from "react";
-import { Switch } from "@headlessui/react";
+import { JSX, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAttendance, CheckClockSetting, CheckClockSettingTime } from "@/contexts/AttendanceContext";
+import LeafletMap from "../../../../components/LeafletMap";
+import { object } from "zod";
+import Multiselect from "multiselect-react-dropdown";
+import OverlaySpinner from "@/components/OverlaySpinner";
+import LeafletMapControl from "@/components/LeafletMapControl";
 
-export default function Jadwal() {
-  const { completeNewCheckClockSetting } = useAttendance();
-  const [liburNasionalMasuk, setLiburNasionalMasuk] = useState(true);
-  const [cutiBersamaMasuk, setCutiBersamaMasuk] = useState(true);
+export default function Jadwal(this: any) {
+  const { completeNewCheckClockSetting, fetchCompanyEmployees, companyEmployees } = useAttendance();
   const router = useRouter();
   const hariList = [
     "Monday",
@@ -27,22 +30,59 @@ export default function Jadwal() {
     }))
   );
 
+  useEffect(() => {
+    fetchCompanyEmployees()
+  }, []);
+
+  const shouldLoading = () => {
+    return isLoading;
+  }
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [employeesOptions, setEmployeesOptions] = useState<{ id_user: string; name: string }[]>([]);
+  const [selectedEmployees, setSelectedEmployees] = useState<{ id_user: string; name: string }[]>([]);
+  const [selectedLatLng, setSelectedLatLng] = useState({} as { latlng: { lat: number; lng: number } } | null);
+
+  useEffect(() => {
+    setSelectedLatLng({ latlng: { lat: -7.95450378241118, lng: 112.63217148198788 } });
+  }, []);
+
+  useEffect(() => {
+    if (companyEmployees) {
+      const options = companyEmployees.map((employee) => ({
+        id_user: employee.user.id,
+        name: employee.first_name + " " + employee.last_name,
+      }));
+      setEmployeesOptions(options);
+    }
+  }, [companyEmployees]);
+
+  console.log("Selected LatLng:", selectedLatLng);
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
+      <OverlaySpinner isLoading={shouldLoading()} />
       {/* Form Tambah Jadwal */}
       <div className="bg-white p-6 rounded-xl shadow">
         <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
           <h1 className="text-xl font-bold text-[#1E3A5F]">Tambah Jadwal</h1>
           <button
-            onClick={() => router.push("/jadwal")}
+            onClick={() => router.push("/manager/jadwal")}
             className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer"
           >
             Kembali
           </button>
         </div>
 
+        <LeafletMap>
+          <LeafletMapControl cb={
+            (e) => {
+              setSelectedLatLng(e);
+            }} />
+        </LeafletMap>
+
         {/* Input Nama Jadwal dan Tanggal */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
           <div>
             <label className="block font-medium mb-1">Nama Jadwal</label>
             <input
@@ -53,11 +93,35 @@ export default function Jadwal() {
             />
           </div>
           <div>
+            <label className="block font-medium mb-1">Radius</label>
+            <input
+              type="number"
+              name="ck_setting_radius"
+              placeholder="Masukkan radius (dalam meter)"
+              className="w-full border rounded px-3 py-2"
+            />
+          </div>
+          <div>
             <label className="block font-medium mb-1">Type</label>
             <select className="w-full border rounded px-3 py-2" name="ck_setting_type">
               <option value="WFO">WFO</option>
-              <option value="WFH">WFH</option>
+              <option value="WFA">WFA</option>
+              <option value="Hybrid">Hybrid</option>
             </select>
+          </div>
+          <div>
+            <label className="block font-medium mb-1">Employees</label>
+            <Multiselect
+              options={employeesOptions}
+              selectedValues={selectedEmployees}
+              onSelect={(selectedList, selectedItem) => {
+                setSelectedEmployees(selectedList as { id_user: string; name: string }[]);
+              }}
+              onRemove={(selectedList, removedItem) => {
+                setSelectedEmployees(selectedList as { id_user: string; name: string }[]);
+              }}
+              displayValue="name"
+            />
           </div>
         </div>
 
@@ -124,6 +188,7 @@ export default function Jadwal() {
           </button>
           <button
             onClick={() => {
+              setIsLoading(true);
               const newCKSetting: CheckClockSetting = {
                 id: "",
                 id_company: "",
@@ -137,6 +202,12 @@ export default function Jadwal() {
                 updated_at: new Date(),
                 deleted_at: null,
                 check_clock_setting_time: [],
+                location_lat: selectedLatLng ? selectedLatLng.latlng.lat : null,
+                location_lng: selectedLatLng ? selectedLatLng.latlng.lng : null,
+                radius: parseInt((document.querySelector(
+                  'input[name="ck_setting_radius"]'
+                ) as HTMLInputElement).value) || null,
+                user_ids: selectedEmployees.map((employee) => employee.id_user),
               }
 
               const check_clock_setting_time: CheckClockSettingTime[] = jadwal.map((row, idx) => ({
@@ -166,6 +237,7 @@ export default function Jadwal() {
                 .catch((error) => {
                   console.error("Error saving schedule:", error);
                 });
+              setIsLoading(false);
             }
             }
             className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-md hover:bg-[#155A8A] transition duration-200 ease-in-out shadow-md cursor-pointer">
@@ -176,3 +248,4 @@ export default function Jadwal() {
     </div>
   );
 }
+

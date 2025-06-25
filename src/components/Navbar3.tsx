@@ -68,6 +68,7 @@ export function Navbar3() {
     const role = segments[1] || "";
     const page = segments[2] || "";
 
+    // Perbaikan penggunaan template literal dengan backtick dan ${}
     const pageTitle = page
         ? `${capitalize(page)} ${capitalize(role)}`
         : capitalize(role || "Dashboard");
@@ -83,6 +84,7 @@ export function Navbar3() {
         if (!path || path.trim() === "") return '/avatar.png';
         if (path.startsWith('http://') || path.startsWith('https://')) return path;
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+        // Perbaikan template literal
         return `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
     };
 
@@ -90,7 +92,8 @@ export function Navbar3() {
         const fetchUserData = async () => {
             try {
                 const userResponse = await api.get('/auth/me');
-                if (!userResponse.status) return;
+                // Cek status dengan benar
+                if (userResponse.status !== 200) return;
 
                 const userData: UserData = userResponse.data.data;
                 let nameToShow = 'User';

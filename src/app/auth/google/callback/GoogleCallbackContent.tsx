@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,42 +22,32 @@ export default function GoogleCallbackContent() {
     const is_new_user = searchParams.get("is_new_user");
     const name = searchParams.get("name");
     const email = searchParams.get("email");
-    const login_method = searchParams.get("login_method");
-    const role = searchParams.get("role"); // ambil role juga
-
-    const loginMethodLower = login_method?.toLowerCase();
-    console.log("login_method:", loginMethodLower);
+    const role = searchParams.get("role");
 
     if (typeof token === "string") {
       if (is_new_user === "true") {
         const { first_name, last_name } = splitName(name || "");
 
+        // Redirect ke register dengan query param untuk pre-fill form
         router.replace(
-          `/auth/register?first_name=${first_name}&last_name=${last_name}&email=${email}`
+          `/auth/register?first_name=${encodeURIComponent(first_name)}&last_name=${encodeURIComponent(last_name)}&email=${encodeURIComponent(email || "")}`
         );
       } else {
-        // ✅ SIMPAN TOKEN DAN USER
+        // Login biasa: simpan token & role, redirect sesuai role
         localStorage.setItem("token", token);
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            email,
-            name,
-            role: role === "manager" ? "admin" : "employee",
-          })
-        );
+        localStorage.setItem("role", role || "employee");
 
-        // ✅ REDIRECT SESUAI ROLE
-        if (role === "manager") {
+        if (role === "admin") {
           router.replace("/manager/dashboard");
-        } else if (role === "employee") {
-          router.replace("/employee/dashboard");
         } else {
-          router.replace("/");
+          router.replace("/employee/dashboard");
         }
       }
+    } else {
+      router.replace("/auth/login/email"); // jika token tidak ada, redirect ke login
     }
   }, [isMounted, router, searchParams]);
 
   return null;
 }
+
