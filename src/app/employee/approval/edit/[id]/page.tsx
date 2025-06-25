@@ -35,15 +35,18 @@ const FormSchema = z.object({
         .min(1),
 })
 
+type FormData = z.infer<typeof FormSchema>;
+
 export default function ApprovalEdit({ params }: { params: Promise<{ id: string }> }) {
     const { id } = React.use(params);
     const router = useRouter();
     const { updateApproval, fetchApproval } = useApproval();
     const [isLoading, setIsLoading] = useState(true);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [formDataToSubmit, setFormDataToSubmit] = useState<FormData | null>(null);
 
-    const form = useForm<z.infer<typeof FormSchema>>({
+    const form = useForm<FormData>({
         resolver: zodResolver(FormSchema),
-
         defaultValues: {
             request_type: "",
             start_date: "",
@@ -83,13 +86,21 @@ export default function ApprovalEdit({ params }: { params: Promise<{ id: string 
         { value: "leave", label: "Cuti" },
     ];
 
-    const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-        if (!id) return;
+    const onSubmit = async (data: FormData) => {
+        setFormDataToSubmit(data);
+        setIsConfirmOpen(true);
+    };
+
+    const handleConfirmSubmit = async () => {
+        if (!id || !formDataToSubmit) return;
         try {
-            await updateApproval(id, data);
+            await updateApproval(id, formDataToSubmit);
             router.back();
         } catch (error) {
             console.error("Error updating approval:", error);
+        } finally {
+            setIsConfirmOpen(false);
+            setFormDataToSubmit(null);
         }
     };
 
@@ -195,6 +206,20 @@ export default function ApprovalEdit({ params }: { params: Promise<{ id: string 
                     </Form>
                 </div>
             </div>
+
+            {isConfirmOpen && (
+                <>
+                    <div className="fixed inset-0 bg-[rgba(0,0,0,0.50)] z-50" onClick={() => setIsConfirmOpen(false)} />
+                    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg z-[60] w-full max-w-sm">
+                        <h3 className="text-lg font-bold">Konfirmasi Perubahan</h3>
+                        <p className="my-4">Apakah Anda yakin ingin menyimpan perubahan pada pengajuan ini?</p>
+                        <div className="flex justify-end gap-3 mt-4">
+                            <Button variant="secondary" type="submit" onClick={() => setIsConfirmOpen(false)}>Batal</Button>
+                            <Button variant="primary" type="submit" className="bg-blue-600 hover:bg-blue-700" onClick={handleConfirmSubmit}>Ya, Simpan</Button>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 }
