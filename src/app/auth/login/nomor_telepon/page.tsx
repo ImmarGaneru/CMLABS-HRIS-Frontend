@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/axios";
 
-export default function LoginTeleponKaryawanPage() {
+export default function LoginNomorTeleponPage() {
   const router = useRouter();
 
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -44,17 +44,7 @@ export default function LoginTeleponKaryawanPage() {
           }
 
           alert("Login berhasil!");
-          // Tambahkan bagian ini:
- const user = result.data.user;
- const role = user?.role;
-
- if (role === "admin") {
-   router.push("/manager/dashboard");
- } else if (role === "employee") {
-   router.push("/employee/dashboard");
- } else {
-   router.push("/auth/login/email");
- }
+          router.push("/employee/dashboard");
         } else {
           throw new Error("Token tidak ditemukan.");
         }
@@ -256,3 +246,4 @@ export default function LoginTeleponKaryawanPage() {
     </div>
   );
 }
+

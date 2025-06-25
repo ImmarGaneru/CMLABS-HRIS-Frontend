@@ -1,6 +1,4 @@
-
 'use client';
-import KeamananURL from '@/components/KeamananURL';
 import ApprovalSum from './component_dashboard/approval_sum';
 import EmployeeAttendancePie from './component_dashboard/employee_attendance';
 import EmployeePayrollSummary from './component_dashboard/employee_payroll';
@@ -12,26 +10,34 @@ import { useEffect, useState } from 'react';
 import ClockStatus from './component_dashboard/clock_status';
 import DepartmentDistribution from './component_dashboard/department_distribution';
 import { dashboardTutorialSteps } from '../tutorial/dashboard_tutorial';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export default function DashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        setIsLoading(false);
+        // Add loading state management
+        const initializeDashboard = async () => {
+            try {
+                // Add your data fetching logic here
+                setIsLoading(false);
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                setIsLoading(false);
+            }
+        };
+
+        initializeDashboard();
     }, []);
 
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center w-full h-screen">
-              <LoadingSpinner size={48} />
+            <div className="flex items-center justify-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
         );
     }
 
     return (
-        //Keamanan URL
-        <KeamananURL role="admin">
         <section className="flex flex-col px-4 py-6 gap-6 w-full h-fit">
             <Tutorial
                 steps={dashboardTutorialSteps}
@@ -67,12 +73,14 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="clock-status">
+                    <ClockStatus/>
+                </div>
                 <div className="department-distribution">
                     <DepartmentDistribution/>
                 </div>
             </div>
         </section>
-        </KeamananURL>
     );
 }

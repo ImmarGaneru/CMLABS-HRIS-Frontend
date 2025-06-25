@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -46,21 +45,7 @@ export default function LoginIdKaryawanPage() {
           }
 
           alert("Login berhasil!");
-//           router.push("/employee/dashboard"); // <-- redirect ke dashboard
-// // "api" di sini mengarah ke base URL backend, contoh: http://localhost:8000/api
-
- // Tambahkan bagian ini:
- const user = result.data.user;
- const role = user?.role;
-
- if (role === "admin") {
-   router.push("/manager/dashboard");
- } else if (role === "employee") {
-   router.push("/employee/dashboard");
- } else {
-   router.push("/auth/login/email");
- }
-
+          router.push("/employee/dashboard");
         } else {
           throw new Error("Token tidak ditemukan.");
         }
@@ -125,7 +110,7 @@ export default function LoginIdKaryawanPage() {
                 type="text"
                 value={signInCode}
                 onChange={(e) => setSignInCode(e.target.value)}
-                placeholder="MN1234"
+                placeholder="ky1234"
                 className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-sm"
                 required
               />
@@ -275,3 +260,4 @@ export default function LoginIdKaryawanPage() {
     </div>
   );
 }
+
