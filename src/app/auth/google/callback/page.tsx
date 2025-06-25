@@ -1,7 +1,8 @@
+
 "use client";
 
 import { Suspense } from "react";
-import GoogleCallbackContent from "./GoogleCallbackContent"; // komponen terpisah
+import GoogleCallbackContent from "./GoogleCallbackContent";
 
 export default function GoogleCallback() {
   return (
@@ -10,3 +11,4 @@ export default function GoogleCallback() {
     </Suspense>
   );
 }
+

@@ -1,5 +1,8 @@
+
 'use client';
+
 import { useEffect, useState } from 'react';
+import KeamananURL from '@/app/auth/login/keamanan_url/page'; // atau path yang benar seperti @/components/KeamananURL
 import EmployeeProfile from './components/employee_profile';
 import api from '@/lib/axios';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -8,7 +11,8 @@ import DailyWorkHoursChart from './components/daily_work_hours_chart';
 import StatusSummaryCard from './components/status_summary_card';
 import StatusPieChart from './components/status_pie_chart';
 
-export default function EmployeeDashboardPage() {
+// 👇 Ini adalah komponen isi dashboard, hanya dipanggil jika role sudah benar
+function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
 
@@ -76,4 +80,13 @@ export default function EmployeeDashboardPage() {
       </div>
     </section>
   );
-} 
+}
+
+// 👇 Export utama halaman dashboard: dilindungi oleh role "employee"
+export default function EmployeeDashboardPage() {
+  return (
+    <KeamananURL role="employee">
+      <DashboardContent />
+    </KeamananURL>
+  );
+}

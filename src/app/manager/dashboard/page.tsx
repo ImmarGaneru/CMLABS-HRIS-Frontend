@@ -1,4 +1,6 @@
+
 'use client';
+import KeamananURL from '@/app/auth/login/keamanan_url/page'; // pastikan path benar
 import ApprovalSum from './component_dashboard/approval_sum';
 import EmployeeAttendancePie from './component_dashboard/employee_attendance';
 import EmployeePayrollSummary from './component_dashboard/employee_payroll';
@@ -28,6 +30,8 @@ export default function DashboardPage() {
     }
 
     return (
+        //Keamanan URL
+        <KeamananURL role="admin">
         <section className="flex flex-col px-4 py-6 gap-6 w-full h-fit">
             <Tutorial
                 steps={dashboardTutorialSteps}
@@ -69,5 +73,6 @@ export default function DashboardPage() {
                 </div>
             </div>
         </section>
+        </KeamananURL>
     );
 }

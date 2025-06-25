@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -5,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/axios";
 
-export default function LoginNomorTeleponPage() {
+export default function LoginTeleponKaryawanPage() {
   const router = useRouter();
 
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -43,7 +44,17 @@ export default function LoginNomorTeleponPage() {
           }
 
           alert("Login berhasil!");
-          router.push("/employee/dashboard");
+          // Tambahkan bagian ini:
+ const user = result.data.user;
+ const role = user?.role;
+
+ if (role === "admin") {
+   router.push("/manager/dashboard");
+ } else if (role === "employee") {
+   router.push("/employee/dashboard");
+ } else {
+   router.push("/auth/login/email");
+ }
         } else {
           throw new Error("Token tidak ditemukan.");
         }
@@ -82,7 +93,7 @@ export default function LoginNomorTeleponPage() {
       <div className="md:w-1/2 w-full flex items-center justify-center p-6">
         <div className="bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] rounded-xl p-8 w-full max-w-md">
           <h2 className="text-[32px] font-bold text-gray-800 mb-2 leading-tight">
-            Masuk dengan Nomor Telepon
+            Masuk dengan Nomer Telepon
           </h2>
           <p className="text-sm text-gray-600 mb-2">
             Selamat datang kembali di HRIS cmlabs!
@@ -217,19 +228,18 @@ export default function LoginNomorTeleponPage() {
                 Masuk dengan ID Karyawan
               </button>
             </Link>
-
             <Link
-  href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect?login_method=nomer_telepon`}
+  href={`${process.env.NEXT_PUBLIC_API_URL}/auth/google/redirect?login_method=nomor_telepon`}
   passHref
 >
-              <button
-                type="button"
-                className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm cursor-pointer"
-              >
-                <span>Masuk dengan akun Google</span>
-                <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
-              </button>
-            </Link>
+  <button
+    type="button"
+    className="w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded-md bg-white font-semibold text-sm cursor-pointer"
+  >
+    <span>Masuk dengan akun Google</span>
+    <img src="/icon-google.svg" alt="Google" className="w-5 h-5" />
+  </button>
+</Link>
           </form>
 
           <p className="text-sm text-center mt-4 text-gray-600">
