@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import KeamananURL from '@/app/auth/login/keamanan_url/page'; // atau path yang benar seperti @/components/KeamananURL
+import KeamananURL from '@/components/KeamananURL';
 import EmployeeProfile from './components/employee_profile';
 import api from '@/lib/axios';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';

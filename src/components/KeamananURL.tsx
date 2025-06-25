@@ -40,15 +40,15 @@ export default function KeamananURL({ role, children }: KeamananURLProps) {
     // Ambil role dari user
     const userRole: string | null = user?.role || null;
 
-console.log("Detected role:", userRole, "Required:", role);
-console.log("localStorage user:", user);
+    console.log("Detected role:", userRole, "Required:", role);
+    console.log("localStorage user:", user);
 
-if (userRole === role) {
-  setAllowed(true);
-} else {
-  console.log("Role tidak sesuai. Redirect ke login.");
-  router.replace("/auth/login/email");
-}
+    if (userRole === role) {
+      setAllowed(true);
+    } else {
+      console.log("Role tidak sesuai. Redirect ke login.");
+      router.replace("/auth/login/email");
+    }
   }, [role, router]);
 
   if (allowed === null) {
@@ -60,4 +60,4 @@ if (userRole === role) {
   }
 
   return <>{children}</>;
-}
+} 

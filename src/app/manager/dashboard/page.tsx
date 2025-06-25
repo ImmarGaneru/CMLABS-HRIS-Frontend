@@ -1,6 +1,6 @@
 
 'use client';
-import KeamananURL from '@/app/auth/login/keamanan_url/page'; // pastikan path benar
+import KeamananURL from '@/components/KeamananURL';
 import ApprovalSum from './component_dashboard/approval_sum';
 import EmployeeAttendancePie from './component_dashboard/employee_attendance';
 import EmployeePayrollSummary from './component_dashboard/employee_payroll';
