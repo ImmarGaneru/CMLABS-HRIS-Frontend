@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,35 +17,44 @@ export default function GoogleCallbackContent() {
     if (!isMounted) return;
 
     const token = searchParams.get("token");
-    const is_new_user = searchParams.get("is_new_user");
+    const isNewUser = searchParams.get("is_new_user");
     const name = searchParams.get("name");
     const email = searchParams.get("email");
     const role = searchParams.get("role");
 
-    if (typeof token === "string") {
-      if (is_new_user === "true") {
-        const { first_name, last_name } = splitName(name || "");
+    if (!token) {
+      router.replace("/auth/login/email");
+      return;
+    }
 
-        // Redirect ke register dengan query param untuk pre-fill form
-        router.replace(
-          `/auth/register?first_name=${encodeURIComponent(first_name)}&last_name=${encodeURIComponent(last_name)}&email=${encodeURIComponent(email || "")}`
-        );
-      } else {
-        // Login biasa: simpan token & role, redirect sesuai role
-        localStorage.setItem("token", token);
-        localStorage.setItem("role", role || "employee");
-
-        if (role === "admin") {
-          router.replace("/manager/dashboard");
-        } else {
-          router.replace("/employee/dashboard");
-        }
-      }
+    if (isNewUser === "true") {
+      // Register flow: pre-fill form
+      const { first_name, last_name } = splitName(name || "");
+      router.replace(
+        `/auth/register?first_name=${encodeURIComponent(first_name)}&last_name=${encodeURIComponent(
+          last_name
+        )}&email=${encodeURIComponent(email || "")}`
+      );
     } else {
-      router.replace("/auth/login/email"); // jika token tidak ada, redirect ke login
+      // Login flow: simpan semua info
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role || "employee");
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          role,
+          name,
+          email,
+        })
+      );
+
+      if (role === "admin") {
+        router.replace("/manager/dashboard");
+      } else {
+        router.replace("/employee/dashboard");
+      }
     }
   }, [isMounted, router, searchParams]);
 
   return null;
 }
-
