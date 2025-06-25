@@ -8,14 +8,25 @@ import { useAttendance, CheckClockSetting, CheckClock, CheckClockSettingTime } f
 import { Button } from "@/components/ui/button";
 import { Toaster } from "sonner";
 import OverlaySpinner from "@/components/OverlaySpinner";
-// import LeafletMap from "@/components/LeafletMap";
-import { Circle, Marker, Popup, Tooltip } from "react-leaflet";
 import { LatLngTuple } from "leaflet";
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dynamic from "next/dynamic";
+
+const Circle = dynamic(() => import("react-leaflet").then((mod) => mod.Circle), {
+    ssr: false,
+});
+const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), {
+    ssr: false,
+});
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+    ssr: false,
+});
+const Tooltip = dynamic(() => import("react-leaflet").then((mod) => mod.Tooltip), {
+    ssr: false,
+});
 
 const LeafletMap = dynamic(() => import("@/components/LeafletMap"), {
     ssr: false,
@@ -80,10 +91,6 @@ export default function AttendacePage() {
 
         if (selfCheckClockSetting!.location_lat !== null && selfCheckClockSetting!.location_lng !== null) {
             attendanceLatLng = [selfCheckClockSetting!.location_lat!, selfCheckClockSetting!.location_lng!];
-        }
-
-        if (typeof window === 'undefined') {
-            return <></>;
         }
 
         return (
