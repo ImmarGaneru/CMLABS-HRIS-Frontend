@@ -2,7 +2,7 @@
 
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
-import { FaArrowLeft } from "react-icons/fa";
+import {FaArrowLeft, FaFileImage, FaFilePdf, FaFileWord, FaTimes, FaUpload} from "react-icons/fa";
 import {z} from "zod";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -22,25 +22,21 @@ import { useApproval } from "@/contexts/ApprovalContext";
 import {useEffect, useState} from "react";
 
 const FormSchema = z.object({
-    id_user: z
-        .string({
-            required_error: "User harus dipilih",
-        })
-        .min(1, "User harus dipilih"),
-    request_type: z
-        .string({
-            required_error: "Tipe pengajuan harus dipilih",
-        })
-        .min(1, "Tipe pengajuan harus dipilih"),
-    start_date: z.string().optional(),
-    end_date: z.string().optional(),
-    reason: z
-        .string({
-            required_error: "Alasan harus diisi",
-        })
-        .min(1, "Alasan harus diisi"),
+    id_user: z.string().min(1, "User harus dipilih"),
+    request_type: z.string().min(1, "Tipe pengajuan harus dipilih"),
+    start_date: z.string().min(1, "Tanggal mulai harus diisi"),
+    end_date: z.string().min(1, "Tanggal akhir harus diisi"),
+    reason: z.string().min(1, "Alasan harus diisi"),
     document: typeof window !== "undefined" ? z.instanceof(File).optional() : z.any().optional(),
-})
+}).refine(data => {
+    if (data.start_date && data.end_date) {
+        return new Date(data.end_date) >= new Date(data.start_date);
+    }
+    return true;
+}, {
+    message: "Tanngal akhir tidak boleh sebelum tanggal mulai",
+    path: ["end_date"],
+});
 
 type FormData = z.infer<typeof FormSchema>;
 
@@ -70,15 +66,13 @@ export default function TambahApproval(){
     form.control.register("start_date");
     form.control.register("end_date");
 
-    if (!hydrated) {
-        return null; // Render nothing until the component is hydrated
-    }
+    if (!hydrated) return null;
+
     function onSubmit(data: FormData) {
         setFormDataToSubmit(data);
         setIsConfirmOpen(true);
     }
 
-    // --- 3. FUNGSI BARU UNTUK MENANGANI SUBMIT SETELAH KONFIRMASI ---
     const handleConfirmSubmit = async () => {
         if (!formDataToSubmit) return;
         try {
@@ -230,22 +224,82 @@ export default function TambahApproval(){
                             <FormField
                                 control={form.control}
                                 name="document"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Dokumen Pendukung</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="file"
-                                                accept=".pdf,.doc,.docx,.png,.jpg"
-                                                onChange={(e) => field.onChange(e.target.files?.[0])}
-                                            />
-                                        </FormControl>
-                                        <FormDescription>
-                                            Unggah dokumen pendukung jika ada (format: .pdf, .doc, .docx, .png, .jpg).
-                                        </FormDescription>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
+                                render={({ field }) => {
+                                    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+                                    const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+                                    const handleFileChange = (file: File | undefined | null) => {
+                                        if (file) {
+                                            field.onChange(file);
+                                            setSelectedFile(file);
+                                        }
+                                    };
+                                    const handleRemoveFile = (e: React.MouseEvent<HTMLButtonElement>) => {
+                                        e.preventDefault();
+                                        field.onChange(null);
+                                        setSelectedFile(null);
+                                    };
+                                    const getFileIcon = (fileName: string) => {
+                                        const extension = fileName.split('.').pop()?.toLowerCase();
+                                        if (extension === 'pdf') return <FaFilePdf className="text-red-500 w-8 h-8" />;
+                                        if (extension === 'doc' || extension === 'docx') return <FaFileWord className="text-blue-500 w-8 h-8" />;
+                                        if (['png', 'jpg', 'jpeg'].includes(extension || '')) return <FaFileImage className="text-purple-500 w-8 h-8" />;
+                                        return null;
+                                    };
+                                    const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+                                        e.preventDefault();
+                                        setIsDraggingOver(true);
+                                    };
+                                    const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+                                        e.preventDefault();
+                                        setIsDraggingOver(false);
+                                    };
+                                    const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+                                        e.preventDefault();
+                                        setIsDraggingOver(false);
+                                        handleFileChange(e.dataTransfer.files?.[0]);
+                                    };
+
+                                    return (
+                                        <FormItem>
+                                            <FormLabel>Dokumen Pendukung</FormLabel>
+                                            <FormControl>
+                                                <label
+                                                    htmlFor="document-upload"
+                                                    className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-300
+                                                        ${isDraggingOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}
+                                                    onDragOver={handleDragOver}
+                                                    onDragLeave={handleDragLeave}
+                                                    onDrop={handleDrop}
+                                                >
+                                                    {selectedFile ? (
+                                                        <div className="flex flex-col items-center justify-center text-center p-4">
+                                                            {getFileIcon(selectedFile.name)}
+                                                            <p className="font-semibold text-gray-700 mt-2 break-all">{selectedFile.name}</p>
+                                                            <p className="text-xs text-gray-500">{(selectedFile.size / 1024).toFixed(2)} KB</p>
+                                                            <button onClick={handleRemoveFile} className="mt-4 text-xs text-red-600 hover:text-red-800 font-semibold flex items-center gap-1"><FaTimes /> Hapus</button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                            <FaUpload className="w-10 h-10 mb-3 text-gray-400" />
+                                                            <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Klik untuk unggah</span> atau seret dan lepas</p>
+                                                            <p className="text-xs text-gray-500">PDF, DOC, DOCX, PNG, atau JPG</p>
+                                                        </div>
+                                                    )}
+                                                    <Input
+                                                        id="document-upload"
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept=".pdf,.doc,.docx,.png,.jpg"
+                                                        onChange={(e) => handleFileChange(e.target.files?.[0])}
+                                                    />
+                                                </label>
+                                            </FormControl>
+                                            <FormDescription>Unggah dokumen pendukung jika ada.</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    );
+                                }}
                             />
                             <Button type="submit" variant="redirectButton">Submit</Button>
                         </form>

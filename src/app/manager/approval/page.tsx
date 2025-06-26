@@ -388,7 +388,7 @@ export default function ApprovalPage() {
                         {/*Dialog Konfirmasi*/}
                         {isConfirmOpen && (
                             <>
-                                <div className="fixed inset-0 bg-black bg-opacity-60 z-[60]" onClick={() => setIsConfirmOpen(false)}/>
+                                <div className="fixed inset-0 bg-[rgba(0,0,0,0.50)] z-[60]" onClick={() => setIsConfirmOpen(false)}/>
                                 {/* Dialog Box */}
                                 <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg z-[70] w-full max-w-sm">
                                     <h3 className="text-lg font-bold">Konfirmasi Tindakan</h3>
