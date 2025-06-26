@@ -30,7 +30,7 @@
 
 import type { NextConfig } from "next";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://api.hriscmlabs.my.id/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.hriscmlabs.my.id/api";
 
 const nextConfig: NextConfig = {
   images: {

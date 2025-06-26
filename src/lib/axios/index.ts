@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api" || "http://api.hriscmlabs.my.id/api";
+const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api" || "https://api.hriscmlabs.my.id/api";
 
 export const api = axios.create({
   baseURL,
