@@ -80,30 +80,28 @@ export default function TambahKaryawan() {
     }));
   };
 
-  // Ambil data posisi berdasarkan department yang dipilih
-  useEffect(() => {
-    const fetchPositionsByDepartment = async () => {
-      if (!selectedDepartment) return;
+useEffect(() => {
+  const fetchPositionsByDepartment = async () => {
+    if (!selectedDepartment) return;
 
-      try {
-        const res = await api.get(`/admin/positions`, {
-          params: { department_id: selectedDepartment }, // optional: jika butuh filter posisi by department
-        });
+    try {
+      const res = await api.get(`/admin/positions/by-department/${selectedDepartment}`);
+      
+      const posisiFormatted = res.data.data.map((pos: any) => ({
+        id: pos.id,
+        name: pos.name,
+        gaji: pos.gaji ?? 0,
+      }));
 
-        const posisiFormatted = res.data.data.map((pos: any) => ({
-          id: pos.id,
-          name: pos.name,
-          gaji: pos.gaji ?? 0,
-        }));
+      setPositions(posisiFormatted);
+    } catch (err) {
+      console.error("Gagal mengambil jabatan:", err);
+    }
+  };
 
-        setPositions(posisiFormatted);
-      } catch (err) {
-        console.error("Gagal mengambil jabatan:", err);
-      }
-    };
+  fetchPositionsByDepartment();
+}, [selectedDepartment]);
 
-    fetchPositionsByDepartment();
-  }, [selectedDepartment]);
 
   const handleBack = () => router.push("/manager/employee");
 
